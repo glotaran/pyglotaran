@@ -206,3 +206,15 @@ def test_get_data_model_issues():
     assert len(get_item_issues(ok, Parameters({}))) == 0
     assert len(get_item_issues(exclusive, Parameters({}))) == 1
     assert len(get_item_issues(unique, Parameters({}))) == 2
+
+
+def test_data_model_data_path():
+    """Test that dataset ``source_path`` is returned when set."""
+    data_model = DataModel(elements=[])
+    assert data_model.data_path is None
+
+    data_model.data = xr.Dataset()
+    assert data_model.data_path is None
+
+    data_model.data = xr.Dataset(attrs={"source_path": "path-to-file"})
+    assert data_model.data_path == "path-to-file"

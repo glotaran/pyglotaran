@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import ChainMap
 from typing import TYPE_CHECKING
 from typing import Literal
 
@@ -49,6 +50,13 @@ class Scheme(BaseModel):
         except KeyError as e:
             msg = f"Not data for data model '{label}' provided."
             raise GlotaranUserError(msg) from e
+
+    @property
+    def dataset_paths(self) -> dict[str, str]:
+        """Paths to all the datasets."""
+        return dict(
+            ChainMap(*(experiment.dataset_paths for experiment in self.experiments.values()))
+        )
 
     def optimize(
         self,

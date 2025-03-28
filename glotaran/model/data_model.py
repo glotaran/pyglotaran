@@ -8,7 +8,7 @@ from typing import Literal
 from typing import cast
 from uuid import uuid4
 
-import xarray as xr  # noqa: TC002
+import xarray as xr
 from pydantic import Field
 from pydantic import create_model
 
@@ -199,12 +199,22 @@ class DataModel(Item):
     )
     weights: list[Weight] = Field(default_factory=list)
 
+    @property
+    def data_path(self) -> str | None:
+        """Path to the data attribute used in serialization."""
+        if isinstance(self.data, xr.Dataset):
+            if "source_path" in self.data.attrs:
+                return self.data.attrs["source_path"]
+            # Data were not loaded via plugin
+            return None
+        return self.data
+
     @staticmethod
     def create_class_for_elements(elements: set[type[Element]]) -> type[DataModel]:
         data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-', '_')}"
         data_models: tuple[type[DataModel], ...] = (
             *cast(
-                tuple[type[DataModel], ...],
+                "tuple[type[DataModel], ...]",
                 tuple({e.data_model_type for e in elements if e.data_model_type is not None}),
             ),
             DataModel,

@@ -55,6 +55,15 @@ class ExperimentModel(BaseModel):
             for name, data_model in datasets.items()
         }
 
+    @property
+    def dataset_paths(self) -> dict[str, str]:
+        """Paths to all the datasets."""
+        return {
+            name: data_model.data_path
+            for name, data_model in self.datasets.items()
+            if data_model.data_path is not None
+        }
+
     @classmethod
     def from_dict(cls, library: ModelLibrary, model_dict: dict[str, Any]) -> ExperimentModel:
         initialized_datasets = {
