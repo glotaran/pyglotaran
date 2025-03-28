@@ -16,6 +16,11 @@ except ImportError:
     # numpy < 1.23
     from numpy.typing._array_like import _SupportsArray  # type:ignore[no-redef]  # noqa: F401
 
+try:
+    from typing import Self  # type: ignore[attr-defined]
+except ImportError:
+    from typing_extensions import Self  # noqa: F401
+
 import xarray as xr
 
 T = TypeVar("T")

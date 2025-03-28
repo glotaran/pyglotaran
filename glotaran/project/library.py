@@ -2,14 +2,18 @@ from __future__ import annotations
 
 from functools import reduce
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import TypeAlias
 from typing import Union
 
 from pydantic import RootModel
+from pydantic import SerializationInfo
+from pydantic import model_serializer
 
 from glotaran.model.element import ExtendableElement
 from glotaran.model.errors import GlotaranModelError
 from glotaran.plugin_system.base_registry import __PluginRegistry
+from glotaran.utils.io import serialization_info_to_kwargs
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -59,3 +63,27 @@ class ModelLibrary(RootModel[LibraryType]):
             for label, element in self.root.items()
             if isinstance(element, ExtendableElement) and element.is_extended()
         ]
+
+    @model_serializer()
+    def serialize(self, info: SerializationInfo) -> dict[str, Any]:
+        """Serialize ``ModelLibrary`` in a round tippable way.
+
+        Main difference is that the initial copy of ``ExtendableElement`` instances is serialized
+        rather than the already extended version.
+
+        Parameters
+        ----------
+        info : SerializationInfo
+            Serialization arguments passed to ``model_dump`` of the top level element.
+
+        Returns
+        -------
+        dict[str, Any]
+        """
+        model_dump_kwargs = serialization_info_to_kwargs(info)
+        return {
+            key: value.model_dump(**model_dump_kwargs)
+            if isinstance(value, ExtendableElement) is False
+            else value._original.model_dump(**model_dump_kwargs)  # noqa: SLF001
+            for key, value in self.root.items()
+        }

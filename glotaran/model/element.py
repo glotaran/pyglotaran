@@ -11,6 +11,7 @@ from typing import ClassVar
 
 from pydantic import ConfigDict
 from pydantic import Field
+from pydantic import PrivateAttr
 
 from glotaran.model.clp_constraint import ClpConstraint  # noqa: TC001
 from glotaran.model.item import TypedItem
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
 
     from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
+    from glotaran.typing.types import Self
 
 
 def _sanitize_json_schema(json_schema: dict[str, Any]) -> None:
@@ -52,7 +54,7 @@ class Element(TypedItem, abc.ABC):
     register_as: ClassVar[str | None] = None
 
     dimension: str | None = None
-    label: str
+    label: str = Field(exclude=True)
     clp_constraints: list[ClpConstraint.get_annotated_type()] = (  # type:ignore[valid-type]
         Field(default_factory=list)
     )
@@ -160,6 +162,16 @@ class Element(TypedItem, abc.ABC):
 
 class ExtendableElement(Element):
     extends: list[str] | None = None
+    _original: Self = PrivateAttr(init=False)
+
+    def model_post_init(self, __context: Any) -> None:  # noqa: ANN401, PYI063
+        """Save a copy of the original instance before extending.
+
+        This is needed for roundtrip serialization, where you want to dump the unextended
+        instance even after the ``extend`` method was called.
+        """
+        super().model_post_init(__context)
+        self._original = self.model_copy(deep=True)
 
     def is_extended(self) -> bool:
         return self.extends is not None

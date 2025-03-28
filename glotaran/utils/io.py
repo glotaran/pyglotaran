@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
     import pandas as pd
+    from pydantic import SerializationInfo
 
     from glotaran.project.result import Result
     from glotaran.typing.types import StrOrPath
@@ -474,3 +475,29 @@ def create_clp_guide_dataset(
             value_dimension: clp_values.coords[value_dimension].to_numpy(),
         },
     ).to_dataset(name="data")
+
+
+def serialization_info_to_kwargs(info: SerializationInfo) -> dict[str, Any]:
+    """Convert ``SerializationInfo`` into a dict that can be spatted into ``model_dump``.
+
+    Parameters
+    ----------
+    info : SerializationInfo
+        Serialization information available in serialization functions passed down from
+        ``model_dump`` calls.
+
+    Returns
+    -------
+    dict[str, Any]
+    """
+    return {
+        "include": info.include,
+        "exclude": info.exclude,
+        "exclude_defaults": info.exclude_defaults,
+        "exclude_none": info.exclude_none,
+        "exclude_unset": info.exclude_unset,
+        "by_alias": info.by_alias,
+        "mode": info.mode,
+        "round_trip": info.round_trip,
+        "context": info.context,
+    }
