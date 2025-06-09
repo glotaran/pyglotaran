@@ -8,6 +8,7 @@ from dataclasses import field
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import final
 
 from pydantic import ConfigDict
 from pydantic import Field
@@ -119,6 +120,7 @@ class Element(TypedItem, abc.ABC):
             Whether model is calculated as global model.
         """
 
+    @final
     def create_result_with_uid(
         self,
         model: DataModel,
