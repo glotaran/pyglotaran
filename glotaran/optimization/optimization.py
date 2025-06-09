@@ -11,6 +11,7 @@ from scipy.optimize import least_squares
 from glotaran.model.errors import GlotaranModelIssues
 from glotaran.model.errors import GlotaranUserError
 from glotaran.optimization.objective import OptimizationObjective
+from glotaran.optimization.objective import OptimizationResult
 from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.optimization.result import OptimizationInfo
 from glotaran.parameter import ParameterHistory
@@ -18,8 +19,6 @@ from glotaran.parameter import Parameters
 from glotaran.utils.tee import TeeContext
 
 if TYPE_CHECKING:
-    import xarray as xr
-
     from glotaran.model.experiment_model import ExperimentModel
     from glotaran.project.library import ModelLibrary
     from glotaran.typing.types import ArrayLike
@@ -97,7 +96,7 @@ class Optimization:
             exclude_non_vary=True
         )
 
-    def run(self) -> tuple[Parameters, dict[str, xr.Dataset], OptimizationInfo]:
+    def run(self) -> tuple[Parameters, dict[str, OptimizationResult], OptimizationInfo]:
         """Perform the optimization.
 
         Raises
@@ -153,7 +152,7 @@ class Optimization:
         )
         return self._parameters, optimization_results, optimization_info
 
-    def dry_run(self) -> tuple[Parameters, dict[str, xr.Dataset], OptimizationInfo]:
+    def dry_run(self) -> tuple[Parameters, dict[str, OptimizationResult], OptimizationInfo]:
         termination_reason = "Dry run."
 
         penalty = np.concatenate([o.calculate() for o in self._objectives])
