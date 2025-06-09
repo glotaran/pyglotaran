@@ -46,6 +46,9 @@ class ActivationDataModel(DataModel):
         description="The activation(s) of the dataset.",
     )
 
+    # TODO: Move result creation logic to activation classes to allow extendability
+    # Currently this method only works for ``MultiGaussianActivation`` and would require
+    # a major refactor to support other activation types.
     @staticmethod
     def create_result(
         model: ActivationDataModel,  # type:ignore[override]
