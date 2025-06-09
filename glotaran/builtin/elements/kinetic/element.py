@@ -117,33 +117,26 @@ class KineticElement(ExtendableElement, Kinetic):
         if index_dependent:
             matrix_shape = (global_axis.size, *matrix_shape)  # type:ignore[assignment]
         matrix = np.zeros(matrix_shape, dtype=np.float64)
-        scales = np.array(
-            [
-                p.scale  # type:ignore[union-attr]
-                for p in (
-                    parameters[0] if index_dependent else parameters  # type:ignore[union-attr]
-                )
-            ]
-        )
+        scales = np.array([p.scale for p in (parameters[0] if index_dependent else parameters)])  # type:ignore[union-attr]
         if index_dependent:
             calculate_matrix_gaussian_activation(
                 matrix,
                 rates,
                 model_axis,
-                np.array([[p.center for p in ps] for ps in parameters]),  # type:ignore[union-attr]
-                np.array([[p.width for p in ps] for ps in parameters]),  # type:ignore[union-attr]
+                np.array([[p.center for p in ps] for ps in parameters]),
+                np.array([[p.width for p in ps] for ps in parameters]),
                 scales,
-                parameters[0][0].backsweep_period,  # type:ignore[index]
+                parameters[0][0].backsweep_period,
             )
         else:
             calculate_matrix_gaussian_activation_on_index(
                 matrix,
                 rates,
                 model_axis,
-                np.array([p.center for p in parameters]),  # type:ignore[union-attr]
-                np.array([p.width for p in parameters]),  # type:ignore[union-attr]
+                np.array([p.center for p in parameters]),  # type:ignore[attr-defined]
+                np.array([p.width for p in parameters]),  # type:ignore[attr-defined]
                 scales,
-                parameters[0].backsweep_period,  # type:ignore[union-attr]
+                parameters[0].backsweep_period,  # type:ignore[attr-defined]
             )
         if activation.normalize:
             matrix /= np.sum(scales)

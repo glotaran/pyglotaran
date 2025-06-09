@@ -3,13 +3,11 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import asdict
 from typing import TYPE_CHECKING
-from typing import cast
 
 import numpy as np
 import xarray as xr
 
 from glotaran.builtin.items.activation.activation import Activation  # noqa: TC001
-from glotaran.builtin.items.activation.gaussian import GaussianActivationParameters
 from glotaran.builtin.items.activation.gaussian import MultiGaussianActivation
 from glotaran.builtin.items.activation.instant import InstantActivation  # noqa: F401
 from glotaran.model.data_model import DataModel
@@ -78,8 +76,11 @@ class ActivationDataModel(DataModel):
                 if activation.dispersion_center is not None
                 else activation.center * global_axis.size
             )
-            # Since we don't pass the ``global_axis`` the type ambiguity is resolved
-            for p in cast("list[GaussianActivationParameters]", activation.parameters()):
+            for parameter in activation.parameters():
+                if isinstance(parameter, list):  # noqa: SIM108
+                    p = parameter[0]
+                else:
+                    p = parameter
                 for parameter_key, val in asdict(p).items():
                     props[parameter_key].append(val)
             result[key] = xr.Dataset(

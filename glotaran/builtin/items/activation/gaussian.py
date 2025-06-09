@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from dataclasses import replace
 from typing import TYPE_CHECKING
 from typing import Literal
+from typing import overload
 
 import numpy as np
 
@@ -143,12 +144,17 @@ class MultiGaussianActivation(Activation):
     )
 
     def calculate_dispersion(self, axis: ArrayLike) -> ArrayLike:
-        return np.array(
-            [[p.center for p in ps] for ps in self.parameters(axis)]  # type:ignore[union-attr]
-        ).T
+        return np.array([[p.center for p in ps] for ps in self.parameters(axis)]).T
 
     def is_index_dependent(self) -> bool:
         return self.shift is not None or self.dispersion_center is not None
+
+    @overload
+    def parameters(
+        self, global_axis: None = None
+    ) -> list[GaussianActivationParameters] | list[list[GaussianActivationParameters]]: ...
+    @overload
+    def parameters(self, global_axis: ArrayLike) -> list[list[GaussianActivationParameters]]: ...
 
     def parameters(  # noqa: C901
         self, global_axis: ArrayLike | None = None
@@ -212,10 +218,7 @@ class MultiGaussianActivation(Activation):
     def calculate_function(self, axis: ArrayLike) -> ArrayLike:
         return np.sum(
             [
-                p.scale  # type:ignore[union-attr]
-                * np.exp(
-                    -1 * (axis - p.center) ** 2 / (2 * p.width**2)  # type:ignore[union-attr]
-                )
+                p.scale * np.exp(-1 * (axis - p.center) ** 2 / (2 * p.width**2))  # type:ignore[union-attr]
                 for p in self.parameters()
             ],
             axis=0,

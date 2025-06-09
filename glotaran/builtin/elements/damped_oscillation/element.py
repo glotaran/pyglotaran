@@ -57,7 +57,7 @@ class DampedOscillationElement(Element):
             oscillation_labels = [
                 label for label in self.oscillations if label in activation.compartments
             ]
-            if not len(oscillation_labels):
+            if not oscillation_labels:
                 continue
 
             clp_label = [f"{label}_cos" for label in oscillation_labels] + [
@@ -90,7 +90,7 @@ class DampedOscillationElement(Element):
                         inputs,
                         frequencies,
                         rates,
-                        parameters,  # type:ignore[arg-type]
+                        parameters,
                         model_axis,
                     )
                 else:

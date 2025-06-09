@@ -43,7 +43,7 @@ class CoherentArtifactElement(Element):
             if isinstance(a, MultiGaussianActivation) and self.label in a.compartments
         }
 
-        if not len(activations):
+        if not activations:
             msg = f'No (multi-)gaussian activation for coherent-artifact "{self.label}".'
             raise GlotaranModelError(msg)
         if len(activations) > 1:
@@ -63,10 +63,8 @@ class CoherentArtifactElement(Element):
         if index_dependent:
             _calculate_coherent_artifact_matrix(
                 matrix,
-                np.array([ps[0].center for ps in parameters]),  # type:ignore[index]
-                np.array(
-                    [self.width or ps[0].width for ps in parameters]  # type:ignore[index]
-                ),
+                np.array([ps[0].center for ps in parameters]),
+                np.array([self.width or ps[0].width for ps in parameters]),
                 global_axis.size,
                 model_axis,
                 self.order,
@@ -75,8 +73,8 @@ class CoherentArtifactElement(Element):
         else:
             _calculate_coherent_artifact_matrix_on_index(
                 matrix,
-                parameters[0].center,  # type:ignore[union-attr]
-                self.width or parameters[0].width,  # type:ignore[union-attr]
+                parameters[0].center,  # type:ignore[attr-defined]
+                self.width or parameters[0].width,  # type:ignore[attr-defined]
                 model_axis,
                 self.order,
             )
