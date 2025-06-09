@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import cast
+from warnings import warn
 
 import numpy as np
 import xarray as xr
@@ -48,14 +49,17 @@ class OptimizationResult(BaseModel):
 
     elements: dict[str, xr.Dataset] = Field(default_factory=dict)
     activations: dict[str, xr.Dataset] = Field(default_factory=dict)
-    input_data: xr.DataArray | xr.Dataset | None = None
+    input_data: xr.DataArray | xr.Dataset
     residuals: xr.DataArray | xr.Dataset | None = None
 
     @property
-    def fitted_data(self) -> xr.Dataset | xr.DataArray:
+    def fitted_data(self) -> xr.Dataset | xr.DataArray | None:
         if self.input_data is None or self.residuals is None:
-            msg = "Data and residuals must be set to calculate fitted data."
-            raise ValueError(msg)
+            warn(
+                UserWarning("Data and residuals must be set to calculate fitted data."),
+                stacklevel=2,
+            )
+            return None
         return self.input_data - self.residuals
 
 
