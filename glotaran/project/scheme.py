@@ -13,7 +13,6 @@ from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization import Optimization
 from glotaran.optimization.result import calculate_parameter_errors
 from glotaran.project.library import ModelLibrary
-from glotaran.project.result import Result
 from glotaran.utils.io import DatasetMapping
 from glotaran.utils.io import load_datasets
 
@@ -21,6 +20,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from glotaran.parameter import Parameters
+    from glotaran.project.result import Result
     from glotaran.typing.types import DatasetMappable
 
 
@@ -77,6 +77,9 @@ class Scheme(BaseModel):
         verbose: bool = True,
         raise_exception: bool = False,
     ) -> Result:
+        # Prevent circular import error
+        from glotaran.project.result import Result
+
         self._load_data(load_datasets(datasets))
         optimization = Optimization(
             models=list(self.experiments.values()),
@@ -99,7 +102,7 @@ class Scheme(BaseModel):
         )
         return Result(
             optimization_results=optimized_data,
-            experiments=self.experiments,
+            scheme=self,
             optimization_info=optimization_info,
             initial_parameters=parameters,
             optimized_parameters=optimized_parameters,

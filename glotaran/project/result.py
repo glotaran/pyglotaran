@@ -16,6 +16,7 @@ from glotaran.model.experiment_model import ExperimentModel  # noqa: TC001
 from glotaran.optimization import OptimizationInfo  # noqa: TC001
 from glotaran.optimization.objective import OptimizationResult  # noqa: TC001
 from glotaran.parameter import Parameters  # noqa: TC001
+from glotaran.project.scheme import Scheme  # noqa: TC001
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -25,10 +26,14 @@ class Result(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     optimization_results: dict[str, OptimizationResult]
-    experiments: dict[str, ExperimentModel]
+    scheme: Scheme
     optimization_info: OptimizationInfo
     initial_parameters: Parameters
     optimized_parameters: Parameters
+
+    @property
+    def experiments(self) -> dict[str, ExperimentModel]:
+        return self.scheme.experiments
 
     def save(
         self,
