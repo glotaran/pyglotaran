@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 from typing import cast
@@ -60,13 +61,14 @@ class ActivationDataModel(DataModel):
             for key, a in model.activations.items()
             if isinstance(a, MultiGaussianActivation)
         }
-        if not len(gaussian_activations):
+        if len(gaussian_activations) == 0:
             return {}
 
         global_axis = amplitudes.coords[global_dimension]
         model_axis = concentrations.coords[model_dimension]
 
         result: dict[str, xr.Dataset] = {}
+        props = defaultdict(list)
 
         for key, activation in gaussian_activations.items():
             trace = activation.calculate_function(model_axis)
@@ -77,10 +79,9 @@ class ActivationDataModel(DataModel):
                 else activation.center * global_axis.size
             )
             # Since we don't pass the ``global_axis`` the type ambiguity is resolved
-            props = [
-                asdict(p)
-                for p in cast(list[GaussianActivationParameters], activation.parameters())
-            ]
+            for p in cast("list[GaussianActivationParameters]", activation.parameters()):
+                for parameter_key, val in asdict(p).items():
+                    props[parameter_key].append(val)
             result[key] = xr.Dataset(
                 {
                     "trace": xr.DataArray(
@@ -93,7 +94,7 @@ class ActivationDataModel(DataModel):
                         center, coords={global_dimension: global_axis}, dims=(global_dimension,)
                     ),
                 },
-                attrs={"activation": props},
+                attrs=props,
             )
 
         return result
