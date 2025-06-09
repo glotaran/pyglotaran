@@ -202,8 +202,7 @@ def load_dataset(
 
     if isinstance(dataset, xr.DataArray):
         dataset = dataset.to_dataset(name="data")
-    dataset.attrs["loader"] = load_dataset
-    dataset.attrs["source_path"] = Path(file_name).as_posix()
+    dataset.attrs["source_path"] = Path(file_name).resolve().as_posix()
     return dataset
 
 
@@ -242,10 +241,7 @@ def save_dataset(
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_data_io(format_name or infer_file_format(file_name, needs_to_exist=False))
-    if "loader" in dataset.attrs:
-        del dataset.attrs["loader"]
     io.save_dataset(file_name=Path(file_name).as_posix(), dataset=dataset, **kwargs)
-    dataset.attrs["loader"] = load_dataset
     if update_source_path is True or "source_path" not in dataset.attrs:
         dataset.attrs["source_path"] = Path(file_name).as_posix()
 
