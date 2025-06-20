@@ -293,7 +293,8 @@ def load_scheme(file_name: StrOrPath, format_name: str | None = None, **kwargs: 
         :class:`Scheme` instance created from the file.
     """
     io = get_project_io(format_name or infer_file_format(file_name))
-
+    if Path(file_name).is_file() is True:
+        file_name = Path(file_name).resolve()
     return io.load_scheme(Path(file_name).as_posix(), **kwargs)
 
 
@@ -328,9 +329,10 @@ def save_scheme(
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name or infer_file_format(file_name, needs_to_exist=False))
-    io.save_scheme(file_name=Path(file_name).as_posix(), scheme=scheme, **kwargs)
+    save_path = Path(file_name).resolve()
+    io.save_scheme(file_name=save_path.as_posix(), scheme=scheme, **kwargs)
     if update_source_path is True:
-        scheme.source_path = Path(file_name).as_posix()  # type:ignore[attr-defined]
+        scheme.source_path = save_path
 
 
 @not_implemented_to_value_error

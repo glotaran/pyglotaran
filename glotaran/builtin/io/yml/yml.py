@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+from shutil import copyfile
 from typing import TYPE_CHECKING
 
 from glotaran.builtin.io.yml.utils import load_dict
+from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.io import ProjectIoInterface
 from glotaran.io import register_project_io
 from glotaran.parameter import Parameters
@@ -50,20 +53,24 @@ class YmlProjectIo(ProjectIoInterface):
         Scheme
         """
         spec = sanitize_yaml(self._load_yml(file_name), do_values=True)
-        return Scheme.from_dict(spec)
+        return Scheme.from_dict(
+            spec, source_path=Path(file_name) if Path(file_name).is_file() else None
+        )
 
-    #  def save_scheme(self, scheme: Scheme, file_name: str):
-    #      """Write a :class:`Scheme` instance to a specification file ``file_name``.
-    #
-    #      Parameters
-    #      ----------
-    #      scheme: Scheme
-    #          :class:`Scheme` instance to save to file.
-    #      file_name: str
-    #          Path to the file to write the scheme specification to.
-    #      """
-    #      scheme_dict = asdict(scheme, folder=Path(file_name).parent)
-    #      write_dict(scheme_dict, file_name=file_name)
+    def save_scheme(self, scheme: Scheme, file_name: str) -> None:
+        """Write a :class:`Scheme` instance to a specification file ``file_name``.
+
+        Parameters
+        ----------
+        scheme: Scheme
+            :class:`Scheme` instance to save to file.
+        file_name: str
+            Path to the file to write the scheme specification to.
+        """
+        if scheme.source_path is not None and scheme.source_path.suffix in (".yml", ".yaml"):
+            copyfile(scheme.source_path, file_name)
+        else:
+            write_dict(scheme.model_dump(exclude_unset=True), file_name=file_name)
 
     def _load_yml(self, file_name: str) -> dict[str, Any]:
         return load_dict(file_name, is_file=self.format != "yml_str")

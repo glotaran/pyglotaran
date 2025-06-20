@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from collections import ChainMap
+from pathlib import Path  # noqa: TC003
 from typing import TYPE_CHECKING
 from typing import Literal
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
+from pydantic import Field
 
 from glotaran.io import load_dataset
 from glotaran.model.errors import GlotaranUserError
@@ -29,9 +31,14 @@ class Scheme(BaseModel):
 
     experiments: dict[str, ExperimentModel]
     library: ModelLibrary
+    source_path: Path | None = Field(
+        default=None,
+        description="Path to the source file from which this scheme was loaded.",
+        exclude=True,
+    )
 
     @classmethod
-    def from_dict(cls, spec: dict) -> Self:
+    def from_dict(cls, spec: dict, source_path: Path | None = None) -> Self:
         library = ModelLibrary.from_dict(spec["library"])
         experiments = {
             k: ExperimentModel.from_dict(library, e) for k, e in spec["experiments"].items()
@@ -40,7 +47,7 @@ class Scheme(BaseModel):
             for d in e.datasets.values():
                 if isinstance(d.data, str):
                     d.data = load_dataset(d.data)
-        return cls(experiments=experiments, library=library)
+        return cls(experiments=experiments, library=library, source_path=source_path)
 
     def _load_data(self, datasets: DatasetMapping) -> None:
         try:
