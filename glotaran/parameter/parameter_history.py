@@ -9,9 +9,8 @@ import numpy as np
 import pandas as pd
 
 if TYPE_CHECKING:
-    from os import PathLike
-
     from glotaran.parameter.parameters import Parameters
+    from glotaran.typing.types import StrOrPath
 
 
 class ParameterHistory:
@@ -46,12 +45,12 @@ class ParameterHistory:
         return history
 
     @classmethod
-    def from_csv(cls, path: str) -> ParameterHistory:
+    def from_csv(cls, path: StrOrPath) -> ParameterHistory:
         """Create a history from a csv file.
 
         Parameters
         ----------
-        path : str
+        path : StrOrPath
             The path to the csv file.
 
         Returns
@@ -111,18 +110,18 @@ class ParameterHistory:
         """
         return pd.DataFrame(self._parameters, columns=self.parameter_labels)
 
-    def to_csv(self, file_name: str | PathLike[str], delimiter: str = ",") -> None:
+    def to_csv(self, path: StrOrPath, delimiter: str = ",") -> None:
         """Write a :class:`ParameterHistory` to a CSV file.
 
         Parameters
         ----------
-        file_name : str
+        path : StrOrPath
             The path to the CSV file.
         delimiter : str
             The delimiter of the CSV file.
         """
-        self.source_path = Path(file_name).as_posix()
-        self.to_dataframe().to_csv(file_name, sep=delimiter, index=False)
+        self.source_path = Path(path).as_posix()
+        self.to_dataframe().to_csv(path, sep=delimiter, index=False)
 
     def append(self, parameters: Parameters, current_iteration: int = 0) -> None:
         """Append :class:`Parameters` to the history.

@@ -81,6 +81,7 @@ unfixable = [ "F401" ]
 "docs/*" = [ "INP001", "E501", "BLE001" ]
 # Needs a full rewrite anyway
 "glotaran/builtin/io/ascii/wavelength_time_explicit_file.py" = [ "PTH" ]
+"glotaran/utils/pydantic_serde.py" = [ "ANN401" ]
 
 [lint.isort]
 required-imports = [ "from __future__ import annotations" ]
