@@ -34,14 +34,23 @@ class SavingOptions(TypedDict, total=False):
     """A collection of options for result saving."""
 
     data_filter: set[Literal["input_data", "residuals", "fitted_data", "elements", "activations"]]
+    """Set of data keys to not saved."""
     data_format: Literal["nc"] | str  # noqa: PYI051
+    """Format of the data files to be saved."""
+    data_plugin: str | None
+    """Name of the data plugin to be used for saving, determined automatically if None."""
     parameter_format: Literal["csv"] | str  # noqa: PYI051
+    """Format of the parameter files to be saved."""
+    parameter_plugin: str | None
+    """Name of the parameter plugin to be used for saving, determined automatically if None."""
 
 
 SAVING_OPTIONS_DEFAULT: SavingOptions = {
     "data_filter": set(),
     "data_format": "nc",
+    "data_plugin": None,
     "parameter_format": "csv",
+    "parameter_plugin": None,
 }
 SAVING_OPTIONS_MINIMAL: SavingOptions = SAVING_OPTIONS_DEFAULT | {
     "data_filter": {"input_data", "residuals", "fitted_data", "elements", "activations"}
