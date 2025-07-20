@@ -85,7 +85,7 @@ class Scheme(BaseModel):
         raise_exception: bool = False,
     ) -> Result:
         # Prevent circular import error
-        from glotaran.project.result import Result
+        from glotaran.project.result import Result  # noqa: PLC0415
 
         self._load_data(load_datasets(datasets))
         optimization = Optimization(

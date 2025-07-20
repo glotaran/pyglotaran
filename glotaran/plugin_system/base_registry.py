@@ -8,7 +8,6 @@ This is to prevent issues with circular imports.
 from __future__ import annotations
 
 import os
-from collections.abc import Iterable
 from importlib import metadata
 from typing import TYPE_CHECKING
 from typing import cast
@@ -17,6 +16,7 @@ from warnings import warn
 if TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Generator
+    from collections.abc import Iterable
     from collections.abc import MutableMapping
     from collections.abc import Sequence
     from typing import Any
@@ -541,8 +541,8 @@ def supported_file_extensions(
     for plugin_registry_key, *differs_list in methods_differ_from_baseclass_table(
         method_names, plugin_registry_keys, get_plugin_function, base_class
     ):
-        format_name_str: str = cast(str, plugin_registry_key).replace("`", "")
+        format_name_str: str = cast("str", plugin_registry_key).replace("`", "")
         if format_name_str.endswith("_str"):
             continue
-        if all(cast(Iterable[bool], differs_list)) is True:
+        if all(cast("Iterable[bool]", differs_list)) is True:
             yield f".{format_name_str}"

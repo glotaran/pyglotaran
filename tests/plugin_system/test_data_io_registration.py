@@ -109,7 +109,7 @@ def test_register_data_io():
 def test_register_data_io_warning():
     """PluginOverwriteWarning raised pointing to correct file."""
 
-    with pytest.warns(PluginOverwriteWarning, match="Dummy.+dummy.+Dummy2") as record:
+    with pytest.warns(PluginOverwriteWarning, match="Dummy.+dummy.+Dummy2") as record:  # noqa: PT031
 
         @register_data_io("dummy")
         class Dummy(DataIoInterface):
@@ -119,8 +119,8 @@ def test_register_data_io_warning():
         class Dummy2(DataIoInterface):
             pass
 
-        assert len(record) == 1
-        assert Path(record[0].filename) == Path(__file__)
+    assert len(record) == 1
+    assert Path(record[0].filename) == Path(__file__)
 
 
 @pytest.mark.usefixtures("mocked_registry")

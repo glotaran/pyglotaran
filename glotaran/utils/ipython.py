@@ -63,6 +63,10 @@ class MarkdownStr(UserString):
             return str(self) == str(other)
         return NotImplemented
 
+    def __hash__(self) -> int:
+        """Hash function for the class."""
+        return super().__hash__()
+
 
 def display_file(path: StrOrPath, *, syntax: str | None = None) -> MarkdownStr:
     """Display a file with syntax highlighting ``syntax``.

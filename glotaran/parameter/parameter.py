@@ -291,7 +291,7 @@ class Parameter(BaseModel):
         parameter = self if all_parameters is None else all_parameters.get(self.label)
         value = f"{parameter.value:.2e}"
         if parameter.vary:
-            if parameter.standard_error is not np.nan:
+            if np.isnan(parameter.standard_error) is False:
                 t_value = pretty_format_numerical(parameter.value / parameter.standard_error)
                 value += f"±{parameter.standard_error:.2e}, t-value: {t_value}"
 
@@ -445,6 +445,10 @@ class Parameter(BaseModel):
         for key, val in super().__repr_args__():
             if key in self.model_fields and not nan_or_equal(val, self.model_fields[key].default):
                 yield key, val
+
+    def __hash__(self) -> int:
+        """Hash function for the class."""
+        return hash(repr(self))
 
 
 def _log_value(value: float) -> float:

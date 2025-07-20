@@ -4,7 +4,7 @@ from __future__ import annotations
 
 
 def __getattr__(attribute_name: str):
-    from glotaran.deprecation import deprecate_module_attribute
+    from glotaran.deprecation import deprecate_module_attribute  # noqa: PLC0415
 
     if attribute_name == "deprecated_attribute":
         return deprecate_module_attribute(

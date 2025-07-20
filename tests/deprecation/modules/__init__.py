@@ -56,7 +56,7 @@ def deprecation_warning_on_call_test_helper(
     Exception
         Exception caused by deprecated_callable if raise_exception is True.
     """
-    with pytest.warns(GlotaranApiDeprecationWarning) as record:
+    with pytest.warns(GlotaranApiDeprecationWarning) as record:  # noqa: PT031
         try:
             result = deprecated_callable(*args, **kwargs)
 

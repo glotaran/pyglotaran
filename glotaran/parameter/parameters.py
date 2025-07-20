@@ -462,6 +462,10 @@ class Parameters:
         )
         raise NotImplementedError(msg)
 
+    def __hash__(self) -> int:
+        """Hash function for the class."""
+        return hash(repr(self))
+
     def close_or_equal(self, rhs: Parameters, rtol: float = 1e-3) -> bool:
         try:
             return all(

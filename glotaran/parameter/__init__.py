@@ -8,7 +8,7 @@ from glotaran.parameter.parameters import Parameters
 
 
 def __getattr__(attribute_name: str):  # noqa: ANN202
-    from glotaran.deprecation import deprecate_module_attribute
+    from glotaran.deprecation import deprecate_module_attribute  # noqa: PLC0415
 
     if attribute_name == "ParameterGroup":
         return deprecate_module_attribute(

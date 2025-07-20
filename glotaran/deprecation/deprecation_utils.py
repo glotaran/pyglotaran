@@ -418,21 +418,21 @@ def deprecate(
             )
             return deprecated_object(*args, **kwargs)
 
-        return cast(DecoratedCallable, inner_wrapper)
+        return cast("DecoratedCallable", inner_wrapper)
 
     def outer_wrapper(deprecated_object: DecoratedCallable) -> DecoratedCallable:
         """Wrap deprecated_object of all callable kinds."""
         if not isinstance(deprecated_object, type):
-            return cast(DecoratedCallable, inject_warn_into_call(deprecated_object))
+            return cast("DecoratedCallable", inject_warn_into_call(deprecated_object))
 
         setattr(  # noqa: B010
             deprecated_object,
             "__new__",
             inject_warn_into_call(deprecated_object.__new__),
         )
-        return deprecated_object  # type: ignore[return-value]
+        return deprecated_object
 
-    return cast(Callable[[DecoratedCallable], DecoratedCallable], outer_wrapper)
+    return cast("Callable[[DecoratedCallable], DecoratedCallable]", outer_wrapper)
 
 
 def deprecate_dict_entry(

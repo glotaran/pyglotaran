@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from collections.abc import Callable
 from functools import partial
 from functools import wraps
@@ -15,6 +14,7 @@ from typing import cast
 DecoratedFunc = TypeVar("DecoratedFunc", bound=Callable[..., Any])  # decorated function
 
 if TYPE_CHECKING:
+    import os
     from collections.abc import Iterable
     from collections.abc import Iterator
 
@@ -90,7 +90,7 @@ def not_implemented_to_value_error(func: DecoratedFunc) -> DecoratedFunc:
         except NotImplementedError as error:
             raise ValueError(error.args) from error
 
-    return cast(DecoratedFunc, wrapper)
+    return cast("DecoratedFunc", wrapper)
 
 
 def protect_from_overwrite(path: str | os.PathLike[str], *, allow_overwrite: bool = False) -> None:
@@ -125,7 +125,7 @@ def protect_from_overwrite(path: str | os.PathLike[str], *, allow_overwrite: boo
     if path.is_file():
         msg = f"The file {path!r} already exists. \n{user_info}"
         raise FileExistsError(msg)
-    if path.is_dir() and os.listdir(str(path)):
+    if path.is_dir() and len(list(path.iterdir())) > 0:
         msg = f"The folder {path.as_posix()!r} already exists and is not empty. \n{user_info}"
         raise FileExistsError(msg)
 

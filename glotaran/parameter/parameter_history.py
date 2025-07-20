@@ -37,10 +37,10 @@ class ParameterHistory:
         """
         history = cls()
 
-        history._parameter_labels = history_df.columns  # noqa: SLF001
+        history._parameter_labels = history_df.columns
 
         for parameter_values in history_df.to_numpy():
-            history._parameters.append(parameter_values)  # noqa: SLF001
+            history._parameters.append(parameter_values)
 
         return history
 

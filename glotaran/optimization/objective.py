@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Any
@@ -15,7 +14,6 @@ from pydantic import Field
 
 from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import iterate_data_model_elements
-from glotaran.model.element import Element
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
@@ -24,6 +22,9 @@ from glotaran.optimization.penalty import calculate_clp_penalties
 from glotaran.parameter.parameter import Parameter
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from glotaran.model.element import Element
     from glotaran.model.experiment_model import ExperimentModel
     from glotaran.typing.types import ArrayLike
 
@@ -410,7 +411,7 @@ class OptimizationObjective:
             element.label: element.create_result_with_uid(
                 model, global_dim, model_dim, amplitudes, concentrations
             )
-            for element in cast(list[Element], model.elements)
+            for element in cast("list[Element]", model.elements)
         }
 
     def create_dataset_result(
@@ -478,11 +479,11 @@ class OptimizationObjective:
         for data_model_cls in {
             e.__class__.data_model_type
             for _, e in cast(
-                Iterable[tuple[Any, Element]], iterate_data_model_elements(data_model)
+                "Iterable[tuple[Any, Element]]", iterate_data_model_elements(data_model)
             )
             if e.__class__.data_model_type is not None
         }:
-            result = result | cast(type[DataModel], data_model_cls).create_result(
+            result = result | cast("type[DataModel]", data_model_cls).create_result(
                 data_model,
                 global_dim,
                 model_dim,
