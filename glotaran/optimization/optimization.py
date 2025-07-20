@@ -10,10 +10,10 @@ from scipy.optimize import least_squares
 
 from glotaran.model.errors import GlotaranModelIssues
 from glotaran.model.errors import GlotaranUserError
+from glotaran.optimization.info import OptimizationInfo
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.objective import OptimizationResult
 from glotaran.optimization.optimization_history import OptimizationHistory
-from glotaran.optimization.result import OptimizationInfo
 from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
 from glotaran.utils.tee import TeeContext

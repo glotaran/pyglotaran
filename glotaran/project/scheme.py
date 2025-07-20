@@ -13,7 +13,7 @@ from glotaran.io import load_dataset
 from glotaran.model.errors import GlotaranUserError
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization import Optimization
-from glotaran.optimization.result import calculate_parameter_errors
+from glotaran.optimization.info import calculate_parameter_errors
 from glotaran.project.library import ModelLibrary
 from glotaran.utils.io import DatasetMapping
 from glotaran.utils.io import load_datasets

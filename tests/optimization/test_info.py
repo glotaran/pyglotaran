@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 
 from pandas.testing import assert_frame_equal
 
+from glotaran.optimization.info import OptimizationInfo
 from glotaran.optimization.optimization_history import OptimizationHistory
-from glotaran.optimization.result import OptimizationInfo
 from glotaran.parameter import ParameterHistory
 from glotaran.parameter.parameters import Parameters
 
