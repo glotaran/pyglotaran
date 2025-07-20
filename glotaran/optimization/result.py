@@ -5,13 +5,20 @@ from __future__ import annotations
 # TODO: Fix circular import
 #  from glotaran import __version__ as glotaran_version
 from typing import TYPE_CHECKING
+from typing import Any
 
 import numpy as np
 from pydantic import BaseModel
 from pydantic import ConfigDict
+from pydantic import SerializationInfo
+from pydantic import ValidationInfo
+from pydantic import field_serializer
+from pydantic import field_validator
 
 from glotaran.optimization.optimization_history import OptimizationHistory  # noqa: TC001
 from glotaran.parameter import ParameterHistory  # noqa: TC001
+from glotaran.utils.pydantic_serde import deserialize_from_csv
+from glotaran.utils.pydantic_serde import serialize_to_csv
 
 if TYPE_CHECKING:
     from scipy.optimize import OptimizeResult
@@ -90,6 +97,23 @@ class OptimizationInfo(BaseModel):
     :math:`rms = \sqrt{\chi^2_{red}}`
     """
     additional_penalty: float | None = None
+
+    @field_serializer("parameter_history", "optimization_history")
+    def serialize_data(
+        self, value: ParameterHistory | OptimizationHistory, info: SerializationInfo
+    ) -> str:
+        """Serialize to csv."""
+        return serialize_to_csv(value, info)
+
+    @field_validator("parameter_history", "optimization_history", mode="before")
+    @classmethod
+    def validate_data(
+        cls,
+        value: Any,  # noqa: ANN401
+        info: ValidationInfo,
+    ) -> ParameterHistory | OptimizationHistory:
+        """Deserialize from csv."""
+        return deserialize_from_csv(cls.model_fields[info.field_name].annotation, value, info)  # type: ignore[return-value,arg-type,index]
 
     @classmethod
     def from_least_squares_result(
