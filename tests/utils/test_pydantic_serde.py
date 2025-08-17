@@ -18,8 +18,12 @@ from pydantic import ValidationInfo
 from pydantic import field_serializer
 from pydantic import field_validator
 
+from glotaran.io import load_parameters
+from glotaran.parameter.parameters import Parameters
 from glotaran.utils.pydantic_serde import deserialize_from_csv
+from glotaran.utils.pydantic_serde import deserialize_parameters
 from glotaran.utils.pydantic_serde import save_folder_from_info
+from glotaran.utils.pydantic_serde import serialize_parameters
 from glotaran.utils.pydantic_serde import serialize_to_csv
 
 if TYPE_CHECKING:
@@ -80,6 +84,37 @@ class ToFromCsvModel(BaseModel):
     def validate_data(cls, value: Any, info: ValidationInfo) -> Any:
         """Validate the data field."""
         return deserialize_from_csv(cls.model_fields[info.field_name].annotation, value, info)
+
+
+class ModelWithParameters(BaseModel):
+    """Dummy Pydantic model to test parameter serialization and deserialization."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    params_1: Parameters
+    params_2: Parameters
+
+    @field_serializer("params_1", "params_2")
+    def serialize_data(self, value: Parameters, info: SerializationInfo) -> Any:
+        """Serialize the data field."""
+        return serialize_parameters(value, info)
+
+    @field_validator("params_1", "params_2", mode="before")
+    @classmethod
+    def validate_data(cls, value: Any, info: ValidationInfo) -> Any:
+        """Validate the data field."""
+        return deserialize_parameters(value, info)
+
+
+@pytest.fixture
+def parameters_model_data():
+    """Roundtrip serialization and deserialization of parameters."""
+    params_1 = Parameters.from_dict({"a": [3, 4, 5], "b": [7, 8]})
+    params_2 = Parameters.from_dict({"c": [1, 2], "d": [4, 5]})
+    model_instance = ModelWithParameters.model_validate(
+        {"params_1": params_1, "params_2": params_2}
+    )
+    return model_instance, params_1, params_2
 
 
 @pytest.mark.parametrize(
@@ -152,4 +187,79 @@ def test_deserialize_from_csv_missing_context_error(tmp_path: Path):
 
     with pytest.raises(ValueError) as exc_info:
         ToFromCsvModel.model_validate({"data": "test.csv"}, context={})
+    assert "ValidationInfo context is missing 'save_folder'" in str(exc_info.value)
+
+
+def test_parameters_serde_roundtrip_default(
+    tmp_path: Path, parameters_model_data: tuple[ModelWithParameters, Parameters, Parameters]
+):
+    """Roundtrip serialization and deserialization of parameters."""
+    model_instance, params_1, params_2 = parameters_model_data
+
+    save_folder = tmp_path / "sub_dir"
+    serialized_value = model_instance.model_dump(context={"save_folder": save_folder})
+    assert serialized_value["params_1"] == "params_1.csv"
+    assert serialized_value["params_2"] == "params_2.csv"
+
+    assert (save_folder / "params_1.csv").is_file()
+    assert (save_folder / "params_2.csv").is_file()
+    assert load_parameters(save_folder / "params_1.csv") == params_1
+    assert load_parameters(save_folder / "params_2.csv") == params_2
+
+    loaded_model = ModelWithParameters.model_validate(
+        serialized_value, context={"save_folder": save_folder}
+    )
+    assert loaded_model.params_1 == params_1
+    assert loaded_model.params_2 == params_2
+
+
+def test_parameters_serde_roundtrip_saving_options(
+    tmp_path: Path, parameters_model_data: tuple[ModelWithParameters, Parameters, Parameters]
+):
+    """Roundtrip serde of ModelWithParameters parameters with custom extension name and plugin."""
+    model_instance, params_1, params_2 = parameters_model_data
+
+    save_folder = tmp_path / "sub_dir"
+    context = {
+        "save_folder": save_folder,
+        "saving_options": {
+            "parameter_format": "foo",
+            "parameters_plugin": "glotaran.builtin.io.pandas.tsv.TsvProjectIo_tsv",
+        },
+    }
+
+    serialized_value = model_instance.model_dump(context=context)
+    assert serialized_value["params_1"] == "params_1.foo"
+    assert serialized_value["params_2"] == "params_2.foo"
+
+    assert (save_folder / "params_1.foo").is_file()
+    assert (save_folder / "params_2.foo").is_file()
+    assert load_parameters(save_folder / "params_1.foo", format_name="tsv") == params_1
+    assert load_parameters(save_folder / "params_2.foo", format_name="tsv") == params_2
+
+    loaded_model = ModelWithParameters.model_validate(serialized_value, context=context)
+    assert loaded_model.params_1 == params_1
+    assert loaded_model.params_2 == params_2
+
+
+def test_serialize_parameters_missing_context_error(
+    parameters_model_data: tuple[ModelWithParameters, Parameters, Parameters],
+):
+    """Test serialization of parameters."""
+    model_instance, _, _ = parameters_model_data
+
+    with pytest.raises(ValueError) as exc_info:
+        model_instance.model_dump(context={})
+    assert "SerializationInfo context is missing 'save_folder'" in str(exc_info.value)
+
+
+def test_deserialize_parameters_missing_context_error(
+    tmp_path: Path, parameters_model_data: tuple[ModelWithParameters, Parameters, Parameters]
+):
+    """Test deserialization from CSV raises an error if save_folder is not in context."""
+    model_instance, _, _ = parameters_model_data
+    serialized_value = model_instance.model_dump(context={"save_folder": tmp_path})
+
+    with pytest.raises(ValueError) as exc_info:
+        ModelWithParameters.model_validate(serialized_value, context={})
     assert "ValidationInfo context is missing 'save_folder'" in str(exc_info.value)
