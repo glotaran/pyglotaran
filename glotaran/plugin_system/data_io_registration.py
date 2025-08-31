@@ -18,6 +18,7 @@ from tabulate import tabulate
 from glotaran.io.interface import DataIoInterface
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.base_registry import add_instantiated_plugin_to_registry
+from glotaran.plugin_system.base_registry import full_plugin_name
 from glotaran.plugin_system.base_registry import get_method_from_plugin
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
@@ -203,6 +204,8 @@ def load_dataset(
     if isinstance(dataset, xr.DataArray):
         dataset = dataset.to_dataset(name="data")
     dataset.attrs["source_path"] = Path(file_name).resolve().as_posix()
+    dataset.attrs["io_plugin_name"] = full_plugin_name(io)
+
     return dataset
 
 
@@ -244,6 +247,7 @@ def save_dataset(
     io.save_dataset(file_name=Path(file_name).as_posix(), dataset=dataset, **kwargs)
     if update_source_path is True or "source_path" not in dataset.attrs:
         dataset.attrs["source_path"] = Path(file_name).as_posix()
+        dataset.attrs["io_plugin_name"] = full_plugin_name(io)
 
 
 def get_dataloader(format_name: str) -> DataLoader:

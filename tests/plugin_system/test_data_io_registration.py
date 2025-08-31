@@ -211,6 +211,7 @@ def test_load_dataset(tmp_path: Path):
     assert result == {"file_name": file_path.as_posix(), "dummy_arg": "baz"}
     assert np.all(dataset.data == xr.DataArray([1, 2]).to_dataset(name="data").data)
     assert dataset.source_path == file_path.as_posix()
+    assert dataset.io_plugin_name == "tests.plugin_system.test_data_io_registration.MockDataIo"
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -226,7 +227,7 @@ def test_protect_from_overwrite_write_functions(tmp_path: Path):
 
 @pytest.mark.parametrize("sub_dir", ["", "sub_dir"])
 @pytest.mark.usefixtures("mocked_registry")
-def test_write_dataset(tmp_path: Path, sub_dir: str):
+def test_save_dataset(tmp_path: Path, sub_dir: str):
     """All args and kwargs are passes correctly."""
     file_path = tmp_path / sub_dir / "dummy.mock"
 
@@ -242,6 +243,38 @@ def test_write_dataset(tmp_path: Path, sub_dir: str):
     assert result["file_name"] == file_path.as_posix()
     assert result["dummy_arg"] == "baz"
     assert np.all(result["dataset"] == xr.DataArray([1, 2]))
+
+
+@pytest.mark.usefixtures("mocked_registry")
+def test_save_dataset_source_update(tmp_path: Path):
+    """Update source path if not set or explicitly using ``update_source_path=False``."""
+    file_path = tmp_path / "dummy.mock"
+    dataset = xr.DataArray([1, 2])
+
+    save_dataset(dataset, file_path, result_container={})
+
+    assert dataset.source_path == file_path.as_posix()
+    assert dataset.io_plugin_name == "tests.plugin_system.test_data_io_registration.MockDataIo"
+
+    @register_data_io("foo_bar")
+    class FooBar(DataIoInterface):
+        def save_dataset(  # type:ignore[override]
+            self,
+            file_name: StrOrPath,
+            dataset: xr.Dataset | xr.DataArray,
+            **kwargs: Any,
+        ) -> None:
+            pass
+
+    foo_bar_path = tmp_path / "dummy.foo_bar"
+
+    save_dataset(dataset, foo_bar_path, update_source_path=False)
+    assert dataset.source_path == file_path.as_posix()
+    assert dataset.io_plugin_name == "tests.plugin_system.test_data_io_registration.MockDataIo"
+
+    save_dataset(dataset, foo_bar_path)
+    assert dataset.source_path == foo_bar_path.as_posix()
+    assert dataset.io_plugin_name == "tests.plugin_system.test_data_io_registration.FooBar"
 
 
 @pytest.mark.usefixtures("mocked_registry")
