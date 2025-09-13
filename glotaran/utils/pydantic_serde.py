@@ -24,12 +24,14 @@ class SerializationInfoWithContext(SerializationInfo):
     """Stub for type guarding the context of ``SerializationInfo``."""
 
     context: dict[str, Any]
+    field_name: str
 
 
 class ValidationInfoWithContext(ValidationInfo):
     """Stub for type guarding the context of ``ValidationInfo``."""
 
     context: dict[str, Any]
+    field_name: str
 
 
 @overload
@@ -139,7 +141,7 @@ def serialize_parameters(value: Parameters, info: SerializationInfo) -> str:
         saving_options = info.context.get("saving_options", {})
         parameters_format = saving_options.get("parameter_format", "csv")
         parameters_plugin = saving_options.get("parameters_plugin", None)
-        path = Path(save_folder) / f"{info.field_name}.{parameters_format}"  # type: ignore[attr-defined]
+        path = Path(save_folder) / f"{info.field_name}.{parameters_format}"
         path.parent.mkdir(parents=True, exist_ok=True)
         save_parameters(value, path, format_name=parameters_plugin)
         return relative_posix_path(path, base_path=Path(save_folder))
