@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import cast
@@ -11,7 +12,17 @@ import xarray as xr
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
+from pydantic import SerializationInfo
+from pydantic import ValidationInfo
+from pydantic import computed_field
+from pydantic import field_serializer
+from pydantic import field_validator
+from pydantic import model_validator
 
+from glotaran.io import load_dataset
+from glotaran.io import save_dataset
+from glotaran.io.interface import SAVING_OPTIONS_DEFAULT
+from glotaran.io.interface import SavingOptions
 from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import iterate_data_model_elements
 from glotaran.optimization.data import LinkedOptimizationData
@@ -20,6 +31,11 @@ from glotaran.optimization.estimation import OptimizationEstimation
 from glotaran.optimization.matrix import OptimizationMatrix
 from glotaran.optimization.penalty import calculate_clp_penalties
 from glotaran.parameter.parameter import Parameter
+from glotaran.plugin_system.base_registry import full_plugin_name
+from glotaran.plugin_system.data_io_registration import get_data_io
+from glotaran.utils.io import relative_posix_path
+from glotaran.utils.pydantic_serde import context_is_dict
+from glotaran.utils.pydantic_serde import save_folder_from_info
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -53,15 +69,250 @@ class OptimizationResult(BaseModel):
     input_data: xr.DataArray | xr.Dataset
     residuals: xr.DataArray | xr.Dataset | None = None
 
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def fitted_data(self) -> xr.Dataset | xr.DataArray | None:
-        if self.input_data is None or self.residuals is None:
+        """Fitted data derived from ``input_data - residuals``.
+
+        Returns
+        -------
+        xr.Dataset | xr.DataArray | None
+            Fitted data if ``residuals`` are set else ``None``
+        """
+        if self.residuals is None:
             warn(
-                UserWarning("Data and residuals must be set to calculate fitted data."),
+                UserWarning("Residuals must be set to calculate fitted data."),
                 stacklevel=2,
             )
             return None
         return self.input_data - self.residuals
+
+    @field_serializer("input_data", "residuals", "fitted_data", when_used="json")
+    def serialize_top_level_datasets(
+        self, value: xr.DataArray | xr.Dataset | None, info: SerializationInfo
+    ) -> str | tuple[str, str] | list[str] | None:
+        """Save top level dataset to file and replace serialized value with the file path.
+
+        This serialization is used when ``Model_dump`` is called in ``json`` mode.
+
+        Parameters
+        ----------
+        value : xr.DataArray | xr.Dataset | None
+            Value of the field to serialize.
+        info : SerializationInfo
+            Additional serialization information for the file including context passed to
+            ``model_dump``.
+
+        Returns
+        -------
+        str | tuple[str, str] | None
+            ``str``: If dataset was saved with builtin plugin.
+            ``tuple[str, str] | list[str]``: Only returned for ``input_data`` when it is filtered
+                out and original dataset was loaded with a  3rd party plugin.
+                The value has the shape: ``(file_path, io_plugin_name)``.
+            ``None``: If value was not set (i.e. loaded from minimal save).
+
+        Raises
+        ------
+        ValueError
+            If serialization context does not contain the ``save_folder``.
+
+        Examples
+        --------
+        >>> optimization_result.model_dump(mode="json", context={"save_folder": Path("result-1")})
+        """
+        if value is None:
+            return None
+        if context_is_dict(info) and (save_folder := save_folder_from_info(info)) is not None:
+            saving_options: SavingOptions = info.context.get(
+                "saving_options", SAVING_OPTIONS_DEFAULT
+            )
+            data_filter = saving_options.get("data_filter", set())
+            data_format = saving_options.get("data_format", "nc")
+            data_plugin = saving_options.get("data_plugin", None) or full_plugin_name(
+                get_data_io(data_format)
+            )
+            if data_plugin.endswith(f"_{data_format}") is False:
+                data_plugin = f"{data_plugin}_{data_format}"
+
+            if info.field_name != "input_data" and info.field_name in data_filter:
+                return None
+            # Input data were loaded with ``load_dataset``
+            if (
+                info.field_name == "input_data"
+                and info.field_name in data_filter
+                and "source_path" in value.attrs
+                and "io_plugin_name" in value.attrs
+            ):
+                original_io_plugin_name = value.attrs["io_plugin_name"]
+                original_source_path = relative_posix_path(
+                    value.attrs["source_path"], base_path=Path(save_folder)
+                )
+                # Only return the original source path if the plugin is from glotaran and
+                # the plugin names match
+                if original_io_plugin_name.startswith("glotaran.") and (
+                    data_plugin
+                    in {original_io_plugin_name, f"{original_io_plugin_name}_{data_format}"}
+                ):
+                    return original_source_path
+                return (original_source_path, original_io_plugin_name)
+            save_path = Path(save_folder) / f"{info.field_name}.{data_format}"
+            save_dataset(value, save_path, format_name=data_plugin, allow_overwrite=True)
+            return save_path.name
+
+        msg = f"SerializationInfo context is missing 'save_folder':\n{info}"
+        raise ValueError(msg)
+
+    @field_validator("input_data", "residuals", mode="before")
+    @classmethod
+    def validate_top_level_datasets(
+        cls,
+        value: xr.DataArray | xr.Dataset | None | str | Path | tuple[str, str] | list[str],
+        info: ValidationInfo,
+    ) -> xr.DataArray | xr.Dataset | None:
+        """Validate top level datasets and deserialize the if values are str or tuple[str, str].
+
+        Parameters
+        ----------
+        value : xr.DataArray | xr.Dataset | None | str | Path | tuple[str, str]
+            Value to validate.
+        info : ValidationInfo
+            Validation information for the field which may contain a context with ``save_folder``
+            used to load data from file.
+
+        Returns
+        -------
+        xr.DataArray | xr.Dataset | None
+
+        Raises
+        ------
+        ValueError
+            If the filed is ``input_data`` and the value is ``None``
+        ValueError
+            If the value is a tuple with a length unequal to two.
+        ValueError
+            If value isn't and expected type or can not be loaded from file due to missing
+            ``save_folder`` in context.
+        """
+        if info.field_name == "input_data" and value is None:
+            msg = "Input data cannot be None."
+            raise ValueError(msg)
+        if isinstance(value, (xr.Dataset, xr.DataArray)) or value is None:
+            return value
+        if context_is_dict(info) and (save_folder := save_folder_from_info(info)) is not None:
+            saving_options: SavingOptions = info.context.get("saving_options", {})
+            data_plugin = saving_options.get("data_plugin", None)
+
+            if isinstance(value, (str, Path)):
+                return load_dataset((Path(save_folder) / value).resolve(), format_name=data_plugin)
+            if isinstance(value, list | tuple):
+                if len(value) != 2 or not all(isinstance(v, str) for v in value):  # noqa: PLR2004
+                    msg = (
+                        f"Expected a tuple/list of relative file path and io plugin name for "
+                        f"deserializing 'input_data' dataset, got: {value!r}"
+                    )
+                    raise ValueError(msg)
+                rel_path, original_io_plugin_name = value
+                return load_dataset(
+                    (Path(save_folder) / rel_path).resolve(), format_name=original_io_plugin_name
+                )
+        msg = f"Unable to validate field {info.field_name}"
+        raise ValueError(msg)
+
+    @field_serializer("elements", "activations", when_used="json")
+    def serialize_dataset_maps(
+        self, value: dict[str, xr.DataArray | xr.Dataset], info: SerializationInfo
+    ) -> dict[str, str] | None:
+        """Save dataset collections to file and replace serialized item values with the file paths.
+
+        This serialization is used when ``model_dump`` is called in ``json`` mode.
+
+
+        Parameters
+        ----------
+        value : dict[str, xr.DataArray  |  xr.Dataset]
+            Value of dataset collection to serialize.
+        info : SerializationInfo
+            Additional serialization information for the file including context passed to
+            ``model_dump``.
+
+        Returns
+        -------
+        dict[str, str] | None
+            Mapping of entries and corresponding file paths.
+
+        Raises
+        ------
+        ValueError
+            If serialization context is missing ``save_folder``.
+
+        Examples
+        --------
+        >>> optimization_result.model_dump(mode="json", context={"save_folder": Path("result-1")})
+        """
+        if context_is_dict(info) and (save_folder := save_folder_from_info(info)) is not None:
+            saving_options: SavingOptions = info.context.get("saving_options", {})
+            data_filter = saving_options.get("data_filter", set())
+            data_format = saving_options.get("data_format", "nc")
+            if info.field_name in data_filter:
+                return {}
+            serialization_mapping = {}
+            for key, dataset in value.items():
+                save_path = Path(save_folder) / info.field_name / f"{key}.{data_format}"
+                save_dataset(dataset, save_path, allow_overwrite=True)
+                serialization_mapping[key] = save_path.name
+            return serialization_mapping
+        msg = f"SerializationInfo context is missing 'save_folder':\n{info}"
+        raise ValueError(msg)
+
+    @field_validator("elements", "activations", mode="before")
+    @classmethod
+    def validate_dataset_maps(
+        cls,
+        value: dict[str, str | Path] | dict[str, xr.DataArray | xr.Dataset],
+        info: ValidationInfo,
+    ) -> dict[str, xr.DataArray | xr.Dataset]:
+        """Validate dataset maps and deserialize them if item values are ``str`` or ``Path``.
+
+        Parameters
+        ----------
+        value : dict[str, str | Path] | dict[str, xr.DataArray  |  xr.Dataset]
+            _description_
+        info : ValidationInfo
+            Validation information for the field which may contain a context with ``save_folder``
+            used to load data from file.
+
+        Returns
+        -------
+        dict[str, xr.DataArray | xr.Dataset]
+        """
+        if (
+            context_is_dict(info)
+            and (save_folder := save_folder_from_info(info)) is not None
+            and all(isinstance(v, (str, Path)) for v in value.values())
+        ):
+            saving_options: SavingOptions = info.context.get(
+                "saving_options", SAVING_OPTIONS_DEFAULT
+            )
+            data_plugin = saving_options.get("data_plugin", None)
+            return {
+                item_label: load_dataset(
+                    (Path(save_folder) / info.field_name / item_value).resolve(),
+                    format_name=data_plugin,
+                )
+                for item_label, item_value in value.items()
+                if isinstance(item_value, (str, Path))
+            }
+        return value
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_model(cls, value: Any) -> Any:  # noqa: ANN401
+        """Remove computed field before attempting to deserialize model."""
+        if isinstance(value, dict):
+            value.pop("fitted_data", None)
+            return value
+        return value
 
 
 @dataclass
