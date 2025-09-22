@@ -9,6 +9,7 @@ and causing an [override] type error in the plugins implementation.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import TypeVar
@@ -293,9 +294,10 @@ def load_scheme(file_name: StrOrPath, format_name: str | None = None, **kwargs: 
         :class:`Scheme` instance created from the file.
     """
     io = get_project_io(format_name or infer_file_format(file_name))
-    if Path(file_name).is_file() is True:
-        file_name = Path(file_name).resolve()
-    return io.load_scheme(Path(file_name).as_posix(), **kwargs)
+    # Path.is_file raises an OSError if the path is too long (i.e. yaml_str)
+    if os.path.isfile(file_name) is True:  # noqa: PTH113
+        file_name = Path(file_name).resolve().as_posix()
+    return io.load_scheme(str(file_name), **kwargs)
 
 
 @not_implemented_to_value_error

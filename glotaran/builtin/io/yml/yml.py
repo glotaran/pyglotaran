@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from shutil import copyfile
 from typing import TYPE_CHECKING
@@ -54,7 +55,8 @@ class YmlProjectIo(ProjectIoInterface):
         """
         spec = sanitize_yaml(self._load_yml(file_name), do_values=True)
         return Scheme.from_dict(
-            spec, source_path=Path(file_name) if Path(file_name).is_file() else None
+            spec,
+            source_path=Path(file_name) if os.path.isfile(file_name) else None,  # noqa: PTH113
         )
 
     def save_scheme(self, scheme: Scheme, file_name: str) -> None:

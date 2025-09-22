@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -21,9 +21,6 @@ from glotaran.testing.plugin_system import monkeypatch_plugin_registry_data_io
 from tests.optimization.data import TestDataModelConstantIndexDependent
 from tests.optimization.data import TestDataModelConstantIndexIndependent
 from tests.optimization.data import TestDataModelGlobal
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 def test_optimization_result_default_serde(tmp_path: Path):
@@ -127,7 +124,7 @@ def test_optimization_result_fitted_data_warn_on_missing_residuals():
     ) as warn_records:
         assert optimization_result.fitted_data is None
     assert len(warn_records) == 1
-    assert warn_records[0].filename == __file__, warn_records[0]
+    assert Path(warn_records[0].filename).samefile(__file__), warn_records[0]
 
 
 def test_optimization_result_error_missing_serialization_context():
@@ -183,7 +180,7 @@ def test_optimization_result_input_data_read_with_3rd_party_plugin(tmp_path: Pat
         save_dataset(input_data, save_path, format_name=mock_plugin_name)
         input_data.attrs["io_plugin_name"] = mock_plugin_name
 
-        assert input_data.attrs["source_path"] == str(save_path)
+        assert input_data.attrs["source_path"] == save_path.as_posix()
 
         serialized_optimization_result = OptimizationResult(input_data=input_data).model_dump(
             context={"save_folder": save_folder, "saving_options": SAVING_OPTIONS_MINIMAL},
