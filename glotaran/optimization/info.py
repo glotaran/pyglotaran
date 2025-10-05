@@ -98,7 +98,7 @@ class OptimizationInfo(BaseModel):
     """
     additional_penalty: float | None = None
 
-    @field_serializer("parameter_history", "optimization_history")
+    @field_serializer("parameter_history", "optimization_history", when_used="json")
     def serialize_data(
         self, value: ParameterHistory | OptimizationHistory, info: SerializationInfo
     ) -> str:

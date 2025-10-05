@@ -74,7 +74,7 @@ class ToFromCsvModel(BaseModel):
 
     data: ToFromCsv
 
-    @field_serializer("data")
+    @field_serializer("data", when_used="json")
     def serialize_data(self, value: Any, info: SerializationInfo) -> Any:
         """Serialize the data field."""
         return serialize_to_csv(value, info)
@@ -94,7 +94,7 @@ class ModelWithParameters(BaseModel):
     params_1: Parameters
     params_2: Parameters
 
-    @field_serializer("params_1", "params_2")
+    @field_serializer("params_1", "params_2", when_used="json")
     def serialize_data(self, value: Parameters, info: SerializationInfo) -> Any:
         """Serialize the data field."""
         return serialize_parameters(value, info)
@@ -145,7 +145,9 @@ def test_serialize_to_csv(tmp_path: Path):
     model_instance = ToFromCsvModel(data=to_from_csv_instance)
 
     csv_path = tmp_path / "sub_dir" / "data.csv"
-    serialized_value = model_instance.model_dump(context={"save_folder": tmp_path / "sub_dir"})
+    serialized_value = model_instance.model_dump(
+        context={"save_folder": tmp_path / "sub_dir"}, mode="json"
+    )
     assert serialized_value["data"] == "data.csv"
 
     assert csv_path.exists()
@@ -160,7 +162,7 @@ def test_serialize_to_csv_missing_context_error():
     model_instance = ToFromCsvModel(data=to_from_csv_instance)
 
     with pytest.raises(ValueError) as exc_info:
-        model_instance.model_dump(context={})
+        model_instance.model_dump(context={}, mode="json")
     assert "SerializationInfo context is missing 'save_folder'" in str(exc_info.value)
 
 
@@ -197,7 +199,7 @@ def test_parameters_serde_roundtrip_default(
     model_instance, params_1, params_2 = parameters_model_data
 
     save_folder = tmp_path / "sub_dir"
-    serialized_value = model_instance.model_dump(context={"save_folder": save_folder})
+    serialized_value = model_instance.model_dump(context={"save_folder": save_folder}, mode="json")
     assert serialized_value["params_1"] == "params_1.csv"
     assert serialized_value["params_2"] == "params_2.csv"
 
@@ -228,7 +230,7 @@ def test_parameters_serde_roundtrip_saving_options(
         },
     }
 
-    serialized_value = model_instance.model_dump(context=context)
+    serialized_value = model_instance.model_dump(context=context, mode="json")
     assert serialized_value["params_1"] == "params_1.foo"
     assert serialized_value["params_2"] == "params_2.foo"
 
@@ -249,7 +251,7 @@ def test_serialize_parameters_missing_context_error(
     model_instance, _, _ = parameters_model_data
 
     with pytest.raises(ValueError) as exc_info:
-        model_instance.model_dump(context={})
+        model_instance.model_dump(context={}, mode="json")
     assert "SerializationInfo context is missing 'save_folder'" in str(exc_info.value)
 
 
@@ -258,7 +260,7 @@ def test_deserialize_parameters_missing_context_error(
 ):
     """Test deserialization from CSV raises an error if save_folder is not in context."""
     model_instance, _, _ = parameters_model_data
-    serialized_value = model_instance.model_dump(context={"save_folder": tmp_path})
+    serialized_value = model_instance.model_dump(context={"save_folder": tmp_path}, mode="json")
 
     with pytest.raises(ValueError) as exc_info:
         ModelWithParameters.model_validate(serialized_value, context={})

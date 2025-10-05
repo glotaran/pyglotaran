@@ -41,7 +41,7 @@ def test_optimization_info_serialization(tmp_path: Path):
         optimization_history=optimization_history,
     )
 
-    serialized = info.model_dump(mode="json", context={"save_folder": tmp_path})
+    serialized = info.model_dump(context={"save_folder": tmp_path}, mode="json")
 
     assert serialized["optimization_history"] == "optimization_history.csv"
     assert (tmp_path / "optimization_history.csv").is_file() is True
