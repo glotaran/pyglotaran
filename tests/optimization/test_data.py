@@ -13,6 +13,14 @@ from tests.optimization.data import TestDataModelConstantIndexIndependent
 from tests.optimization.data import TestDataModelGlobal
 
 
+def test_data_model_has_original_dataset_attributes():
+    """Test that original dataset attributes are stored in OptimizationData."""
+    data_model = deepcopy(TestDataModelConstantIndexIndependent)
+    data = OptimizationData(data_model)
+
+    assert data.original_dataset_attributes == {"test_attr": "test_value"}
+
+
 @pytest.mark.parametrize("weight", [True, False])
 def test_optimization_data(weight: bool):
     data_model = deepcopy(TestDataModelConstantIndexIndependent)

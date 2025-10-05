@@ -8,8 +8,10 @@ from tests.optimization.elements import TestElementConstant
 
 TestDataModelConstantIndexIndependent = DataModel(
     data=xr.DataArray(
-        np.ones((4, 3)) * 5, coords=[("model_dim", [5, 7, 9, 12]), ("global_dim", [1, 5, 6])]
-    ).to_dataset(name="data"),
+        np.ones((4, 3)) * 5,
+        coords=[("model_dim", [5, 7, 9, 12]), ("global_dim", [1, 5, 6])],
+        attrs={"test_attr": "test_value"},
+    ).to_dataset(name="data", promote_attrs=True),
     elements=[
         TestElementConstant(
             type="test-element-constant",

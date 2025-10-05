@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import abc
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import Literal
 
 import numpy as np
@@ -56,6 +57,7 @@ class OptimizationData(OptimizationDataProvider):
         data = model.data
         assert isinstance(data, xr.Dataset)
 
+        self._original_dataset_attributes = data.attrs.copy()
         self._model = model
         self._model_dimension = get_data_model_dimension(model)
         self._model_axis = data.coords[self._model_dimension].data
@@ -79,6 +81,10 @@ class OptimizationData(OptimizationDataProvider):
             self._data_slices = []
         else:
             self._data_slices = [self._data[:, i] for i in range(self.global_axis.size)]
+
+    @property
+    def original_dataset_attributes(self) -> dict[Any, Any]:
+        return self._original_dataset_attributes
 
     @property
     def data(self) -> ArrayLike:

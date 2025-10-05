@@ -157,7 +157,13 @@ class OptimizationResult(BaseModel):
                     return original_source_path
                 return (original_source_path, original_io_plugin_name)
             save_path = Path(save_folder) / f"{info.field_name}.{data_format}"
-            save_dataset(value, save_path, format_name=data_plugin, allow_overwrite=True)
+            save_dataset(
+                value,
+                save_path,
+                format_name=data_plugin,
+                allow_overwrite=True,
+                update_source_path=info.field_name != "input_data",
+            )
             return save_path.name
 
         msg = f"SerializationInfo context is missing 'save_folder':\n{info}"
@@ -408,6 +414,7 @@ class OptimizationObjective:
         dataset = data.model.data.copy()
         if dataset.data.dims != (data.model_dimension, data.global_dimension):
             dataset["data"] = dataset.data.T
+        dataset["data"].attrs = data.original_dataset_attributes.copy()
         dataset.attrs["model_dimension"] = data.model_dimension
         dataset.attrs["global_dimension"] = data.global_dimension
         dataset.coords[data.model_dimension] = data.model_axis
@@ -539,8 +546,10 @@ class OptimizationObjective:
 
         self._data.unweight_result_dataset(result_dataset)
         add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
+        input_data = result_dataset.data
+        input_data.attrs |= self._data.original_dataset_attributes.copy()
         result = OptimizationResult(
-            input_data=result_dataset.data,
+            input_data=input_data,
             residuals=result_dataset.residual,
             elements=element_results,
             activations=activations,
@@ -672,7 +681,7 @@ class OptimizationObjective:
         concentration: OptimizationMatrix,
         estimated_amplitude_axes: list[list[str]],
         estimations: list[OptimizationEstimation],
-    ) -> xr.Dataset:
+    ) -> OptimizationResult:
         assert isinstance(self._data, LinkedOptimizationData)
         result_dataset = self.create_result_dataset(label, data)
 
