@@ -21,7 +21,7 @@ from glotaran.model.item import get_item_issues
 from glotaran.model.item import resolve_item_parameters
 from glotaran.model.item import resolve_parameter
 from glotaran.parameter import Parameters
-from glotaran.utils.io import serialization_info_to_kwargs
+from glotaran.utils.pydantic_serde import serialization_info_to_kwargs
 
 if TYPE_CHECKING:
     from glotaran.model.errors import ItemIssue

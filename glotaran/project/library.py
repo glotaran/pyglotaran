@@ -13,7 +13,7 @@ from pydantic import model_serializer
 from glotaran.model.element import ExtendableElement
 from glotaran.model.errors import GlotaranModelError
 from glotaran.plugin_system.base_registry import __PluginRegistry
-from glotaran.utils.io import serialization_info_to_kwargs
+from glotaran.utils.pydantic_serde import serialization_info_to_kwargs
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

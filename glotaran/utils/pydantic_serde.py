@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Literal
 from typing import TypeGuard
 from typing import overload
 
@@ -32,6 +33,51 @@ class ValidationInfoWithContext(ValidationInfo):
 
     context: dict[str, Any]
     field_name: str
+
+
+SerializationInfoKey = Literal[
+    "include",
+    "exclude",
+    "exclude_defaults",
+    "exclude_none",
+    "exclude_unset",
+    "by_alias",
+    "mode",
+    "round_trip",
+    "context",
+]
+
+
+def serialization_info_to_kwargs(
+    info: SerializationInfo, *, exclude: set[SerializationInfoKey] | None = None
+) -> dict[str, Any]:
+    """Convert ``SerializationInfo`` into a dict that can be spatted into ``model_dump``.
+
+    Parameters
+    ----------
+    info : SerializationInfo
+        Serialization information available in serialization functions passed down from
+        ``model_dump`` calls.
+
+    Returns
+    -------
+    dict[str, Any]
+    """
+    full_dict = {
+        "include": info.include,
+        "exclude": info.exclude,
+        "exclude_defaults": info.exclude_defaults,
+        "exclude_none": info.exclude_none,
+        "exclude_unset": info.exclude_unset,
+        "by_alias": info.by_alias,
+        "mode": info.mode,
+        "round_trip": info.round_trip,
+        "context": info.context,
+        "serialize_as_any": info.serialize_as_any,
+    }
+    if exclude is None:
+        return full_dict
+    return {key: value for key, value in full_dict.items() if key not in exclude}
 
 
 @overload

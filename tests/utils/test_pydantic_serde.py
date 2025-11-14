@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Annotated
@@ -23,10 +25,13 @@ from glotaran.parameter.parameters import Parameters
 from glotaran.utils.pydantic_serde import deserialize_from_csv
 from glotaran.utils.pydantic_serde import deserialize_parameters
 from glotaran.utils.pydantic_serde import save_folder_from_info
+from glotaran.utils.pydantic_serde import serialization_info_to_kwargs
 from glotaran.utils.pydantic_serde import serialize_parameters
 from glotaran.utils.pydantic_serde import serialize_to_csv
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from glotaran.typing.types import Self
     from glotaran.typing.types import StrOrPath
 
@@ -115,6 +120,37 @@ def parameters_model_data():
         {"params_1": params_1, "params_2": params_2}
     )
     return model_instance, params_1, params_2
+
+
+def test_serialization_info_to_kwargs():
+    """Test serialization_info_to_kwargs function."""
+
+    @dataclass
+    class MockSerializationInfo:
+        """Mock class that is compliant with the ``SerializationInfo`` Protocol."""
+
+        mode: str
+        context: dict[str, Any]
+        include: Any = None
+        exclude: Any = None
+        exclude_defaults: bool = False
+        exclude_none: bool = False
+        exclude_unset: bool = False
+        by_alias: bool = False
+        round_trip: Callable[[], bool] = lambda: False
+        serialize_as_any: bool = False
+
+    info = MockSerializationInfo(
+        mode="json",
+        context={"save_folder": Path("test_folder"), "extra_option": 42},
+    )
+
+    assert serialization_info_to_kwargs(info) == asdict(info)
+
+    filtered_kwargs = asdict(info)
+    filtered_kwargs.pop("context", None)
+    filtered_kwargs.pop("mode", None)
+    assert serialization_info_to_kwargs(info, exclude={"context", "mode"}) == filtered_kwargs
 
 
 @pytest.mark.parametrize(
