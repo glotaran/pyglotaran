@@ -158,7 +158,7 @@ class Element(TypedItem, abc.ABC):
         result = self.create_result(
             model, global_dimension, model_dimension, amplitudes, concentrations
         )
-        result.attrs["element_uid"] = full_plugin_name(self)
+        result.attrs |= {"element_uid": full_plugin_name(self)}
         return result
 
 

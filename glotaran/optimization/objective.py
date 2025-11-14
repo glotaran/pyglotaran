@@ -43,6 +43,7 @@ if TYPE_CHECKING:
     from glotaran.model.element import Element
     from glotaran.model.experiment_model import ExperimentModel
     from glotaran.typing.types import ArrayLike
+    from glotaran.typing.types import Self
 
 
 def add_svd_to_result_dataset(dataset: xr.Dataset, global_dim: str, model_dim: str) -> None:
@@ -77,6 +78,16 @@ def calculate_root_mean_square_error(residual: xr.DataArray) -> float:
     return np.linalg.norm(residual) / np.sqrt(residual.size)
 
 
+class OptimizationResultMetaData(BaseModel):
+    """Metadata for optimization results."""
+
+    global_dimension: str
+    model_dimension: str
+    root_mean_square_error: float
+    weighted_root_mean_square_error: float | None = None
+    scale: float = 1
+
+
 class OptimizationResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
@@ -84,6 +95,7 @@ class OptimizationResult(BaseModel):
     activations: dict[str, xr.Dataset] = Field(default_factory=dict)
     input_data: xr.DataArray | xr.Dataset
     residuals: xr.DataArray | xr.Dataset | None = None
+    meta: OptimizationResultMetaData
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -101,7 +113,9 @@ class OptimizationResult(BaseModel):
                 stacklevel=2,
             )
             return None
-        return self.input_data - self.residuals
+        fitted_data = self.input_data - self.residuals
+        fitted_data.attrs |= self.meta.model_dump(exclude_defaults=True)
+        return fitted_data
 
     @field_serializer("input_data", "residuals", "fitted_data", when_used="json")
     def serialize_top_level_datasets(
@@ -336,6 +350,17 @@ class OptimizationResult(BaseModel):
             return value
         return value
 
+    @model_validator(mode="after")
+    def inject_meta_data_into_datasets(self) -> Self:
+        """Inject meta data into datasets after full initialization."""
+        if self.residuals is not None:
+            self.residuals.attrs |= self.meta.model_dump(exclude_defaults=True)
+        for field_name in ["elements", "activations"]:
+            field_value = getattr(self, field_name)
+            for value in field_value.values():
+                value.attrs |= self.meta.model_dump(exclude_defaults=True)
+        return self
+
 
 @dataclass
 class OptimizationObjectiveResult:
@@ -425,29 +450,59 @@ class OptimizationObjective:
             if label in self._data.group_definitions[group_label]
         ]
 
-    def create_result_dataset(self, label: str, data: OptimizationData) -> xr.Dataset:
+    def create_result_dataset(self, data: OptimizationData) -> xr.Dataset:
         assert isinstance(data.model.data, xr.Dataset)
         dataset = data.model.data.copy()
         if dataset.data.dims != (data.model_dimension, data.global_dimension):
             dataset["data"] = dataset.data.T
         dataset["data"].attrs = data.original_dataset_attributes.copy()
-        dataset.attrs["model_dimension"] = data.model_dimension
-        dataset.attrs["global_dimension"] = data.global_dimension
         dataset.coords[data.model_dimension] = data.model_axis
         dataset.coords[data.global_dimension] = data.global_axis
-        if isinstance(self._data, LinkedOptimizationData):
-            scale = self._data.scales[label]
-            dataset.attrs["scale"] = scale.value if isinstance(scale, Parameter) else scale
         return dataset
+
+    def create_result_metadata(
+        self, label: str, data: OptimizationData, result_dataset: xr.Dataset
+    ) -> OptimizationResultMetaData:
+        """Create metadata for optimization result.
+
+        Parameters
+        ----------
+        label : str
+            Dataset label.
+        data : OptimizationData
+            Optimization data.
+        result_dataset : xr.Dataset
+            Result dataset.
+
+        Returns
+        -------
+        OptimizationResultMetaData
+            Metadata for optimization result.
+        """
+        scale = None
+        if isinstance(self._data, LinkedOptimizationData):
+            scale_param = self._data.scales[label]
+            scale = scale_param.value if isinstance(scale_param, Parameter) else scale_param
+        return OptimizationResultMetaData(
+            global_dimension=data.global_dimension,
+            model_dimension=data.model_dimension,
+            root_mean_square_error=calculate_root_mean_square_error(result_dataset.residual),
+            weighted_root_mean_square_error=calculate_root_mean_square_error(
+                result_dataset.weighted_residual
+            )
+            if "weighted_residual" in result_dataset.data_vars
+            else None,
+            scale=scale if scale is not None else 1,
+        )
 
     def create_global_result(self) -> OptimizationObjectiveResult:
         label = next(iter(self._model.datasets.keys()))
         assert isinstance(self._data, OptimizationData)
-        result_dataset = self.create_result_dataset(label, self._data)
+        result_dataset = self.create_result_dataset(self._data)
 
-        global_dim = result_dataset.attrs["global_dimension"]
+        global_dim = self._data.global_dimension
         global_axis = result_dataset.coords[global_dim]
-        model_dim = result_dataset.attrs["model_dimension"]
+        model_dim = self._data.model_dimension
         model_axis = result_dataset.coords[model_dim]
 
         matrix = OptimizationMatrix.from_data(self._data).to_data_array(
@@ -478,9 +533,6 @@ class OptimizationObjective:
             estimation.residual.reshape(global_axis.size, model_axis.size),
             coords=((global_dim, global_axis.to_numpy()), (model_dim, model_axis.to_numpy())),
         ).T
-        result_dataset.attrs["root_mean_square_error"] = np.sqrt(
-            (result_dataset.residual.to_numpy() ** 2).sum() / sum(result_dataset.residual.shape)
-        )
         clp_size = len(matrix.amplitude_label) + len(global_matrix.amplitude_label)
         self._data.unweight_result_dataset(result_dataset)
 
@@ -497,6 +549,7 @@ class OptimizationObjective:
                     }
                 )
             },
+            meta=self.create_result_metadata(label, self._data, result_dataset),
         )
         return OptimizationObjectiveResult(
             optimization_results={label: result}, clp_size=clp_size, additional_penalty=0
@@ -508,11 +561,11 @@ class OptimizationObjective:
             return self.create_global_result()
 
         label = next(iter(self._model.datasets.keys()))
-        result_dataset = self.create_result_dataset(label, self._data)
+        result_dataset = self.create_result_dataset(self._data)
 
-        global_dim = result_dataset.attrs["global_dimension"]
+        global_dim = self._data.global_dimension
         global_axis = result_dataset.coords[global_dim]
-        model_dim = result_dataset.attrs["model_dimension"]
+        model_dim = self._data.model_dimension
         model_axis = result_dataset.coords[model_dim]
 
         concentrations = OptimizationMatrix.from_data(self._data)
@@ -542,9 +595,6 @@ class OptimizationObjective:
         result_dataset["residual"] = xr.DataArray(
             [e.residual for e in estimations], dims=residual_dims
         ).T
-        result_dataset.attrs["root_mean_square_error"] = np.sqrt(
-            (result_dataset.residual.to_numpy() ** 2).sum() / sum(result_dataset.residual.shape)
-        )
         additional_penalty = sum(
             calculate_clp_penalties(
                 [concentrations],
@@ -569,6 +619,7 @@ class OptimizationObjective:
             residuals=result_dataset.residual,
             elements=element_results,
             activations=activations,
+            meta=self.create_result_metadata(label, self._data, result_dataset),
         )
         return OptimizationObjectiveResult(
             optimization_results={label: result},
@@ -699,18 +750,15 @@ class OptimizationObjective:
         estimations: list[OptimizationEstimation],
     ) -> OptimizationResult:
         assert isinstance(self._data, LinkedOptimizationData)
-        result_dataset = self.create_result_dataset(label, data)
+        result_dataset = self.create_result_dataset(data)
 
-        global_dim = result_dataset.attrs["global_dimension"]
+        global_dim = data.global_dimension
         global_axis = result_dataset.coords[global_dim]
-        model_dim = result_dataset.attrs["model_dimension"]
+        model_dim = data.model_dimension
         model_axis = result_dataset.coords[model_dim]
 
         result_dataset["residual"] = self.get_dataset_residual(
             label, estimations, model_dim, model_axis, global_dim, global_axis
-        )
-        result_dataset.attrs["root_mean_square_error"] = np.sqrt(
-            (result_dataset.residual.to_numpy() ** 2).sum() / sum(result_dataset.residual.shape)
         )
         self._data.data[label].unweight_result_dataset(result_dataset)
         result_dataset["fit"] = result_dataset.data - result_dataset.residual
@@ -739,6 +787,7 @@ class OptimizationObjective:
             residuals=result_dataset.residual,
             elements=element_results,
             activations=activations,
+            meta=self.create_result_metadata(label, data, result_dataset),
         )
 
     def create_data_model_results(

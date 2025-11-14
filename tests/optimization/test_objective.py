@@ -16,12 +16,19 @@ from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.objective import OptimizationResult
+from glotaran.optimization.objective import OptimizationResultMetaData
 from glotaran.optimization.objective import calculate_root_mean_square_error
 from glotaran.plugin_system.data_io_registration import get_data_io
 from glotaran.testing.plugin_system import monkeypatch_plugin_registry_data_io
 from tests.optimization.data import TestDataModelConstantIndexDependent
 from tests.optimization.data import TestDataModelConstantIndexIndependent
 from tests.optimization.data import TestDataModelGlobal
+
+STUB_META_DATA = OptimizationResultMetaData(
+    global_dimension="global_dim",
+    model_dimension="model_dim",
+    root_mean_square_error=0.1,
+)
 
 
 # Values taken from https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_squared_error.html
@@ -59,6 +66,7 @@ def test_optimization_result_default_serde(tmp_path: Path):
         activations={"bar": bar_data},
         input_data=input_data,
         residuals=residuals,
+        meta=STUB_META_DATA,
     )
     # Instance validation passes without error
     OptimizationResult.model_validate(optimization_result)
@@ -79,11 +87,18 @@ def test_optimization_result_default_serde(tmp_path: Path):
     deserialized = OptimizationResult.model_validate(
         serialized, context={"save_folder": save_folder}
     )
+    expected_dataset_attrs = STUB_META_DATA.model_dump(exclude_defaults=True)
     assert deserialized.elements["foo"].equals(foo_data)
+    assert deserialized.elements["foo"].attrs.items() >= expected_dataset_attrs.items()
     assert deserialized.activations["bar"].equals(bar_data)
+    assert deserialized.activations["bar"].attrs.items() >= expected_dataset_attrs.items()
     assert deserialized.input_data.equals(input_data)
+    assert deserialized.residuals is not None
     assert deserialized.residuals.equals(residuals)
+    assert deserialized.residuals.attrs.items() >= expected_dataset_attrs.items()
+    assert deserialized.fitted_data is not None
     assert deserialized.fitted_data.equals(optimization_result.fitted_data)
+    assert deserialized.fitted_data.attrs.items() >= expected_dataset_attrs.items()
 
 
 def test_optimization_result_minimal_serde(tmp_path: Path):
@@ -100,6 +115,7 @@ def test_optimization_result_minimal_serde(tmp_path: Path):
         activations={"bar": xr.Dataset({"data": ("dim_0", np.arange(3) + 10)})},
         input_data=input_data,
         residuals=xr.Dataset({"data": ("dim_0", np.arange(4) * 0.001)}),
+        meta=STUB_META_DATA,
     )
 
     serialized = optimization_result.model_dump(
@@ -133,6 +149,7 @@ def test_optimization_result_noop_validation():
         activations={"bar": xr.Dataset({"data": ("dim_0", np.arange(3) + 10)})},
         input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}),
         residuals=xr.Dataset({"data": ("dim_0", np.arange(4) * 0.001)}),
+        meta=STUB_META_DATA,
     )
     OptimizationResult.model_validate(optimization_result)
 
@@ -140,7 +157,7 @@ def test_optimization_result_noop_validation():
 def test_optimization_result_fitted_data_warn_on_missing_residuals():
     """Warn when fitted data is accessed without residuals."""
     optimization_result = OptimizationResult(
-        input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}),
+        input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}), meta=STUB_META_DATA
     )
 
     with pytest.warns(
@@ -156,6 +173,7 @@ def test_optimization_result_error_missing_serialization_context():
     optimization_result = OptimizationResult(
         input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}),
         residuals=xr.Dataset({"data": ("dim_0", np.arange(4) * 0.001)}),
+        meta=STUB_META_DATA,
     )
 
     with pytest.raises(ValueError) as exec_info:
@@ -206,7 +224,9 @@ def test_optimization_result_input_data_read_with_3rd_party_plugin(tmp_path: Pat
 
         assert input_data.attrs["source_path"] == save_path.as_posix()
 
-        serialized_optimization_result = OptimizationResult(input_data=input_data).model_dump(
+        serialized_optimization_result = OptimizationResult(
+            input_data=input_data, meta=STUB_META_DATA
+        ).model_dump(
             context={"save_folder": save_folder, "saving_options": SAVING_OPTIONS_MINIMAL},
             mode="json",
         )
