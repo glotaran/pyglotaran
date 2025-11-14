@@ -16,11 +16,35 @@ from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.objective import OptimizationResult
+from glotaran.optimization.objective import calculate_root_mean_square_error
 from glotaran.plugin_system.data_io_registration import get_data_io
 from glotaran.testing.plugin_system import monkeypatch_plugin_registry_data_io
 from tests.optimization.data import TestDataModelConstantIndexDependent
 from tests.optimization.data import TestDataModelConstantIndexIndependent
 from tests.optimization.data import TestDataModelGlobal
+
+
+# Values taken from https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_squared_error.html
+# and calculated sqrt.
+# The current root_mean_squared_error of sklearn currently has a bug where the mean of the sqrt
+#  is calculated instead of the sqrt of the mean.
+# Ref.: https://github.com/scikit-learn/scikit-learn/blob/1eb422d6c5f46a98a318f341de3e4709f9521bfe/sklearn/metrics/_regression.py
+@pytest.mark.parametrize(
+    ("residual", "expected_rmse"),
+    [
+        (xr.DataArray(np.array([0.5, -0.5, 0, -1]), dims=("flat")), 0.612372),
+        (
+            xr.DataArray(
+                np.array([[0.5, -1.0], [0.0, -1.0], [-1.0, -1.0]]),
+                dims=("model_dim", "global_dim"),
+            ),
+            0.841625,
+        ),
+    ],
+)
+def test_calculate_root_mean_square_error(residual: xr.DataArray, expected_rmse: float):
+    """Test calculation of root mean square error in OptimizationResultMetaData."""
+    assert calculate_root_mean_square_error(residual) == pytest.approx(expected_rmse)
 
 
 def test_optimization_result_default_serde(tmp_path: Path):

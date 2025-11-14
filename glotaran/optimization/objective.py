@@ -61,6 +61,22 @@ def add_svd_to_result_dataset(dataset: xr.Dataset, global_dim: str, model_dim: s
         )
 
 
+def calculate_root_mean_square_error(residual: xr.DataArray) -> float:
+    """Calculate root mean square error from residual.
+
+    Parameters
+    ----------
+    residuals : xr.DataArray
+        Residuals data array.
+
+    Returns
+    -------
+    float
+        Root mean square error.
+    """
+    return np.linalg.norm(residual) / np.sqrt(residual.size)
+
+
 class OptimizationResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
