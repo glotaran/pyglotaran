@@ -115,6 +115,11 @@ class OptimizationInfo(BaseModel):
         """Deserialize from csv."""
         return deserialize_from_csv(cls.model_fields[info.field_name].annotation, value, info)  # type: ignore[return-value,arg-type,index]
 
+    @field_serializer("covariance_matrix", "jacobian", when_used="json")
+    def exclude_arrays(self, value: Any) -> None:
+        """Exclude numpy arrays in json mode."""
+        return None
+
     @classmethod
     def from_least_squares_result(
         cls,
