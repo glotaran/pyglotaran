@@ -223,7 +223,9 @@ class DataModel(Item):
 
     @classmethod
     def from_dict(cls, library: ModelLibrary, model_dict: dict[str, Any]) -> DataModel:
-        element_labels = model_dict.get("elements", []) + model_dict.get("global_elements", [])
+        element_labels = model_dict.get("elements", []) + (
+            model_dict.get("global_elements", None) or []
+        )
         if len(element_labels) == 0:
             msg = "No element defined for dataset"
             raise GlotaranModelError(msg)
