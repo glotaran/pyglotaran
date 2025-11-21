@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from pydantic import ValidationError
 
 from glotaran.builtin.elements.kinetic import Kinetic
 
@@ -167,6 +168,40 @@ class ParallelModelWithEquilibria:
             [0.3456491, 1.6751081],
         ]
     )
+
+
+def test_rate_string_key_validations():
+    """Test that string keys for rates are properly converted to tuple keys (common serde case)."""
+    kinetic_element = Kinetic.model_validate(
+        {
+            "rates": {
+                " s2 ,  s1  ": "rates.1",
+                ("s2", "s2"): "rates.2",
+                "(s2, s3)": "rates.3",
+            },
+        }
+    )
+    assert ("s2", "s1") in kinetic_element.rates
+    assert ("s2", "s2") in kinetic_element.rates
+    assert ("s2", "s3") in kinetic_element.rates
+
+    with pytest.raises(ValidationError, match="Invalid rate key format: 's1'") as exec_info:
+        Kinetic.model_validate(
+            {
+                "rates": {
+                    "s1": "rates.1",
+                },
+            }
+        )
+
+    with pytest.raises(ValidationError, match="Invalid rate key format: 's1,s2,s3'"):
+        Kinetic.model_validate(
+            {
+                "rates": {
+                    "s1,s2,s3": "rates.1",
+                },
+            }
+        )
 
 
 @pytest.mark.parametrize(

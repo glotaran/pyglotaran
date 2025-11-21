@@ -5,8 +5,10 @@ from __future__ import annotations
 import itertools
 from functools import reduce
 from typing import TYPE_CHECKING
+from typing import Annotated
 
 import numpy as np
+from pydantic import BeforeValidator
 from scipy.linalg import eig
 from scipy.linalg import solve
 
@@ -17,10 +19,36 @@ if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
 
 
+def convert_string_key_to_tuple(value: str | tuple[str, str]) -> tuple[str, str]:
+    """Ensure the value is a tuple of two strings."""
+    if isinstance(value, str):
+        to_compartment, _, from_compartment = value.partition(",")
+        to_compartment, from_compartment = (
+            to_compartment.strip().lstrip("("),
+            from_compartment.strip().rstrip(")"),
+        )
+        if any(
+            compartment == "" or "," in compartment
+            for compartment in (to_compartment, from_compartment)
+        ):
+            raise ValueError(
+                f"Invalid rate key format: '{value}'. Expected format 'to_compartment,from_compartment'."
+            )
+        return (to_compartment.strip(), from_compartment.strip())
+    return value
+
+
+def ensure_keys(
+    value: dict[tuple[str, str] | str, ParameterType],
+) -> dict[tuple[str, str], ParameterType]:
+    """Ensure all keys are tuples of strings."""
+    return {convert_string_key_to_tuple(k): v for k, v in value.items()}
+
+
 class Kinetic(Item):
     """A scheme for kinetic dynamics, e.g. anergy transfers between states."""
 
-    rates: dict[tuple[str, str], ParameterType]
+    rates: Annotated[dict[tuple[str, str], ParameterType], BeforeValidator(ensure_keys)]
 
     @classmethod
     def combine(cls, kinetics: list[Kinetic]) -> Kinetic:
