@@ -242,6 +242,57 @@ def test_optimization_result_input_data_read_with_3rd_party_plugin(tmp_path: Pat
         assert loaded_optimization_result.input_data.equals(input_data)
 
 
+def test_optimization_result_extract_paths_from_serialization(tmp_path: Path):
+    """Test extraction of file paths from serialized OptimizationResult."""
+
+    optimization_result = OptimizationResult(
+        elements={"foo": xr.Dataset({"data": ("dim_0", np.arange(2))})},
+        activations={"bar": xr.Dataset({"data": ("dim_0", np.arange(3) + 10)})},
+        input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}),
+        residuals=xr.Dataset({"data": ("dim_0", np.arange(4) * 0.001)}),
+        meta=STUB_META_DATA,
+    )
+
+    full_save_folder = tmp_path / "full_save"
+
+    full_serialized = optimization_result.model_dump(
+        context={"save_folder": full_save_folder}, mode="json"
+    )
+
+    full_extracted_paths = OptimizationResult.extract_paths_from_serialization(
+        full_save_folder, full_serialized
+    )
+    assert list(full_extracted_paths) == [
+        (full_save_folder / "input_data.nc"),
+        (full_save_folder / "residuals.nc"),
+        (full_save_folder / "fitted_data.nc"),
+        (full_save_folder / "elements/foo.nc"),
+        (full_save_folder / "activations/bar.nc"),
+    ]
+
+    minimal_save_folder = tmp_path / "minimal_save"
+
+    minimal_serialized = optimization_result.model_dump(
+        context={"save_folder": minimal_save_folder, "saving_options": SAVING_OPTIONS_MINIMAL},
+        mode="json",
+    )
+    minimal_extracted_paths = OptimizationResult.extract_paths_from_serialization(
+        minimal_save_folder, minimal_serialized
+    )
+    # input data are only saved when no file exists
+    assert list(minimal_extracted_paths) == [(full_save_folder / "input_data.nc")]
+
+    optimization_result.input_data = xr.Dataset({"data": ("dim_0", np.arange(4))})
+    minimal_serialized_no_input = optimization_result.model_dump(
+        context={"save_folder": minimal_save_folder, "saving_options": SAVING_OPTIONS_MINIMAL},
+        mode="json",
+    )
+    minimal_extracted_paths_rewrite = OptimizationResult.extract_paths_from_serialization(
+        minimal_save_folder, minimal_serialized_no_input
+    )
+    assert list(minimal_extracted_paths_rewrite) == [(minimal_save_folder / "input_data.nc")]
+
+
 def test_single_data():
     data_model = deepcopy(TestDataModelConstantIndexIndependent)
     experiment = ExperimentModel(datasets={"test_data": data_model})

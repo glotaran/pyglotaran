@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
@@ -39,6 +40,7 @@ from glotaran.utils.pydantic_serde import save_folder_from_info
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Iterator
 
     from glotaran.model.element import Element
     from glotaran.model.experiment_model import ExperimentModel
@@ -360,6 +362,42 @@ class OptimizationResult(BaseModel):
             for value in field_value.values():
                 value.attrs |= self.meta.model_dump(exclude_defaults=True)
         return self
+
+    @staticmethod
+    def extract_paths_from_serialization(
+        save_folder: Path, serialized: dict[str, Any]
+    ) -> Iterator[Path]:
+        """Extract file paths from serialized OptimizationResult.
+
+        Parameters
+        ----------
+        save_folder : Path
+            Folder where the files are saved.
+        serialized : dict[str, Any]
+            Serialized OptimizationResult dictionary.
+
+        Yields
+        ------
+        Iterator[Path]
+            Paths of all saved items.
+        """
+
+        def mapping_path_iterator() -> Iterator[Path]:
+            for field_name in ["elements", "activations"]:
+                if field_name in serialized:
+                    yield from (
+                        save_folder / field_name / item_path
+                        for item_path in serialized[field_name].values()
+                    )
+
+        top_level_paths_iterator = (
+            save_folder / serialized[field_name]
+            for field_name in ["input_data", "residuals", "fitted_data"]
+            if serialized.get(field_name) is not None
+        )
+        return (
+            path.resolve() for path in chain(top_level_paths_iterator, mapping_path_iterator())
+        )
 
 
 @dataclass

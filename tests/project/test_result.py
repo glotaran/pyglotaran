@@ -174,6 +174,31 @@ def test_result_saving_options_are_used(tmp_path: Path):
     assert isinstance(deserialized.optimized_parameters, Parameters)
 
 
+def test_result_extract_paths_from_serialization(tmp_path: Path):
+    """Test that saving options provided in the context are used during serialization."""
+
+    serialized = RESULT.model_dump(
+        mode="json",
+        context={"save_folder": tmp_path},
+    )
+    result_file_path = tmp_path / "result.yml"
+    result_file_path.touch()
+
+    assert Result.extract_paths_from_serialization(result_file_path, serialized) == [
+        result_file_path.as_posix(),
+        (tmp_path / "scheme.yml").as_posix(),
+        (tmp_path / "initial_parameters.csv").as_posix(),
+        (tmp_path / "optimized_parameters.csv").as_posix(),
+        (tmp_path / "parameter_history.csv").as_posix(),
+        (tmp_path / "optimization_history.csv").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/input_data.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/residuals.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/fitted_data.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/elements/sequential.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/activations/irf.nc").as_posix(),
+    ]
+
+
 @pytest.mark.xfail(reason="Needs to be fixed.")
 @pytest.mark.parametrize("path_is_absolute", [True, False])
 def test_saving(tmp_path: Path, path_is_absolute: bool):

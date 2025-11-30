@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from itertools import chain
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -154,6 +155,43 @@ class Result(BaseModel):
                 value = save_folder / value
             return load_scheme(value, format_name=scheme_plugin)
         return value
+
+    @staticmethod
+    def extract_paths_from_serialization(
+        result_file_path: Path, serialized: dict[str, Any]
+    ) -> list[str]:
+        """Extract file paths from serialized Result.
+
+        Parameters
+        ----------
+        result_file_path : Path
+            Path to the result file.
+        serialized : dict[str, Any]
+            Serialized representation of the Result.
+
+        Yields
+        ------
+        list[str]
+            List of file paths extracted from the serialization.
+        """
+        base_folder = result_file_path.parent
+        project_paths_iterator = iter(
+            (
+                result_file_path,
+                base_folder / serialized["scheme"],
+                base_folder / serialized["initial_parameters"],
+                base_folder / serialized["optimized_parameters"],
+                base_folder / serialized["optimization_info"]["parameter_history"],
+                base_folder / serialized["optimization_info"]["optimization_history"],
+            )
+        )
+        result_iterators = tuple(
+            OptimizationResult.extract_paths_from_serialization(
+                base_folder / "optimization_results" / dataset_name, serialized
+            )
+            for dataset_name, serialized in serialized["optimization_results"].items()
+        )
+        return [path.as_posix() for path in chain(project_paths_iterator, *result_iterators)]
 
     def save(
         self,
