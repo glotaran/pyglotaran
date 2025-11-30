@@ -31,9 +31,11 @@ def convert_string_key_to_tuple(value: str | tuple[str, str]) -> tuple[str, str]
             compartment == "" or "," in compartment
             for compartment in (to_compartment, from_compartment)
         ):
-            raise ValueError(
-                f"Invalid rate key format: '{value}'. Expected format 'to_compartment,from_compartment'."
+            msg = (
+                f"Invalid rate key format: '{value}'. "
+                "Expected format 'to_compartment,from_compartment'."
             )
+            raise ValueError(msg)
         return (to_compartment.strip(), from_compartment.strip())
     return value
 

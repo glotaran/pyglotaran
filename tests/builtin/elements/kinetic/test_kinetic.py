@@ -185,7 +185,7 @@ def test_rate_string_key_validations():
     assert ("s2", "s2") in kinetic_element.rates
     assert ("s2", "s3") in kinetic_element.rates
 
-    with pytest.raises(ValidationError, match="Invalid rate key format: 's1'") as exec_info:
+    with pytest.raises(ValidationError, match="Invalid rate key format: 's1'"):
         Kinetic.model_validate(
             {
                 "rates": {

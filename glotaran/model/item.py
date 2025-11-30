@@ -70,7 +70,7 @@ def extract_glotaran_field_metadata(info: FieldInfo) -> GlotaranFieldMetadata:
     return GlotaranFieldMetadata()
 
 
-class ItemAttribute(FieldInfo):
+class ItemAttribute(FieldInfo):  # type:ignore[misc]
     """An attribute for items.
 
     A thin wrapper around pydantic.fields.FieldInfo.
