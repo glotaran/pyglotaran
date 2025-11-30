@@ -58,3 +58,17 @@ def test_save_scheme_from_file(tmp_path: Path):
     save_scheme(load_scheme(input_path), save_path)
 
     assert save_path.read_text() == test_scheme_yml
+
+
+def test_save_scheme_from_file_edited(tmp_path: Path):
+    """YAML file writes changes when scheme was changed in memory."""
+    input_path = tmp_path / "input_scheme.yml"
+    input_path.write_text(test_scheme_yml)
+
+    save_path = tmp_path / "test_scheme.yml"
+    scheme = load_scheme(input_path)
+    scheme.experiments.pop("myexp")
+    save_scheme(scheme, save_path)
+
+    assert save_path.read_text() != test_scheme_yml
+    assert load_scheme(save_path).experiments == {}

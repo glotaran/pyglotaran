@@ -69,7 +69,12 @@ class YmlProjectIo(ProjectIoInterface):
         file_name: str
             Path to the file to write the scheme specification to.
         """
-        if scheme.source_path is not None and scheme.source_path.suffix in (".yml", ".yaml"):
+        if (
+            scheme.source_path is not None
+            and scheme.source_path.suffix in (".yml", ".yaml")
+            and self.load_scheme(str(scheme.source_path)).model_dump(exclude_unset=True)
+            == scheme.model_dump(exclude_unset=True)
+        ):
             copyfile(scheme.source_path, file_name)
         else:
             write_dict(scheme.model_dump(exclude_unset=True), file_name=file_name)
