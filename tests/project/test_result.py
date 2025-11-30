@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -21,7 +20,6 @@ from glotaran.project.result import Result
 from glotaran.project.scheme import Scheme
 from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET
 from glotaran.testing.simulated_data.sequential_spectral_decay import RESULT
-from glotaran.utils.io import chdir_context
 
 if TYPE_CHECKING:
     from glotaran.io.interface import SavingOptions
@@ -208,23 +206,21 @@ def test_result_extract_paths_from_serialization(tmp_path: Path):
     ]
 
 
-@pytest.mark.xfail(reason="Needs to be fixed.")
-@pytest.mark.parametrize("path_is_absolute", [True, False])
-def test_saving(tmp_path: Path, path_is_absolute: bool):
-    """Check all files exist."""
-    warnings.warn("Test needs to be fixed.", stacklevel=2)
-    result_dir = tmp_path / "testresult" if path_is_absolute is True else Path("testresult")
+def test_result_save(tmp_path: Path):
+    """Minimal check that save_result is properly wrapped."""
+    result_file_paths = RESULT.save(tmp_path)
 
-    with chdir_context("." if path_is_absolute is True else tmp_path):
-        RESULT.save(result_dir)
+    assert len(result_file_paths) == 11
+    assert result_file_paths[0] == (tmp_path / "result.yml").as_posix()
+    assert (tmp_path / "result.yml").is_file()
+    assert all(Path(path).exists() for path in result_file_paths)
 
-        assert (result_dir / "glotaran_result.yml").exists()
-        assert (result_dir / "parameters_initial.csv").exists()
-        assert (result_dir / "parameters_optimized.csv").exists()
-        assert (result_dir / "optimization_history.csv").exists()
-        assert (result_dir / "data" / "sequential-decay.nc").exists()
+    result_file_paths = RESULT.save(tmp_path / "minimal", saving_options=SAVING_OPTIONS_MINIMAL)
+    assert len(result_file_paths) == 7
+    assert result_file_paths[0] == (tmp_path / "minimal/result.yml").as_posix()
+    assert (tmp_path / "minimal/result.yml").is_file()
+    assert all(Path(path).exists() for path in result_file_paths)
 
 
 if __name__ == "__main__":
-    # TODO: disable for now
     pytest.main([__file__])
