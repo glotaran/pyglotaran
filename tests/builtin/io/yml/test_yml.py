@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import numpy as np
+import pytest
 
 from glotaran.builtin.elements.kinetic.element import KineticElement
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.io import load_parameters
+from glotaran.io import load_result
 from glotaran.io import load_scheme
+from glotaran.io import save_result
 from glotaran.io import save_scheme
-
-if TYPE_CHECKING:
-    from pathlib import Path
+from glotaran.testing.simulated_data.sequential_spectral_decay import RESULT
 
 TEST_SCHEME_YML = """
 # Just a comment
@@ -110,3 +111,30 @@ def test_save_scheme_from_file_edited(tmp_path: Path):
 
     assert save_path.read_text() != TEST_SCHEME_YML
     assert load_scheme(save_path).experiments == {}
+
+
+@pytest.mark.parametrize("result_file_name", ["result.yml", ""])
+def test_result_round_tripping(tmp_path: Path, result_file_name: str):
+    """Saving and loading Result via YAML preserves data."""
+    save_path = tmp_path / result_file_name
+    result_file_paths = save_result(RESULT, save_path)
+    assert result_file_paths == [
+        (tmp_path / "result.yml").as_posix(),
+        (tmp_path / "scheme.yml").as_posix(),
+        (tmp_path / "initial_parameters.csv").as_posix(),
+        (tmp_path / "optimized_parameters.csv").as_posix(),
+        (tmp_path / "parameter_history.csv").as_posix(),
+        (tmp_path / "optimization_history.csv").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/input_data.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/residuals.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/fitted_data.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/elements/sequential.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/activations/irf.nc").as_posix(),
+    ]
+    assert all(Path(path).exists() for path in result_file_paths)
+    loaded_result = load_result(save_path)
+    for dataset in loaded_result.optimization_results.values():
+        assert dataset.meta.weighted_root_mean_square_error is None
+        assert dataset.meta.scale == 1
+
+    loaded_result.scheme.optimize(loaded_result.optimized_parameters, loaded_result.input_data)
