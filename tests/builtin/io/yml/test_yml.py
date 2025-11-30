@@ -2,15 +2,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
+
 from glotaran.builtin.elements.kinetic.element import KineticElement
 from glotaran.builtin.items.activation import ActivationDataModel
+from glotaran.io import load_parameters
 from glotaran.io import load_scheme
 from glotaran.io import save_scheme
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-test_scheme_yml = """
+TEST_SCHEME_YML = """
 # Just a comment
 library:
     parallel:
@@ -31,9 +34,44 @@ experiments:
 """
 
 
+def test_parameter_group_copy():
+    params = """
+    a:
+        - ["foo", 1, {non-negative: true, min: -1, max: 1, vary: false}]
+        - 4
+        - 5
+    b:
+        - 7
+        - 8
+    """
+    parameters = load_parameters(params, format_name="yml_str")
+
+    assert parameters.get("a.foo").value == 1
+    assert parameters.get("a.foo").non_negative
+    assert parameters.get("a.foo").minimum == -1
+    assert parameters.get("a.foo").maximum == 1
+    assert not parameters.get("a.foo").vary
+
+    assert parameters.get("a.2").value == 4
+    assert not parameters.get("a.2").non_negative
+    assert parameters.get("a.2").minimum == -np.inf
+    assert parameters.get("a.2").maximum == np.inf
+    assert parameters.get("a.2").vary
+
+    assert parameters.get("a.3").value == 5
+
+    assert parameters.get("b.1").value == 7
+    assert not parameters.get("b.1").non_negative
+    assert parameters.get("b.1").minimum == -np.inf
+    assert parameters.get("b.1").maximum == np.inf
+    assert parameters.get("b.1").vary
+
+    assert parameters.get("b.2").value == 8
+
+
 def test_load_scheme():
     """Load scheme from string."""
-    scheme = load_scheme(test_scheme_yml, format_name="yml_str")
+    scheme = load_scheme(TEST_SCHEME_YML, format_name="yml_str")
     assert isinstance(scheme.library["parallel"], KineticElement)
     assert isinstance(
         scheme.experiments["myexp"].datasets["kinetic_parallel"], ActivationDataModel
@@ -42,7 +80,7 @@ def test_load_scheme():
 
 def test_save_scheme_from_string(tmp_path: Path):
     """Save and load scheme from file."""
-    input_scheme = load_scheme(test_scheme_yml, format_name="yml_str")
+    input_scheme = load_scheme(TEST_SCHEME_YML, format_name="yml_str")
     save_path = tmp_path / "test_scheme.yml"
     save_scheme(input_scheme, save_path)
     loaded_scheme = load_scheme(save_path)
@@ -52,23 +90,23 @@ def test_save_scheme_from_string(tmp_path: Path):
 def test_save_scheme_from_file(tmp_path: Path):
     """YAML file roundtrip preserves comments."""
     input_path = tmp_path / "input_scheme.yml"
-    input_path.write_text(test_scheme_yml)
+    input_path.write_text(TEST_SCHEME_YML)
 
     save_path = tmp_path / "test_scheme.yml"
     save_scheme(load_scheme(input_path), save_path)
 
-    assert save_path.read_text() == test_scheme_yml
+    assert save_path.read_text() == TEST_SCHEME_YML
 
 
 def test_save_scheme_from_file_edited(tmp_path: Path):
     """YAML file writes changes when scheme was changed in memory."""
     input_path = tmp_path / "input_scheme.yml"
-    input_path.write_text(test_scheme_yml)
+    input_path.write_text(TEST_SCHEME_YML)
 
     save_path = tmp_path / "test_scheme.yml"
     scheme = load_scheme(input_path)
     scheme.experiments.pop("myexp")
     save_scheme(scheme, save_path)
 
-    assert save_path.read_text() != test_scheme_yml
+    assert save_path.read_text() != TEST_SCHEME_YML
     assert load_scheme(save_path).experiments == {}
