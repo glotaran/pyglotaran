@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-# TODO: Fix circular import
-#  from glotaran import __version__ as glotaran_version
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -12,8 +10,10 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import SerializationInfo
 from pydantic import ValidationInfo
+from pydantic import computed_field
 from pydantic import field_serializer
 from pydantic import field_validator
+from pydantic import model_validator
 
 from glotaran.optimization.optimization_history import OptimizationHistory  # noqa: TC001
 from glotaran.parameter import ParameterHistory  # noqa: TC001
@@ -41,9 +41,6 @@ class OptimizationInfo(BaseModel):
 
     termination_reason: str
     """The reason (message when) the optimizer terminated"""
-
-    #  glotaran_version: str
-    #  """The glotaran version used to create the result."""
 
     free_parameter_labels: list[str]
     """List of labels of the free parameters used in optimization."""
@@ -98,6 +95,15 @@ class OptimizationInfo(BaseModel):
     """
     additional_penalty: float | None = None
 
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def glotaran_version(self) -> str:
+        """The glotaran version used to create the result."""
+        # Prevent circular import issues
+        from glotaran import __version__  # noqa: PLC0415
+
+        return __version__
+
     @field_serializer("parameter_history", "optimization_history", when_used="json")
     def serialize_data(
         self, value: ParameterHistory | OptimizationHistory, info: SerializationInfo
@@ -116,9 +122,17 @@ class OptimizationInfo(BaseModel):
         return deserialize_from_csv(cls.model_fields[info.field_name].annotation, value, info)  # type: ignore[return-value,arg-type,index]
 
     @field_serializer("covariance_matrix", "jacobian", when_used="json")
-    def exclude_arrays(self, value: Any) -> None:
+    def exclude_arrays(self, value: Any) -> None:  # noqa: ANN401
         """Exclude numpy arrays in json mode."""
-        return None
+
+    @model_validator(mode="before")
+    @classmethod
+    def remove_computed_fields(cls, value: Any) -> Any:  # noqa: ANN401
+        """Remove computed fields before validation."""
+        if isinstance(value, dict) is True:
+            value.pop("glotaran_version", None)
+            return value
+        return value
 
     @classmethod
     def from_least_squares_result(

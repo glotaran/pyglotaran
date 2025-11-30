@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 import xarray as xr
 
+from glotaran import __version__
 from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import SAVING_OPTIONS_MINIMAL
 from glotaran.model.experiment_model import ExperimentModel
@@ -49,6 +50,7 @@ def test_result_serde_default(tmp_path: Path):
         "irf.center",
         "irf.width",
     ]
+    assert optimization_info["glotaran_version"] == __version__
 
     assert serialized["scheme"] == "scheme.yml"
     assert (tmp_path / serialized["scheme"]).is_file()
@@ -122,6 +124,7 @@ def test_result_serde_minimal(tmp_path: Path):
         "irf.center",
         "irf.width",
     ]
+    assert optimization_info["glotaran_version"] == __version__
 
     sequential_results = serialized["optimization_results"]["sequential-decay"]
     assert len(sequential_results["elements"]) == 0
