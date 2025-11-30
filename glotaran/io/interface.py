@@ -12,12 +12,18 @@ See: https://www.python.org/dev/peps/pep-3102/
 
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING
-from typing import TypedDict
+
+if sys.version_info < (3, 12):
+    from typing_extensions import TypedDict
+else:
+    from typing import TypedDict
+
+from typing import Literal
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from typing import Literal
     from typing import TypeAlias
 
     import xarray as xr
@@ -39,10 +45,14 @@ class SavingOptions(TypedDict, total=False):
     """Format of the data files to be saved."""
     data_plugin: str | None
     """Name of the data plugin to be used for saving, determined automatically if None."""
-    parameters_format: Literal["csv"] | str  # noqa: PYI051
+    parameters_format: Literal["csv", "tsv", "xlsx", "ods"] | str  # noqa: PYI051
     """Format of the parameter files to be saved."""
     parameters_plugin: str | None
     """Name of the parameter plugin to be used for saving, determined automatically if None."""
+    scheme_format: Literal["yml"] | str  # noqa: PYI051
+    """Format of the scheme files to be saved."""
+    scheme_plugin: str | None
+    """Name of the scheme plugin to be used for saving, determined automatically if None."""
 
 
 SAVING_OPTIONS_DEFAULT: SavingOptions = {
@@ -51,6 +61,8 @@ SAVING_OPTIONS_DEFAULT: SavingOptions = {
     "data_plugin": None,
     "parameters_format": "csv",
     "parameters_plugin": None,
+    "scheme_format": "yml",
+    "scheme_plugin": None,
 }
 SAVING_OPTIONS_MINIMAL: SavingOptions = SAVING_OPTIONS_DEFAULT | {
     "data_filter": {"input_data", "residuals", "fitted_data", "elements", "activations"}

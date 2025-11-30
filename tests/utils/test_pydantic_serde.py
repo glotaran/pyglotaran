@@ -261,7 +261,7 @@ def test_parameters_serde_roundtrip_saving_options(
     context = {
         "save_folder": save_folder,
         "saving_options": {
-            "parameter_format": "foo",
+            "parameters_format": "foo",
             "parameters_plugin": "glotaran.builtin.io.pandas.tsv.TsvProjectIo_tsv",
         },
     }

@@ -69,6 +69,7 @@ unfixable = [ "F401" ]
   "FBT002",  # Boolean default positional argument in function definition
   "FBT003",  # Boolean positional value in function call
   "EM101",   # Exception must not use a string literal, assign to variable first
+  "PLR0915", # Too many statements (53 > 50)
   "PLR2004", # Magic value used in comparison
   "PT011",   # pytest.raise is too broad, set the `match` parameter or use a more specific exception
   "SLF001",  # Private member accessed

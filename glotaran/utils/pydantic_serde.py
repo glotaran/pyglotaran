@@ -185,7 +185,7 @@ def serialize_parameters(value: Parameters, info: SerializationInfo) -> str:
     """
     if context_is_dict(info) and (save_folder := save_folder_from_info(info)) is not None:
         saving_options = info.context.get("saving_options", {})
-        parameters_format = saving_options.get("parameter_format", "csv")
+        parameters_format = saving_options.get("parameters_format", "csv")
         parameters_plugin = saving_options.get("parameters_plugin", None)
         path = Path(save_folder) / f"{info.field_name}.{parameters_format}"
         path.parent.mkdir(parents=True, exist_ok=True)
