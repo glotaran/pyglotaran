@@ -133,7 +133,7 @@ class Result(BaseModel):
         if (save_folder := save_folder_from_info(info)) is not None:
             scheme_format = info.context.get("saving_options", {}).get("scheme_format", "yml")
             save_path = save_folder / f"scheme.{scheme_format}"
-            save_scheme(value, save_path)
+            save_scheme(value, save_path, allow_overwrite=True)
             return save_path.name
         msg = (
             "SerializationInfo context is missing 'save_folder' for "
