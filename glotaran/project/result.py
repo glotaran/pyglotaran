@@ -34,6 +34,8 @@ from glotaran.utils.pydantic_serde import serialize_parameters
 if TYPE_CHECKING:
     from pathlib import Path
 
+    import xarray as xr
+
 
 def inject_saving_option_from_data_into_context(info: ValidationInfoWithContext) -> None:
     """Retrieve saving options from data and inject them into context.
@@ -66,6 +68,14 @@ class Result(BaseModel):
     @property
     def experiments(self) -> dict[str, ExperimentModel]:
         return self.scheme.experiments
+
+    @property
+    def input_data(self) -> dict[str, xr.Dataset | xr.DataArray]:
+        """Input data used to create the result."""
+        return {
+            dataset_name: optimization_result.input_data
+            for dataset_name, optimization_result in self.optimization_results.items()
+        }
 
     @field_serializer("saving_options")
     def serialize_saving_options(

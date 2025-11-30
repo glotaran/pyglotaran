@@ -4,6 +4,7 @@ import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import numpy as np
 import pytest
 import xarray as xr
 
@@ -18,11 +19,19 @@ from glotaran.parameter.parameters import Parameters
 from glotaran.project.library import ModelLibrary
 from glotaran.project.result import Result
 from glotaran.project.scheme import Scheme
+from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET
 from glotaran.testing.simulated_data.sequential_spectral_decay import RESULT
 from glotaran.utils.io import chdir_context
 
 if TYPE_CHECKING:
     from glotaran.io.interface import SavingOptions
+
+
+def test_result_input_data():
+    """Getting input data from result is the same as accessing it directly."""
+    assert isinstance(RESULT.input_data, dict)
+    assert "sequential-decay" in RESULT.input_data
+    assert np.allclose(RESULT.input_data["sequential-decay"].data, DATASET.data)
 
 
 def test_result_serde_default(tmp_path: Path):
