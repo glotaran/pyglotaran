@@ -13,7 +13,6 @@ from types import UnionType
 from typing import Annotated
 from typing import Any
 from typing import ClassVar
-from typing import Literal
 from typing import TypeAlias
 from typing import TypeVar
 from typing import Union
@@ -147,7 +146,7 @@ class Item(BaseModel):
 class TypedItem(Item):
     """An item with a type."""
 
-    type: Literal[None]
+    type: None
     __item_types__: ClassVar[list[type[Item]]]  # type:ignore[valid-type]
 
     def __init_subclass__(cls) -> None:
@@ -352,7 +351,7 @@ def resolve_item_parameters(  # noqa: C901
         value = getattr(item, name)
         if value is None:
             continue
-        structure, item_type = get_structure_and_type_from_field(info)
+        structure, _item_type = get_structure_and_type_from_field(info)
         if structure is None:
             resolved[name] = resolve_item_parameters(value, parameters, initial)
         elif structure is list:

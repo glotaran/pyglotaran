@@ -221,7 +221,7 @@ def test_protect_from_overwrite_write_functions(tmp_path: Path):
     file_path = tmp_path / "dummy.foo"
     file_path.touch()
 
-    with pytest.raises(FileExistsError, match="The file .+? already exists"):
+    with pytest.raises(FileExistsError, match=r"The file .+? already exists"):
         save_dataset(xr.DataArray([1, 2]), str(file_path))
 
 

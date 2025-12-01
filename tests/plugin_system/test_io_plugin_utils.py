@@ -49,7 +49,7 @@ def test_inferr_file_format_no_extension(tmp_path: Path):
     file_path.touch()
 
     with pytest.raises(
-        ValueError, match="Cannot determine format of file .+?, please provide an explicit format"
+        ValueError, match=r"Cannot determine format of file .+?, please provide an explicit format"
     ):
         infer_file_format(file_path)
 
@@ -94,7 +94,7 @@ def test_protect_from_overwrite_file_exists(tmp_path: Path):
     path = tmp_path / "dummy.txt"
     path.touch()
 
-    with pytest.raises(FileExistsError, match="The file .+? already exists"):
+    with pytest.raises(FileExistsError, match=r"The file .+? already exists"):
         protect_from_overwrite(path)
 
 
@@ -113,7 +113,7 @@ def test_protect_from_overwrite_not_empty_dir(tmp_path: Path):
 
     (path / "dummy.txt").write_text("test", encoding="utf8")
 
-    with pytest.raises(FileExistsError, match="The folder .+? already exists and is not empty"):
+    with pytest.raises(FileExistsError, match=r"The folder .+? already exists and is not empty"):
         protect_from_overwrite(path)
 
 

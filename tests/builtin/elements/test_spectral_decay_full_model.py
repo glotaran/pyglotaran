@@ -142,7 +142,7 @@ def test_spectral_decay():
         raise_exception=True,
         maximum_number_function_evaluations=25,
     )
-    optimized_parameters, optimized_data, result = optimization.run()
+    optimized_parameters, _optimized_data, result = optimization.run()
     assert result.success
     print(optimized_parameters)
     print(test_parameters_simulation)

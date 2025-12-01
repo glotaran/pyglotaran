@@ -50,7 +50,7 @@ def test_from_global_data(weight: bool):
     if weight:
         data_model.data["weight"] = xr.ones_like(data_model.data.data) * 0.5
     data = OptimizationData(data_model)
-    matrix, global_matrix, full_matrix = OptimizationMatrix.from_global_data(data)
+    _matrix, global_matrix, full_matrix = OptimizationMatrix.from_global_data(data)
     assert global_matrix.array.shape == (data.global_axis.size, 1)
     assert full_matrix.array.shape == (data.global_axis.size * data.model_axis.size, 1)
     assert full_matrix.clp_axis == ["c4@c4"]
