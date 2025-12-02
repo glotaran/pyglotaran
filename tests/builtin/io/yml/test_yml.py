@@ -94,7 +94,15 @@ def test_save_scheme_from_file(tmp_path: Path):
     input_path.write_text(TEST_SCHEME_YML)
 
     save_path = tmp_path / "test_scheme.yml"
-    save_scheme(load_scheme(input_path), save_path)
+    scheme = load_scheme(input_path)
+    save_scheme(scheme, save_path)
+
+    assert save_path.read_text() == TEST_SCHEME_YML
+
+    # copyfile does fail if source and target are the same
+    reloaded_scheme = load_scheme(save_path)
+    assert reloaded_scheme.source_path == save_path
+    save_scheme(reloaded_scheme, save_path, allow_overwrite=True)
 
     assert save_path.read_text() == TEST_SCHEME_YML
 
