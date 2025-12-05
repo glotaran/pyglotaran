@@ -391,7 +391,12 @@ class OptimizationResult(BaseModel):
                     )
 
         top_level_paths_iterator = (
-            save_folder / serialized[field_name]
+            save_folder
+            / (
+                serialized[field_name]
+                if isinstance(serialized[field_name], str)
+                else serialized[field_name][0]
+            )
             for field_name in ["input_data", "residuals", "fitted_data"]
             if serialized.get(field_name) is not None
         )

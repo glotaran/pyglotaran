@@ -10,14 +10,17 @@ import xarray as xr
 from glotaran import __version__
 from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import SAVING_OPTIONS_MINIMAL
+from glotaran.io import save_dataset
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization.info import OptimizationInfo
 from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.parameter.parameter_history import ParameterHistory
 from glotaran.parameter.parameters import Parameters
+from glotaran.plugin_system.data_io_registration import get_data_io
 from glotaran.project.library import ModelLibrary
 from glotaran.project.result import Result
 from glotaran.project.scheme import Scheme
+from glotaran.testing.plugin_system import monkeypatch_plugin_registry_data_io
 from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET
 from glotaran.testing.simulated_data.sequential_spectral_decay import RESULT
 
@@ -204,6 +207,43 @@ def test_result_extract_paths_from_serialization(tmp_path: Path):
         (tmp_path / "optimization_results/sequential-decay/elements/sequential.nc").as_posix(),
         (tmp_path / "optimization_results/sequential-decay/activations/irf.nc").as_posix(),
     ]
+
+
+def test_result_extract_paths_from_serialization_minimal_save(tmp_path: Path):
+    """Check that minimal paths can be correctly extracted from minimal save."""
+    # This will serialize to a tuple with the plugin name rather than a relative path
+    save_path = tmp_path / "original_data/input_data.foo"
+    nc_plugin = get_data_io("nc")
+    mock_plugin_name = "foo.FooNc"
+
+    with monkeypatch_plugin_registry_data_io({mock_plugin_name: nc_plugin}):
+        input_data = RESULT.optimization_results["sequential-decay"].input_data
+        save_dataset(input_data, save_path, format_name=mock_plugin_name)
+        input_data.attrs["io_plugin_name"] = mock_plugin_name
+
+        assert input_data.attrs["source_path"] == save_path.as_posix()
+
+        serialized = RESULT.model_dump(
+            mode="json",
+            context={"save_folder": tmp_path, "saving_options": SAVING_OPTIONS_MINIMAL},
+        )
+        assert serialized["optimization_results"]["sequential-decay"]["input_data"] == [
+            "../../original_data/input_data.foo",
+            mock_plugin_name,
+        ]
+
+        result_file_path = tmp_path / "result.yml"
+        result_file_path.touch()
+
+        assert Result.extract_paths_from_serialization(result_file_path, serialized) == [
+            result_file_path.as_posix(),
+            (tmp_path / "scheme.yml").as_posix(),
+            (tmp_path / "initial_parameters.csv").as_posix(),
+            (tmp_path / "optimized_parameters.csv").as_posix(),
+            (tmp_path / "parameter_history.csv").as_posix(),
+            (tmp_path / "optimization_history.csv").as_posix(),
+            (tmp_path / "original_data/input_data.foo").as_posix(),
+        ]
 
 
 def test_result_save(tmp_path: Path):

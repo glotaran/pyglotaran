@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from itertools import chain
+from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -21,6 +22,7 @@ from glotaran.optimization import OptimizationInfo  # noqa: TC001
 from glotaran.optimization.objective import OptimizationResult
 from glotaran.parameter import Parameters  # noqa: TC001
 from glotaran.project.scheme import Scheme
+from glotaran.utils.io import relative_posix_path
 from glotaran.utils.pydantic_serde import ValidationInfoWithContext
 from glotaran.utils.pydantic_serde import context_is_dict
 from glotaran.utils.pydantic_serde import deserialize_parameters
@@ -29,8 +31,6 @@ from glotaran.utils.pydantic_serde import serialization_info_to_kwargs
 from glotaran.utils.pydantic_serde import serialize_parameters
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     import xarray as xr
 
 
@@ -236,4 +236,7 @@ class Result(BaseModel):
             )
             for dataset_name, serialized in serialized["optimization_results"].items()
         )
-        return [path.as_posix() for path in chain(project_paths_iterator, *result_iterators)]
+        return [
+            relative_posix_path(path, base_path=Path())
+            for path in chain(project_paths_iterator, *result_iterators)
+        ]
