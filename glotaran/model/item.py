@@ -257,7 +257,8 @@ def iterate_fields_of_type(
     tuple[str, FieldInfo]
         The matching attributes.
     """
-    for name, info in item.model_fields.items():
+    item_class = item if isinstance(item, type) else item.__class__
+    for name, info in item_class.model_fields.items():
         _, item_type = get_structure_and_type_from_field(info)
         with contextlib.suppress(TypeError):
             # issubclass does for some reason not work with e.g. tuple as item_type

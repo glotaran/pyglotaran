@@ -443,7 +443,9 @@ class Parameter(BaseModel):
     def __repr_args__(self) -> _repr.ReprArgs:
         """Strip defaults from args shown in repr."""
         for key, val in super().__repr_args__():
-            if key in self.model_fields and not nan_or_equal(val, self.model_fields[key].default):
+            if key in self.model_fields_set and not nan_or_equal(
+                val, self.__class__.model_fields[key].default
+            ):
                 yield key, val
 
     def __hash__(self) -> int:
