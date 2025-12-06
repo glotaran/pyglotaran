@@ -74,11 +74,15 @@ class ActivationDataModel(DataModel):
         for key, activation in gaussian_activations.items():
             trace = activation.calculate_function(model_axis)
             shift = activation.shift if activation.shift is not None else [0] * global_axis.size
-            center = (
-                np.sum(activation.calculate_dispersion(global_axis), axis=0)
-                if activation.dispersion_center is not None
-                else activation.center * global_axis.size
-            )
+            if activation.dispersion_center is not None:
+                center = activation.calculate_dispersion(global_axis)
+            else:
+                centers = (
+                    activation.center
+                    if isinstance(activation.center, list)
+                    else [activation.center]
+                )
+                center = np.array([np.full(global_axis.size, float(c)) for c in centers])
             for parameter in activation.parameters():
                 if isinstance(parameter, list):  # noqa: SIM108
                     p = parameter[0]
@@ -95,7 +99,12 @@ class ActivationDataModel(DataModel):
                         shift, coords={global_dimension: global_axis}, dims=(global_dimension,)
                     ),
                     "center": xr.DataArray(
-                        center, coords={global_dimension: global_axis}, dims=(global_dimension,)
+                        center,
+                        coords={global_dimension: global_axis},
+                        dims=(
+                            "component_index",
+                            global_dimension,
+                        ),
                     ),
                 },
                 attrs=props,

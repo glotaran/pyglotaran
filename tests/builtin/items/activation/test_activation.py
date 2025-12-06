@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+import xarray as xr
 
 from glotaran.builtin.items.activation import GaussianActivation
 from glotaran.builtin.items.activation import MultiGaussianActivation
+from glotaran.builtin.items.activation.data_model import ActivationDataModel
 from glotaran.model.errors import GlotaranUserError
 
 
@@ -90,3 +92,104 @@ def test_gaussian_activation_dispersion_reciproke():
     assert parameter[0][0].width == 20
     assert parameter[1][0].center == 1
     assert parameter[1][0].width == 10
+
+
+def test_create_result_gaussian_activation():
+    """Test create_result with GaussianActivation produces expected dimensions."""
+    model = ActivationDataModel(
+        elements=[],
+        activations={
+            "irf": GaussianActivation(
+                type="gaussian",
+                center=0.1,
+                width=0.1,
+                compartments={},
+            )
+        },
+    )
+
+    global_axis = np.linspace(400, 600, 5)
+    model_axis = np.linspace(-1, 1, 20)
+
+    amplitudes = xr.DataArray(
+        np.zeros((5, 3)),
+        coords={"wavelength": global_axis, "species": ["s1", "s2", "s3"]},
+        dims=["wavelength", "species"],
+    )
+
+    concentrations = xr.DataArray(
+        np.zeros((20, 3)),
+        coords={"time": model_axis, "species": ["s1", "s2", "s3"]},
+        dims=["time", "species"],
+    )
+
+    result = model.create_result(
+        model=model,
+        global_dimension="wavelength",
+        model_dimension="time",
+        amplitudes=amplitudes,
+        concentrations=concentrations,
+    )
+
+    assert "irf" in result
+    assert "trace" in result["irf"]
+    assert "shift" in result["irf"]
+    assert "center" in result["irf"]
+    assert result["irf"]["trace"].dims == ("time",)
+    assert result["irf"]["trace"].shape == (model_axis.size,)
+    assert result["irf"]["shift"].dims == ("wavelength",)
+    assert result["irf"]["shift"].shape == (global_axis.size,)
+    assert result["irf"]["center"].dims == ("component_index", "wavelength")
+    assert result["irf"]["center"].shape == (1, global_axis.size)
+    assert np.allclose(result["irf"]["center"][0], 0.1)
+
+
+def test_create_result_multi_gaussian_activation():
+    """Test create_result with MultiGaussianActivation produces expected dimensions."""
+    model = ActivationDataModel(
+        elements=[],
+        activations={
+            "irf": MultiGaussianActivation(
+                type="multi-gaussian",
+                center=[0.1, 0.5],
+                width=[0.1, 0.2],
+                compartments={},
+            )
+        },
+    )
+
+    global_axis = np.linspace(400, 600, 5)
+    model_axis = np.linspace(-1, 1, 20)
+
+    amplitudes = xr.DataArray(
+        np.zeros((5, 3)),
+        coords={"wavelength": global_axis, "species": ["s1", "s2", "s3"]},
+        dims=["wavelength", "species"],
+    )
+
+    concentrations = xr.DataArray(
+        np.zeros((20, 3)),
+        coords={"time": model_axis, "species": ["s1", "s2", "s3"]},
+        dims=["time", "species"],
+    )
+
+    result = model.create_result(
+        model=model,
+        global_dimension="wavelength",
+        model_dimension="time",
+        amplitudes=amplitudes,
+        concentrations=concentrations,
+    )
+
+    assert "irf" in result
+    assert "trace" in result["irf"]
+    assert "shift" in result["irf"]
+    assert "center" in result["irf"]
+    assert result["irf"]["trace"].dims == ("time",)
+    assert result["irf"]["trace"].shape == (model_axis.size,)
+    assert result["irf"]["shift"].dims == ("wavelength",)
+    assert result["irf"]["shift"].shape == (global_axis.size,)
+    assert result["irf"]["center"].dims == ("component_index", "wavelength")
+    assert result["irf"]["center"].shape == (2, global_axis.size)
+    assert np.allclose(result["irf"]["center"][0], 0.1)
+    assert np.allclose(result["irf"]["center"][1], 0.5)
