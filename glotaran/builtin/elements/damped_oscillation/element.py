@@ -82,7 +82,7 @@ class DampedOscillationElement(Element):
                     if activation.is_index_dependent()
                     else (model_axis.size, len(clp_label))
                 )
-                matrix = np.zeros(matrix_shape, dtype=np.float64)
+                matrix = np.ones(matrix_shape, dtype=np.float64)
 
                 if activation.is_index_dependent():
                     calculate_damped_oscillation_matrix_gaussian_activation(
