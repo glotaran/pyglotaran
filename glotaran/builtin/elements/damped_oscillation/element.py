@@ -165,7 +165,7 @@ class DampedOscillationElement(Element):
         )
         doas_amplitudes = np.sqrt(sin_amplitudes**2 + cos_amplitudes**2)
         phase_amplitudes = xr.DataArray(
-            np.unwrap(np.arctan2(sin_amplitudes, cos_amplitudes)),
+            np.unwrap(np.arctan2(sin_amplitudes, cos_amplitudes), axis=0),
             coords=doas_amplitudes.coords,
         )
 
@@ -181,7 +181,7 @@ class DampedOscillationElement(Element):
         )
         doas_concentrations = np.sqrt(sin_concentrations**2 + cos_concentrations**2)
         phase_concentrations = xr.DataArray(
-            np.unwrap(np.arctan2(sin_concentrations, cos_concentrations)),
+            np.unwrap(np.arctan2(sin_concentrations, cos_concentrations), axis=0),
             coords=doas_concentrations.coords,
         )
 
