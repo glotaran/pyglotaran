@@ -31,7 +31,7 @@ def write_dict(
         Defaults to None which makes this function return a string.
     offset: int
         Block indentation level. Defaults to 0
-        See https://yaml.readthedocs.io/en/latest/detail/#indentation-of-block-sequences
+        See https://yaml.dev/doc/ruamel.yaml/detail/#Indentation_of_block_sequences
 
     Returns
     -------
