@@ -7,7 +7,7 @@ default_language_version:
 repos:
   # Formatters
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: check-ast
       - id: check-builtin-literals
@@ -19,7 +19,7 @@ repos:
         args: [--remove]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.17.0
+    rev: v3.21.2
     hooks:
       - id: pyupgrade
         types: [file]
@@ -35,8 +35,8 @@ repos:
         types: [file]
         types_or: [python, pyi]
 
-  - repo: https://github.com/psf/black
-    rev: 24.8.0
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 25.12.0
     hooks:
       - id: black
         types: [file]
@@ -44,7 +44,7 @@ repos:
         language_version: python3
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
+    rev: 7.0.0
     hooks:
       - id: isort
         types: [file]
@@ -52,14 +52,14 @@ repos:
         minimum_pre_commit_version: 2.9.0
 
   - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.5.0
+    rev: v3.2.0
     hooks:
       - id: setup-cfg-fmt
         args: [--include-version-classifiers]
 
   # Notebook tools
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.7.1
+    rev: 0.8.2
     hooks:
       - id: nbstripout
         args:
@@ -68,7 +68,7 @@ repos:
           - "metadata.vscode metadata.language_info.version"
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.8.7
+    rev: 1.9.1
     hooks:
       - id: nbqa-black
         additional_dependencies: [black==22.6.0]
@@ -92,7 +92,7 @@ repos:
         additional_dependencies: [flake8-docstrings, flake8-print>=5.0.0]
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.1.1
+    rev: 7.3.0
     hooks:
       - id: flake8
         name: "flake8 lint code"
@@ -104,7 +104,7 @@ repos:
           - "--count"
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.1.1
+    rev: 7.3.0
     hooks:
       - id: flake8
         alias: flake8-docs
@@ -116,7 +116,7 @@ repos:
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
+    rev: v1.19.1
     hooks:
       - id: mypy
         exclude: "docs|benchmark/|.*/tests?/.*"
@@ -131,7 +131,7 @@ repos:
         additional_dependencies: [click<8]
 
   - repo: https://github.com/rstcheck/rstcheck
-    rev: "v6.2.4"
+    rev: "v6.2.5"
     hooks:
       - id: rstcheck
         additional_dependencies: [sphinx]
@@ -150,7 +150,7 @@ repos:
       - id: rst-inline-touching-normal
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: codespell
         types: [file]
