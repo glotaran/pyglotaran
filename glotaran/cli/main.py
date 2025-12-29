@@ -49,7 +49,7 @@ class Cli(click.Group):
         return decorator
 
 
-@click.group(cls=Cli)
+@click.group(name="glotaran", cls=Cli)
 @click.version_option(version=VERSION)
 def main(prog_name="glotaran"):
     """The glotaran CLI main function."""

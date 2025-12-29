@@ -9,7 +9,9 @@ from glotaran.cli import main
 def test_cli_deprecation():
     """Needs to be tested with subprocess since CliRunner clears stdout."""
 
-    result = subprocess.run("glotaran", capture_output=True, check=True)
+    result = subprocess.run("glotaran", capture_output=True, check=False)
+
+    assert result.returncode == 2, result.stderr.decode()
 
     assert result.stderr.decode().startswith(
         "[DEPRECATED] The pyglotaran command line interface will be removed without"
@@ -20,9 +22,10 @@ def test_cli_help():
     """Test the CLI help options."""
     runner = CliRunner()
     result = runner.invoke(main)
-    assert result.exit_code == 0
+    assert result.exit_code == 2, result.output
+    assert "Usage: glotaran [OPTIONS] COMMAND [ARGS]..." in result.output
     help_result = runner.invoke(main, ["--help"], prog_name="glotaran")
-    assert help_result.exit_code == 0
+    assert help_result.exit_code == 0, help_result.output
     assert "Usage: glotaran [OPTIONS] COMMAND [ARGS]..." in help_result.output
 
 

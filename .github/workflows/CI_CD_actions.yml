@@ -10,6 +10,9 @@ on:
       - "pre-commit-ci-update-config"
   pull_request:
 
+env:
+  UV_SYSTEM_PYTHON: 1
+
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
@@ -33,8 +36,14 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
       - name: Install check manifest
-        run: python -m pip install check-manifest 'setuptools>=62.4.0'
+        run: uv pip install check-manifest 'setuptools>=62.4.0'
       - name: Run check manifest
         run: check-manifest
 
@@ -51,14 +60,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
       - name: Install dependencies
         run: |
           conda install -y pandoc
-          python -m pip install -U pip wheel
-          python -m pip install .
-          python -m pip install -U -r docs/requirements.txt
+          uv pip install . -r docs/requirements.txt -p $(which python)
       - name: Show installed packages
-        run: pip freeze
+        run: uv pip list
       - name: Build docs
         run: |
           make --directory=docs clean html
@@ -76,14 +89,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
       - name: Install dependencies
         run: |
           conda install -y pandoc
-          python -m pip install -U pip wheel
-          python -m pip install .
-          python -m pip install -U -r docs/requirements.txt
+          uv pip install . -r docs/requirements.txt -p $(which python)
       - name: Show installed packages
-        run: pip freeze
+        run: uv pip list
       - name: Check doc links
         run: |
           make --directory=docs clean linkcheck $@ | tee linkcheck-output.txt
@@ -100,16 +116,20 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
       - name: Install dependencies
         run: |
-          python -m pip install -U pip wheel
-          python -m pip install -U -r requirements_dev.txt
-          pip install .
+          conda install -y pandoc
+          uv pip install . -r docs/requirements.txt
       - name: Show installed packages
-        run: python -m pip freeze
+        run: uv pip list
       - name: Build docs
         run: |
-          python -m pytest -vv --nbval docs/source/notebooks
+          uv run pytest -vv --nbval docs/source/notebooks
 
   test:
     runs-on: ${{ matrix.os }}
@@ -117,7 +137,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@v4
@@ -125,16 +145,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip wheel
-          python -m pip install -r requirements_dev.txt
-          python -m pip install -e .
+          uv pip install -e . -r requirements_dev.txt
       - name: Show installed packages
-        run: python -m pip freeze
+        run: uv pip list
       - name: Run tests
         run: |
-          python -m pytest --cov=./ --cov-report term --cov-report xml --cov-config pyproject.toml glotaran
+          uv run pytest --cov=./ --cov-report term --cov-report xml --cov-config pyproject.toml glotaran
 
       - name: Codecov Upload
         uses: codecov/codecov-action@v4
@@ -153,12 +176,14 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-      - name: Install dependencies
-        run: |
-          python -m pip install -U pip wheel 'setuptools>=62.4.0'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
       - name: Build dist
         run: |
-          python setup.py sdist bdist_wheel
+          uv build
 
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@v1.13.0
