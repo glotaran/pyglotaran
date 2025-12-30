@@ -37,4 +37,8 @@ def test_write_explicit_file(tmp_path):
     test_data_file_write = ExplicitFile(filepath=str(test_data_file), dataset=test_dataarray_read)
     test_data_file_write.write(comment="written \n in \n test.", overwrite=True)
     test_dataarray_reread = test_data_file_write.read(prepare=False)
+    assert np.array_equal(test_dataarray_read.coords["time"], test_dataarray_reread.coords["time"])
+    assert np.array_equal(
+        test_dataarray_read.coords["spectral"], test_dataarray_reread.coords["spectral"]
+    )
     assert np.array_equal(test_dataarray_read.values, test_dataarray_reread.values)
