@@ -10,6 +10,8 @@
 
 ### 🩹 Bug fixes
 
+- 🩹 Fix changed numpy repr breaks ascii saving (#1591)
+
 ### 📚 Documentation
 
 ### 🗑️ Deprecations (due in 0.9.0)
