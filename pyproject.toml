@@ -1,3 +1,90 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[project]
+name = "pyglotaran"
+description = "The Glotaran fitting engine."
+readme = "README.md"
+license = { text = "LGPL-3.0" }
+authors = [
+  { name = "Joern Weissenborn", email = "joern.weissenborn@gmail.com" },
+  { name = "Joris Snellenburg", email = "j.snellenburg@gmail.com" },
+  { name = "Ivo van Stokkum", email = "i.h.m.van.stokkum@vu.nl" },
+]
+requires-python = ">=3.10,<3.15"
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Chemistry",
+  "Topic :: Scientific/Engineering :: Physics",
+]
+dynamic = ["version"]
+dependencies = [
+  "asteval>=0.9.22,!=0.9.28",
+  "attrs>=22.1.0",
+  "click>=8.1.3",
+  "netCDF4>=1.5.7",
+  "numba>=0.55.0",
+  "numpy>=1.21.2,<2.4",
+  "odfpy>=1.4.1",
+  "openpyxl>=3.0.10",
+  "pandas>=1.3.4",
+  "pydantic>=2.7.2",
+  "ruamel.yaml>=0.17.17",
+  "scipy>=1.7.2",
+  "sdtfile>=2020.8.3",
+  "tabulate>=0.8.9",
+  "xarray>=2022.3.0",
+]
+
+[project.optional-dependencies]
+extras = ["pyglotaran-extras>=0.5.0"]
+notebook = ["ipykernel>=6.23.1", "jupyterlab>=4.0.0"]
+full = ["pyglotaran[extras,notebook]"]
+
+[project.scripts]
+glotaran = "glotaran.cli.main:main"
+
+[project.entry-points."glotaran.plugins.data_io"]
+ascii = "glotaran.builtin.io.ascii.wavelength_time_explicit_file"
+sdt = "glotaran.builtin.io.sdt.sdt_file_reader"
+nc = "glotaran.builtin.io.netCDF.netCDF"
+
+[project.entry-points."glotaran.plugins.megacomplexes"]
+baseline = "glotaran.builtin.megacomplexes.baseline"
+clp_guide = "glotaran.builtin.megacomplexes.clp_guide"
+coherent_artifact = "glotaran.builtin.megacomplexes.coherent_artifact"
+damped_oscillation = "glotaran.builtin.megacomplexes.damped_oscillation"
+pfid = "glotaran.builtin.megacomplexes.pfid"
+decay = "glotaran.builtin.megacomplexes.decay"
+spectral = "glotaran.builtin.megacomplexes.spectral"
+
+[project.entry-points."glotaran.plugins.project_io"]
+yml = "glotaran.builtin.io.yml.yml"
+csv = "glotaran.builtin.io.pandas.csv"
+tsv = "glotaran.builtin.io.pandas.tsv"
+xlsx = "glotaran.builtin.io.pandas.xlsx"
+folder = "glotaran.builtin.io.folder.folder_plugin"
+
+[tool.hatch.version]
+path = "glotaran/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = ["glotaran", "tests"]
+
+[tool.hatch.build.targets.wheel]
+only-include = ["glotaran"]
+
 [tool.black]
 line-length = 99
 target-version = ['py38']
