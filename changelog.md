@@ -2,11 +2,11 @@
 
 (changes-0_7_4)=
 
-## 🚀 0.7.4 (Unreleased)
+## 🚀 0.7.4 (2025-12-31)
 
 ### ✨ Features
 
-### 👌 Minor Improvements:
+- ✨ Add official Python 3.13 and 3.14 support (#1590)
 
 ### 🩹 Bug fixes
 
@@ -14,11 +14,12 @@
 
 ### 📚 Documentation
 
-### 🗑️ Deprecations (due in 0.9.0)
-
-### 🗑️❌ Deprecated functionality removed in this release
+- 📚Improve documentation - rework getting-started notebook. (#1540)
 
 ### 🚧 Maintenance
+
+- Bump the runtime-dependencies (#1567, #1535, #1590)
+- Bump pypa/gh-action-pypi-publish from 1.9.0 to 1.13.0 in /.github/workflows (#1588)
 
 (changes-0_7_3)=
 
