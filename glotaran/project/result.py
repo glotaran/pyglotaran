@@ -61,6 +61,7 @@ class Result(BaseModel):
     optimization_info: OptimizationInfo
     initial_parameters: Parameters
     optimized_parameters: Parameters
+    source_path: Path | None = None
 
     @property
     def experiments(self) -> dict[str, ExperimentModel]:

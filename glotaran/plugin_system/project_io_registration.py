@@ -49,8 +49,6 @@ if TYPE_CHECKING:
 
     ProjectIoMethods = TypeVar(
         "ProjectIoMethods",
-        Literal["load_model"],
-        Literal["save_model"],
         Literal["load_parameters"],
         Literal["save_parameters"],
         Literal["load_scheme"],
@@ -60,8 +58,6 @@ if TYPE_CHECKING:
     )
 
 PROJECT_IO_METHODS = (
-    "load_model",
-    "save_model",
     "load_parameters",
     "save_parameters",
     "load_scheme",
@@ -158,8 +154,6 @@ def set_project_plugin(
 
     Effected functions:
 
-    - :func:`load_model`
-    - :func:`save_model`
     - :func:`load_parameters`
     - :func:`save_parameters`
     - :func:`load_scheme`
@@ -297,7 +291,9 @@ def load_scheme(file_name: StrOrPath, format_name: str | None = None, **kwargs: 
     # Path.is_file raises an OSError if the path is too long (i.e. yaml_str)
     if os.path.isfile(file_name) is True:  # noqa: PTH113
         file_name = Path(file_name).resolve().as_posix()
-    return io.load_scheme(str(file_name), **kwargs)
+    scheme = io.load_scheme(str(file_name), **kwargs)
+    scheme.source_path = Path(file_name)
+    return scheme
 
 
 @not_implemented_to_value_error
@@ -359,9 +355,9 @@ def load_result(result_path: StrOrPath, format_name: str | None = None, **kwargs
     """
     io = get_project_io(format_name or infer_file_format(result_path, allow_folder=True))
 
-    return io.load_result(Path(result_path).as_posix(), **kwargs)
-    # result.source_path = Path(result_path).as_posix()
-    # return result
+    result = io.load_result(Path(result_path).as_posix(), **kwargs)
+    result.source_path = Path(result_path)
+    return result
 
 
 @not_implemented_to_value_error
@@ -371,7 +367,7 @@ def save_result(
     format_name: str | None = None,
     *,
     allow_overwrite: bool = False,
-    # update_source_path: bool = True,
+    update_source_path: bool = True,
     saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
     **kwargs: Any,  # noqa: ANN401
 ) -> list[str]:
@@ -406,15 +402,15 @@ def save_result(
     io = get_project_io(
         format_name or infer_file_format(result_path, needs_to_exist=False, allow_folder=True)
     )
-    return io.save_result(
+    return_paths = io.save_result(
         result_path=Path(result_path).as_posix(),
         result=result,
         saving_options=saving_options,
         **kwargs,
     )
-    # if update_source_path is True:
-    #     result.source_path = Path(result_path).as_posix()
-    # return paths
+    if update_source_path is True:
+        result.source_path = Path(result_path)
+    return return_paths
 
 
 def get_project_io_method(format_name: str, method_name: ProjectIoMethods) -> Callable[..., Any]:
@@ -427,9 +423,9 @@ def get_project_io_method(format_name: str, method_name: ProjectIoMethods) -> Ca
     ----------
     format_name : str
         Format the dataloader should be able to read.
-    method_name : {'load_model', 'write_model', 'load_parameters', 'write_parameters',\
+    method_name : {'load_parameters', 'write_parameters',\
     'load_scheme', 'write_scheme', 'load_result', 'write_result'}
-        Method name, e.g. load_model.
+        Method name, e.g. load_scheme.
 
     Returns
     -------
@@ -450,7 +446,7 @@ def show_project_io_method_help(format_name: str, method_name: ProjectIoMethods)
     ----------
     format_name : str
         Format the method should support.
-    method_name : {'load_model', 'write_model', 'load_parameters', 'write_parameters',\
+    method_name : {'load_parameters', 'write_parameters',\
     'load_scheme', 'write_scheme', 'load_result', 'write_result'}
         Method name.
 

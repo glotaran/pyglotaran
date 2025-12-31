@@ -373,7 +373,7 @@ def get_method_from_plugin(
     plugin : object | type[object],
         Plugin instance or class.
     method_name : str
-        Method name, e.g. load_model.
+        Method name, e.g. load_scheme.
 
     Returns
     -------
