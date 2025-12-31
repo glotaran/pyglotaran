@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from copy import deepcopy
 from functools import partial
 from functools import wraps
 from pathlib import Path
@@ -18,6 +19,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
 
+    from glotaran.io.interface import SavingOptions
     from glotaran.typing import StrOrPath
 
 
@@ -201,3 +203,42 @@ def bool_table_repr(
     """
     bool_repr = partial(bool_str_repr, true_repr=true_repr, false_repr=false_repr)
     return ((bool_repr(value) for value in values) for values in table_data)
+
+
+def resolve_saving_option_plugin_names(saving_options: SavingOptions) -> SavingOptions:
+    """Resolve saving option plugins to actual plugin instances.
+
+    Parameters
+    ----------
+    saving_options : SavingOptions
+        Saving options with plugin names.
+
+    Returns
+    -------
+    SavingOptions
+        Saving options with actual plugin instances.
+    """
+    from glotaran.plugin_system.base_registry import full_plugin_name  # noqa: PLC0415
+    from glotaran.plugin_system.data_io_registration import get_data_io  # noqa: PLC0415
+    from glotaran.plugin_system.project_io_registration import get_project_io  # noqa: PLC0415
+
+    resolved_plugins = deepcopy(saving_options)
+    if saving_options.get("data_plugin") is None:
+        data_format_name = saving_options.get("data_format", "nc")
+        data_plugin_instance = get_data_io(data_format_name)
+        resolved_plugins["data_plugin"] = (
+            f"{full_plugin_name(data_plugin_instance)}_{data_format_name}"
+        )
+    if saving_options.get("parameters_plugin") is None:
+        parameters_format_name = saving_options.get("parameters_format", "csv")
+        parameters_plugin_instance = get_project_io(parameters_format_name)
+        resolved_plugins["parameters_plugin"] = (
+            f"{full_plugin_name(parameters_plugin_instance)}_{parameters_format_name}"
+        )
+    if saving_options.get("scheme_plugin") is None:
+        scheme_format_name = saving_options.get("scheme_format", "yml")
+        scheme_plugin_instance = get_project_io(scheme_format_name)
+        resolved_plugins["scheme_plugin"] = (
+            f"{full_plugin_name(scheme_plugin_instance)}_{scheme_format_name}"
+        )
+    return resolved_plugins
