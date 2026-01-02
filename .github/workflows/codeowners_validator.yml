@@ -18,12 +18,12 @@ jobs:
         run: echo "${{ github.event_name }}"
       - name: Checkout pull request
         if: github.event_name == 'pull_request_target'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Checkout repo
         if: github.event_name != 'pull_request_target'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: GitHub CODEOWNERS Validator
         uses: mszostok/codeowners-validator@v0.7.4
         with:

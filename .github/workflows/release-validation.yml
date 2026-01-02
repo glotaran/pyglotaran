@@ -13,7 +13,7 @@ jobs:
       contents: write
     steps:
       - name: ⏬ Checkout examples repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: glotaran/pyglotaran-examples
           fetch-depth: 1
@@ -42,7 +42,7 @@ jobs:
       contents: write
     steps:
       - name: ⏬ Checkout validation repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: glotaran/pyglotaran-validation
           fetch-depth: 1

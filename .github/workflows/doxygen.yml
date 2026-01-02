@@ -54,7 +54,7 @@ jobs:
               ref = os.getenv("GITHUB_REF_NAME")
           with open(os.getenv("GITHUB_OUTPUT"), "a", encoding="utf8") as f:
               f.writelines([f"ref={ref}"])
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ steps.ref_to_checkout.outputs.ref }}
