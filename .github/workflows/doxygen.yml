@@ -63,7 +63,7 @@ jobs:
         with:
           doxyfile-path: "docs/Doxyfile.ini"
       - name: Upload Doxygen Docs Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: doxygen_docs_pyglotaran
           path: doxygen_docs_pyglotaran
