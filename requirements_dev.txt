@@ -6,17 +6,17 @@ wheel>=0.38.0
 asteval==1.0.8
 attrs ==25.4.0
 click==8.3.1
-netCDF4==1.7.3
+netCDF4==1.7.4
 numba==0.63.1
 numpy==2.2.6;python_version<"3.11"
-numpy==2.3.5;python_version>="3.11"
+numpy==2.4.1;python_version>="3.11"
 odfpy==1.4.1
 openpyxl==3.1.5
 pandas==2.3.3
 pydantic==2.12.5
-ruamel.yaml==0.18.17
+ruamel.yaml==0.19.1
 scipy==1.15.3;python_version<"3.11"
-scipy==1.16.3;python_version>="3.11"
+scipy==1.17.0;python_version>="3.11"
 sdtfile==2024.12.6;python_version<"3.11"
 sdtfile==2025.12.12;python_version>="3.11"
 tabulate==0.9.0
