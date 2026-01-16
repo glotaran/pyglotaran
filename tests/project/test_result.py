@@ -23,6 +23,7 @@ from glotaran.project.scheme import Scheme
 from glotaran.testing.plugin_system import monkeypatch_plugin_registry_data_io
 from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET
 from glotaran.testing.simulated_data.sequential_spectral_decay import RESULT
+from glotaran.utils.io import chdir_context
 
 if TYPE_CHECKING:
     from glotaran.io.interface import SavingOptions
@@ -207,6 +208,32 @@ def test_result_extract_paths_from_serialization(tmp_path: Path):
         (tmp_path / "optimization_results/sequential-decay/elements/sequential.nc").as_posix(),
         (tmp_path / "optimization_results/sequential-decay/activations/irf.nc").as_posix(),
     ]
+
+
+def test_result_extract_paths_from_serialization_relative(tmp_path: Path):
+    """Test that saving options provided in the context are used during serialization."""
+
+    serialized = RESULT.model_dump(
+        mode="json",
+        context={"save_folder": tmp_path},
+    )
+    result_file_path = tmp_path / "result.yml"
+    result_file_path.touch()
+
+    with chdir_context(tmp_path):
+        assert Result.extract_paths_from_serialization(result_file_path, serialized) == [
+            "result.yml",
+            "scheme.yml",
+            "initial_parameters.csv",
+            "optimized_parameters.csv",
+            "parameter_history.csv",
+            "optimization_history.csv",
+            "optimization_results/sequential-decay/input_data.nc",
+            "optimization_results/sequential-decay/residuals.nc",
+            "optimization_results/sequential-decay/fitted_data.nc",
+            "optimization_results/sequential-decay/elements/sequential.nc",
+            "optimization_results/sequential-decay/activations/irf.nc",
+        ]
 
 
 def test_result_extract_paths_from_serialization_minimal_save(tmp_path: Path):

@@ -246,8 +246,13 @@ def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = No
         ``source_path`` as posix path relative to ``base_path`` if defined.
     """
     source_path = Path(source_path)
-    if base_path is not None and (
-        source_path.is_absolute() or Path(base_path).resolve() in source_path.resolve().parents
+    # Base path and source path have common parents except the file system root (drive on Windows)
+    if (
+        base_path is not None
+        and set(source_path.resolve().parents[:-1]).isdisjoint(
+            Path(base_path).resolve().parents[:-1]
+        )
+        is False
     ):
         with contextlib.suppress(ValueError):
             source_path = os.path.relpath(source_path.as_posix(), Path(base_path).as_posix())
