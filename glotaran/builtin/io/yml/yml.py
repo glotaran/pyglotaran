@@ -83,7 +83,7 @@ class YmlProjectIo(ProjectIoInterface):
                 return
             copyfile(scheme.source_path, file_name)
         else:
-            write_dict(scheme.model_dump(exclude_unset=True), file_name=file_name)
+            write_dict(scheme.model_dump(exclude_unset=True, mode="json"), file_name=file_name)
 
     def load_result(self, result_path: str) -> Result:
         """Create a :class:`Result` instance from the specs defined in a file.

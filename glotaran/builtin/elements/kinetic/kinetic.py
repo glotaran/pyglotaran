@@ -9,6 +9,7 @@ from typing import Annotated
 
 import numpy as np
 from pydantic import BeforeValidator
+from pydantic import PlainSerializer
 from scipy.linalg import eig
 from scipy.linalg import solve
 
@@ -47,10 +48,19 @@ def ensure_keys(
     return {convert_string_key_to_tuple(k): v for k, v in value.items()}
 
 
+def tuple_to_string_keys(value: dict[tuple[str, str], ParameterType]) -> dict[str, ParameterType]:
+    """Convert a tuple keys to string keys."""
+    return {f"({key[0]}, {key[1]})": value for key, value in value.items()}
+
+
 class Kinetic(Item):
     """A scheme for kinetic dynamics, e.g. anergy transfers between states."""
 
-    rates: Annotated[dict[tuple[str, str], ParameterType], BeforeValidator(ensure_keys)]
+    rates: Annotated[
+        dict[tuple[str, str], ParameterType],
+        BeforeValidator(ensure_keys),
+        PlainSerializer(tuple_to_string_keys, when_used="json"),
+    ]
 
     @classmethod
     def combine(cls, kinetics: list[Kinetic]) -> Kinetic:

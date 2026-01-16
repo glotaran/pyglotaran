@@ -84,6 +84,7 @@ def test_save_scheme_from_string(tmp_path: Path):
     input_scheme = load_scheme(TEST_SCHEME_YML, format_name="yml_str")
     save_path = tmp_path / "test_scheme.yml"
     save_scheme(input_scheme, save_path)
+    assert "(s1, s1): rates.1" in save_path.read_text()
     loaded_scheme = load_scheme(save_path)
     assert loaded_scheme.model_dump() == input_scheme.model_dump()
 
