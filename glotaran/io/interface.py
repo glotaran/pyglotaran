@@ -39,7 +39,16 @@ if TYPE_CHECKING:
 class SavingOptions(TypedDict, total=False):
     """A collection of options for result saving."""
 
-    data_filter: set[Literal["input_data", "residuals", "fitted_data", "elements", "activations"]]
+    data_filter: set[
+        Literal[
+            "input_data",
+            "residuals",
+            "fitted_data",
+            "elements",
+            "activations",
+            "computation_detail",
+        ]
+    ]
     """Set of data keys to not saved."""
     data_format: Literal["nc"] | str  # noqa: PYI051
     """Format of the data files to be saved."""
@@ -65,7 +74,14 @@ SAVING_OPTIONS_DEFAULT: SavingOptions = {
     "scheme_plugin": None,
 }
 SAVING_OPTIONS_MINIMAL: SavingOptions = SAVING_OPTIONS_DEFAULT | {
-    "data_filter": {"input_data", "residuals", "fitted_data", "elements", "activations"}
+    "data_filter": {
+        "input_data",
+        "residuals",
+        "fitted_data",
+        "elements",
+        "activations",
+        "computation_detail",
+    }
 }
 
 

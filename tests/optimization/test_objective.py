@@ -14,6 +14,7 @@ from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
+from glotaran.optimization.objective import ComputationDetail
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.objective import OptimizationResult
 from glotaran.optimization.objective import OptimizationResultMetaData
@@ -28,6 +29,10 @@ STUB_META_DATA = OptimizationResultMetaData(
     global_dimension="global_dim",
     model_dimension="model_dim",
     root_mean_square_error=0.1,
+)
+STUB_computation_detail = ComputationDetail(
+    clp=xr.DataArray([np.arange(2) + 2], dims=("clp", "clp_label")),
+    matrix=xr.DataArray([np.arange(2) + 3], dims=("matrix", "matrix_label")),
 )
 
 
@@ -66,6 +71,7 @@ def test_optimization_result_default_serde(tmp_path: Path):
         activations={"bar": bar_data},
         input_data=input_data,
         residuals=residuals,
+        computation_detail=STUB_computation_detail,
         meta=STUB_META_DATA,
     )
     # Instance validation passes without error
@@ -83,6 +89,13 @@ def test_optimization_result_default_serde(tmp_path: Path):
     assert serialized["residuals"] == "residuals.nc"
     assert (save_folder / "residuals.nc").is_file() is True
 
+    # Computation details should be serialized to files
+    assert "computation_detail" in serialized
+    assert serialized["computation_detail"]["clp"] == "clp.nc"
+    assert (save_folder / "computation_detail" / "clp.nc").is_file() is True
+    assert serialized["computation_detail"]["matrix"] == "matrix.nc"
+    assert (save_folder / "computation_detail" / "matrix.nc").is_file() is True
+
     # Round Trip
     deserialized = OptimizationResult.model_validate(
         serialized, context={"save_folder": save_folder}
@@ -92,6 +105,11 @@ def test_optimization_result_default_serde(tmp_path: Path):
     assert deserialized.elements["foo"].attrs.items() >= expected_dataset_attrs.items()
     assert deserialized.activations["bar"].equals(bar_data)
     assert deserialized.activations["bar"].attrs.items() >= expected_dataset_attrs.items()
+    assert deserialized.computation_detail is not None
+    assert deserialized.computation_detail.clp.equals(STUB_computation_detail.clp)
+    assert deserialized.computation_detail.clp.attrs.items() >= expected_dataset_attrs.items()
+    assert deserialized.computation_detail.matrix.equals(STUB_computation_detail.matrix)
+    assert deserialized.computation_detail.matrix.attrs.items() >= expected_dataset_attrs.items()
     assert deserialized.input_data.equals(input_data)
     assert deserialized.residuals is not None
     assert deserialized.residuals.equals(residuals)
@@ -115,6 +133,7 @@ def test_optimization_result_minimal_serde(tmp_path: Path):
         activations={"bar": xr.Dataset({"data": ("dim_0", np.arange(3) + 10)})},
         input_data=input_data,
         residuals=xr.Dataset({"data": ("dim_0", np.arange(4) * 0.001)}),
+        computation_detail=STUB_computation_detail,
         meta=STUB_META_DATA,
     )
 
@@ -149,6 +168,7 @@ def test_optimization_result_noop_validation():
         activations={"bar": xr.Dataset({"data": ("dim_0", np.arange(3) + 10)})},
         input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}),
         residuals=xr.Dataset({"data": ("dim_0", np.arange(4) * 0.001)}),
+        computation_detail=STUB_computation_detail,
         meta=STUB_META_DATA,
     )
     OptimizationResult.model_validate(optimization_result)
@@ -157,7 +177,9 @@ def test_optimization_result_noop_validation():
 def test_optimization_result_fitted_data_warn_on_missing_residuals():
     """Warn when fitted data is accessed without residuals."""
     optimization_result = OptimizationResult(
-        input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}), meta=STUB_META_DATA
+        input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}),
+        computation_detail=None,
+        meta=STUB_META_DATA,
     )
 
     with pytest.warns(
@@ -173,6 +195,7 @@ def test_optimization_result_error_missing_serialization_context():
     optimization_result = OptimizationResult(
         input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}),
         residuals=xr.Dataset({"data": ("dim_0", np.arange(4) * 0.001)}),
+        computation_detail=None,
         meta=STUB_META_DATA,
     )
 
@@ -225,7 +248,9 @@ def test_optimization_result_input_data_read_with_3rd_party_plugin(tmp_path: Pat
         assert input_data.attrs["source_path"] == save_path.as_posix()
 
         serialized_optimization_result = OptimizationResult(
-            input_data=input_data, meta=STUB_META_DATA
+            input_data=input_data,
+            computation_detail=STUB_computation_detail,
+            meta=STUB_META_DATA,
         ).model_dump(
             context={"save_folder": save_folder, "saving_options": SAVING_OPTIONS_MINIMAL},
             mode="json",
@@ -250,6 +275,7 @@ def test_optimization_result_extract_paths_from_serialization(tmp_path: Path):
         activations={"bar": xr.Dataset({"data": ("dim_0", np.arange(3) + 10)})},
         input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}),
         residuals=xr.Dataset({"data": ("dim_0", np.arange(4) * 0.001)}),
+        computation_detail=STUB_computation_detail,
         meta=STUB_META_DATA,
     )
 
@@ -268,6 +294,8 @@ def test_optimization_result_extract_paths_from_serialization(tmp_path: Path):
         (full_save_folder / "fitted_data.nc"),
         (full_save_folder / "elements/foo.nc"),
         (full_save_folder / "activations/bar.nc"),
+        (full_save_folder / "computation_detail" / "clp.nc"),
+        (full_save_folder / "computation_detail" / "matrix.nc"),
     ]
 
     minimal_save_folder = tmp_path / "minimal_save"
@@ -279,8 +307,10 @@ def test_optimization_result_extract_paths_from_serialization(tmp_path: Path):
     minimal_extracted_paths = OptimizationResult.extract_paths_from_serialization(
         minimal_save_folder, minimal_serialized
     )
-    # input data are only saved when no file exists
-    assert list(minimal_extracted_paths) == [(full_save_folder / "input_data.nc")]
+    # input data are only saved when no file exists; computation details are saved
+    assert list(minimal_extracted_paths) == [
+        (full_save_folder / "input_data.nc"),
+    ]
 
     optimization_result.input_data = xr.Dataset({"data": ("dim_0", np.arange(4))})
     minimal_serialized_no_input = optimization_result.model_dump(

@@ -32,7 +32,7 @@ class NetCDFDataIo(DataIoInterface):
 
     def save_dataset(
         self,
-        dataset: xr.Dataset,
+        dataset: xr.Dataset | xr.DataArray,
         file_name: str,
         *,
         data_filters: list[str] | None = None,

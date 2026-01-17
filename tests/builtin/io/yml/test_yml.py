@@ -139,6 +139,10 @@ def test_result_round_tripping(tmp_path: Path, result_file_name: str):
         (tmp_path / "optimization_results/sequential-decay/fitted_data.nc").as_posix(),
         (tmp_path / "optimization_results/sequential-decay/elements/sequential.nc").as_posix(),
         (tmp_path / "optimization_results/sequential-decay/activations/irf.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/computation_detail/clp.nc").as_posix(),
+        (
+            tmp_path / "optimization_results/sequential-decay/computation_detail/matrix.nc"
+        ).as_posix(),
     ]
     assert all(Path(path).exists() for path in result_file_paths)
     loaded_result = load_result(save_path)

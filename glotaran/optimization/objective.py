@@ -37,6 +37,7 @@ from glotaran.plugin_system.data_io_registration import get_data_io
 from glotaran.utils.io import relative_posix_path
 from glotaran.utils.pydantic_serde import context_is_dict
 from glotaran.utils.pydantic_serde import save_folder_from_info
+from glotaran.utils.pydantic_serde import serialization_info_to_kwargs
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -80,6 +81,57 @@ def calculate_root_mean_square_error(residual: xr.DataArray) -> float:
     return np.linalg.norm(residual) / np.sqrt(residual.size)
 
 
+class ComputationDetail(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
+
+    clp: xr.DataArray
+    matrix: xr.DataArray
+
+    @field_serializer("clp", "matrix", when_used="json")
+    def serialize_computation_arrays(self, value: xr.DataArray, info: SerializationInfo) -> str:
+        if context_is_dict(info) and (save_folder := save_folder_from_info(info)) is not None:
+            saving_options: SavingOptions = info.context.get(
+                "saving_options", SAVING_OPTIONS_DEFAULT
+            )
+            data_format = saving_options.get("data_format", "nc")
+            data_plugin = saving_options.get("data_plugin", None) or full_plugin_name(
+                get_data_io(data_format)
+            )
+            if data_plugin.endswith(f"_{data_format}") is False:
+                data_plugin = f"{data_plugin}_{data_format}"
+
+            save_path = Path(save_folder) / f"{info.field_name}.{data_format}"
+            save_dataset(value, save_path, format_name=data_plugin, allow_overwrite=True)
+            return save_path.name
+
+        msg = f"SerializationInfo context is missing 'save_folder':\n{info}"
+        raise ValueError(msg)
+
+    @field_validator("clp", "matrix", mode="before")
+    @classmethod
+    def validate_computation_arrays(
+        cls,
+        value: xr.DataArray | xr.Dataset | None | str | Path,
+        info: ValidationInfo,
+    ) -> xr.DataArray | xr.Dataset | None:
+        if isinstance(value, xr.Dataset):
+            return value.to_array()
+        if isinstance(value, (xr.DataArray)) or value is None:
+            return value
+        if context_is_dict(info) and (save_folder := save_folder_from_info(info)) is not None:
+            saving_options: SavingOptions = info.context.get("saving_options", {})
+            data_plugin = saving_options.get("data_plugin", None)
+            if isinstance(value, (str, Path)):
+                loaded = load_dataset(
+                    (Path(save_folder) / value).resolve(), format_name=data_plugin
+                )
+                if isinstance(loaded, xr.Dataset) and len(loaded.data_vars) == 1:
+                    loaded = loaded[next(iter(loaded.data_vars))]
+                return loaded
+        msg = f"Unable to validate field {info.field_name}"
+        raise ValueError(msg)
+
+
 class OptimizationResultMetaData(BaseModel):
     """Metadata for optimization results."""
 
@@ -97,6 +149,7 @@ class OptimizationResult(BaseModel):
     activations: dict[str, xr.Dataset] = Field(default_factory=dict)
     input_data: xr.DataArray | xr.Dataset
     residuals: xr.DataArray | xr.Dataset | None = None
+    computation_detail: ComputationDetail | None
     meta: OptimizationResultMetaData
 
     @computed_field  # type: ignore[prop-decorator]
@@ -303,6 +356,38 @@ class OptimizationResult(BaseModel):
         msg = f"SerializationInfo context is missing 'save_folder':\n{info}"
         raise ValueError(msg)
 
+    @field_serializer("computation_detail", when_used="json")
+    def serialize_computation_detail(
+        self, value: ComputationDetail | None, info: SerializationInfo
+    ) -> dict[str, str] | None:
+        if value is None:
+            return None
+        if context_is_dict(info) and (save_folder := save_folder_from_info(info)) is not None:
+            saving_options: SavingOptions = info.context.get(
+                "saving_options", SAVING_OPTIONS_DEFAULT
+            )
+            data_filter = saving_options.get("data_filter", set())
+            if info.field_name in data_filter:
+                return None
+            return value.model_dump(
+                mode="json",
+                context=info.context | {"save_folder": Path(save_folder) / info.field_name},
+                **serialization_info_to_kwargs(info, exclude={"mode", "context"}),
+            )
+        msg = f"SerializationInfo context is missing 'save_folder':\n{info}"
+        raise ValueError(msg)
+
+    @field_validator("computation_detail", mode="before")
+    @classmethod
+    def validate_computation_detail(cls, value: Any, info: ValidationInfo) -> Any:  # noqa: ANN401
+        if isinstance(value, ComputationDetail) or value is None:
+            return value
+        if context_is_dict(info) and (save_folder := save_folder_from_info(info)) is not None:
+            return ComputationDetail.model_validate(
+                value, context=info.context | {"save_folder": Path(save_folder) / info.field_name}
+            )
+        return value
+
     @field_validator("elements", "activations", mode="before")
     @classmethod
     def validate_dataset_maps(
@@ -355,12 +440,16 @@ class OptimizationResult(BaseModel):
     @model_validator(mode="after")
     def inject_meta_data_into_datasets(self) -> Self:
         """Inject meta data into datasets after full initialization."""
+        meta_attrs = self.meta.model_dump(exclude_defaults=True)
         if self.residuals is not None:
-            self.residuals.attrs |= self.meta.model_dump(exclude_defaults=True)
+            self.residuals.attrs |= meta_attrs
+        if self.computation_detail is not None:
+            self.computation_detail.clp.attrs |= meta_attrs
+            self.computation_detail.matrix.attrs |= meta_attrs
         for field_name in ["elements", "activations"]:
             field_value = getattr(self, field_name)
             for value in field_value.values():
-                value.attrs |= self.meta.model_dump(exclude_defaults=True)
+                value.attrs |= meta_attrs
         return self
 
     @staticmethod
@@ -383,8 +472,10 @@ class OptimizationResult(BaseModel):
         """
 
         def mapping_path_iterator() -> Iterator[Path]:
-            for field_name in ["elements", "activations"]:
+            for field_name in ["elements", "activations", "computation_detail"]:
                 if field_name in serialized:
+                    if serialized[field_name] is None:
+                        continue
                     yield from (
                         save_folder / field_name / item_path
                         for item_path in serialized[field_name].values()
@@ -592,6 +683,7 @@ class OptimizationObjective:
                     }
                 )
             },
+            computation_detail=ComputationDetail(clp=clp, matrix=matrix),
             meta=self.create_result_metadata(label, self._data, result_dataset),
         )
         return OptimizationObjectiveResult(
@@ -662,6 +754,7 @@ class OptimizationObjective:
             residuals=result_dataset.residual,
             elements=element_results,
             activations=activations,
+            computation_detail=ComputationDetail(clp=amplitudes, matrix=concentration),
             meta=self.create_result_metadata(label, self._data, result_dataset),
         )
         return OptimizationObjectiveResult(
@@ -830,6 +923,7 @@ class OptimizationObjective:
             residuals=result_dataset.residual,
             elements=element_results,
             activations=activations,
+            computation_detail=ComputationDetail(clp=amplitudes, matrix=concentrations),
             meta=self.create_result_metadata(label, data, result_dataset),
         )
 
