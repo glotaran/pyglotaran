@@ -15,6 +15,7 @@ from glotaran.builtin.elements.kinetic.matrix import calculate_matrix_gaussian_a
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.model.element import ExtendableElement
+from glotaran.model.item import ParameterType  # noqa:F401
 
 if TYPE_CHECKING:
     from glotaran.model.data_model import DataModel
