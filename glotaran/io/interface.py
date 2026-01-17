@@ -46,7 +46,7 @@ class SavingOptions(TypedDict, total=False):
             "fitted_data",
             "elements",
             "activations",
-            "computation_detail",
+            "fit_decomposition",
         ]
     ]
     """Set of data keys to not saved."""
@@ -80,7 +80,7 @@ SAVING_OPTIONS_MINIMAL: SavingOptions = SAVING_OPTIONS_DEFAULT | {
         "fitted_data",
         "elements",
         "activations",
-        "computation_detail",
+        "fit_decomposition",
     }
 }
 

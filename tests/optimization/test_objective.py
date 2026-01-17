@@ -14,7 +14,7 @@ from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
-from glotaran.optimization.objective import ComputationDetail
+from glotaran.optimization.objective import FitDecomposition
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.objective import OptimizationResult
 from glotaran.optimization.objective import OptimizationResultMetaData
@@ -30,7 +30,7 @@ STUB_META_DATA = OptimizationResultMetaData(
     model_dimension="model_dim",
     root_mean_square_error=0.1,
 )
-STUB_computation_detail = ComputationDetail(
+STUB_fit_decomposition = FitDecomposition(
     clp=xr.DataArray([np.arange(2) + 2], dims=("clp", "clp_label")),
     matrix=xr.DataArray([np.arange(2) + 3], dims=("matrix", "matrix_label")),
 )
@@ -71,7 +71,7 @@ def test_optimization_result_default_serde(tmp_path: Path):
         activations={"bar": bar_data},
         input_data=input_data,
         residuals=residuals,
-        computation_detail=STUB_computation_detail,
+        fit_decomposition=STUB_fit_decomposition,
         meta=STUB_META_DATA,
     )
     # Instance validation passes without error
@@ -89,12 +89,12 @@ def test_optimization_result_default_serde(tmp_path: Path):
     assert serialized["residuals"] == "residuals.nc"
     assert (save_folder / "residuals.nc").is_file() is True
 
-    # Computation details should be serialized to files
-    assert "computation_detail" in serialized
-    assert serialized["computation_detail"]["clp"] == "clp.nc"
-    assert (save_folder / "computation_detail" / "clp.nc").is_file() is True
-    assert serialized["computation_detail"]["matrix"] == "matrix.nc"
-    assert (save_folder / "computation_detail" / "matrix.nc").is_file() is True
+    # Fit decomposition should be serialized to files
+    assert "fit_decomposition" in serialized
+    assert serialized["fit_decomposition"]["clp"] == "clp.nc"
+    assert (save_folder / "fit_decomposition" / "clp.nc").is_file() is True
+    assert serialized["fit_decomposition"]["matrix"] == "matrix.nc"
+    assert (save_folder / "fit_decomposition" / "matrix.nc").is_file() is True
 
     # Round Trip
     deserialized = OptimizationResult.model_validate(
@@ -105,11 +105,11 @@ def test_optimization_result_default_serde(tmp_path: Path):
     assert deserialized.elements["foo"].attrs.items() >= expected_dataset_attrs.items()
     assert deserialized.activations["bar"].equals(bar_data)
     assert deserialized.activations["bar"].attrs.items() >= expected_dataset_attrs.items()
-    assert deserialized.computation_detail is not None
-    assert deserialized.computation_detail.clp.equals(STUB_computation_detail.clp)
-    assert deserialized.computation_detail.clp.attrs.items() >= expected_dataset_attrs.items()
-    assert deserialized.computation_detail.matrix.equals(STUB_computation_detail.matrix)
-    assert deserialized.computation_detail.matrix.attrs.items() >= expected_dataset_attrs.items()
+    assert deserialized.fit_decomposition is not None
+    assert deserialized.fit_decomposition.clp.equals(STUB_fit_decomposition.clp)
+    assert deserialized.fit_decomposition.clp.attrs.items() >= expected_dataset_attrs.items()
+    assert deserialized.fit_decomposition.matrix.equals(STUB_fit_decomposition.matrix)
+    assert deserialized.fit_decomposition.matrix.attrs.items() >= expected_dataset_attrs.items()
     assert deserialized.input_data.equals(input_data)
     assert deserialized.residuals is not None
     assert deserialized.residuals.equals(residuals)
@@ -133,7 +133,7 @@ def test_optimization_result_minimal_serde(tmp_path: Path):
         activations={"bar": xr.Dataset({"data": ("dim_0", np.arange(3) + 10)})},
         input_data=input_data,
         residuals=xr.Dataset({"data": ("dim_0", np.arange(4) * 0.001)}),
-        computation_detail=STUB_computation_detail,
+        fit_decomposition=STUB_fit_decomposition,
         meta=STUB_META_DATA,
     )
 
@@ -168,7 +168,7 @@ def test_optimization_result_noop_validation():
         activations={"bar": xr.Dataset({"data": ("dim_0", np.arange(3) + 10)})},
         input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}),
         residuals=xr.Dataset({"data": ("dim_0", np.arange(4) * 0.001)}),
-        computation_detail=STUB_computation_detail,
+        fit_decomposition=STUB_fit_decomposition,
         meta=STUB_META_DATA,
     )
     OptimizationResult.model_validate(optimization_result)
@@ -178,7 +178,7 @@ def test_optimization_result_fitted_data_warn_on_missing_residuals():
     """Warn when fitted data is accessed without residuals."""
     optimization_result = OptimizationResult(
         input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}),
-        computation_detail=None,
+        fit_decomposition=None,
         meta=STUB_META_DATA,
     )
 
@@ -195,7 +195,7 @@ def test_optimization_result_error_missing_serialization_context():
     optimization_result = OptimizationResult(
         input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}),
         residuals=xr.Dataset({"data": ("dim_0", np.arange(4) * 0.001)}),
-        computation_detail=None,
+        fit_decomposition=None,
         meta=STUB_META_DATA,
     )
 
@@ -249,7 +249,7 @@ def test_optimization_result_input_data_read_with_3rd_party_plugin(tmp_path: Pat
 
         serialized_optimization_result = OptimizationResult(
             input_data=input_data,
-            computation_detail=STUB_computation_detail,
+            fit_decomposition=STUB_fit_decomposition,
             meta=STUB_META_DATA,
         ).model_dump(
             context={"save_folder": save_folder, "saving_options": SAVING_OPTIONS_MINIMAL},
@@ -275,7 +275,7 @@ def test_optimization_result_extract_paths_from_serialization(tmp_path: Path):
         activations={"bar": xr.Dataset({"data": ("dim_0", np.arange(3) + 10)})},
         input_data=xr.Dataset({"data": ("dim_0", np.arange(4))}),
         residuals=xr.Dataset({"data": ("dim_0", np.arange(4) * 0.001)}),
-        computation_detail=STUB_computation_detail,
+        fit_decomposition=STUB_fit_decomposition,
         meta=STUB_META_DATA,
     )
 
@@ -294,8 +294,8 @@ def test_optimization_result_extract_paths_from_serialization(tmp_path: Path):
         (full_save_folder / "fitted_data.nc"),
         (full_save_folder / "elements/foo.nc"),
         (full_save_folder / "activations/bar.nc"),
-        (full_save_folder / "computation_detail" / "clp.nc"),
-        (full_save_folder / "computation_detail" / "matrix.nc"),
+        (full_save_folder / "fit_decomposition" / "clp.nc"),
+        (full_save_folder / "fit_decomposition" / "matrix.nc"),
     ]
 
     minimal_save_folder = tmp_path / "minimal_save"

@@ -83,13 +83,13 @@ def test_result_serde_default(tmp_path: Path):
     assert (tmp_path / "optimization_results/sequential-decay/residuals.nc").is_file()
     assert sequential_results["fitted_data"] == "fitted_data.nc"
     assert (tmp_path / "optimization_results/sequential-decay/fitted_data.nc").is_file()
-    # Computation details saved for optimization result
-    assert "computation_detail" in sequential_results
-    assert sequential_results["computation_detail"]["clp"] == "clp.nc"
-    assert (tmp_path / "optimization_results/sequential-decay/computation_detail/clp.nc").is_file()
-    assert sequential_results["computation_detail"]["matrix"] == "matrix.nc"
+    # Fit decomposition saved for optimization result
+    assert "fit_decomposition" in sequential_results
+    assert sequential_results["fit_decomposition"]["clp"] == "clp.nc"
+    assert (tmp_path / "optimization_results/sequential-decay/fit_decomposition/clp.nc").is_file()
+    assert sequential_results["fit_decomposition"]["matrix"] == "matrix.nc"
     assert (
-        tmp_path / "optimization_results/sequential-decay/computation_detail/matrix.nc"
+        tmp_path / "optimization_results/sequential-decay/fit_decomposition/matrix.nc"
     ).is_file()
 
     deserialized = Result.model_validate(serialized, context={"save_folder": tmp_path})
@@ -215,9 +215,9 @@ def test_result_extract_paths_from_serialization(tmp_path: Path):
         (tmp_path / "optimization_results/sequential-decay/fitted_data.nc").as_posix(),
         (tmp_path / "optimization_results/sequential-decay/elements/sequential.nc").as_posix(),
         (tmp_path / "optimization_results/sequential-decay/activations/irf.nc").as_posix(),
-        (tmp_path / "optimization_results/sequential-decay/computation_detail/clp.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/fit_decomposition/clp.nc").as_posix(),
         (
-            tmp_path / "optimization_results/sequential-decay/computation_detail/matrix.nc"
+            tmp_path / "optimization_results/sequential-decay/fit_decomposition/matrix.nc"
         ).as_posix(),
     ]
 
@@ -245,8 +245,8 @@ def test_result_extract_paths_from_serialization_relative(tmp_path: Path):
             "optimization_results/sequential-decay/fitted_data.nc",
             "optimization_results/sequential-decay/elements/sequential.nc",
             "optimization_results/sequential-decay/activations/irf.nc",
-            "optimization_results/sequential-decay/computation_detail/clp.nc",
-            "optimization_results/sequential-decay/computation_detail/matrix.nc",
+            "optimization_results/sequential-decay/fit_decomposition/clp.nc",
+            "optimization_results/sequential-decay/fit_decomposition/matrix.nc",
         ]
 
 

@@ -81,7 +81,7 @@ def calculate_root_mean_square_error(residual: xr.DataArray) -> float:
     return np.linalg.norm(residual) / np.sqrt(residual.size)
 
 
-class ComputationDetail(BaseModel):
+class FitDecomposition(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     clp: xr.DataArray
@@ -149,7 +149,7 @@ class OptimizationResult(BaseModel):
     activations: dict[str, xr.Dataset] = Field(default_factory=dict)
     input_data: xr.DataArray | xr.Dataset
     residuals: xr.DataArray | xr.Dataset | None = None
-    computation_detail: ComputationDetail | None
+    fit_decomposition: FitDecomposition | None
     meta: OptimizationResultMetaData
 
     @computed_field  # type: ignore[prop-decorator]
@@ -356,9 +356,9 @@ class OptimizationResult(BaseModel):
         msg = f"SerializationInfo context is missing 'save_folder':\n{info}"
         raise ValueError(msg)
 
-    @field_serializer("computation_detail", when_used="json")
-    def serialize_computation_detail(
-        self, value: ComputationDetail | None, info: SerializationInfo
+    @field_serializer("fit_decomposition", when_used="json")
+    def serialize_fit_decomposition(
+        self, value: FitDecomposition | None, info: SerializationInfo
     ) -> dict[str, str] | None:
         if value is None:
             return None
@@ -377,13 +377,13 @@ class OptimizationResult(BaseModel):
         msg = f"SerializationInfo context is missing 'save_folder':\n{info}"
         raise ValueError(msg)
 
-    @field_validator("computation_detail", mode="before")
+    @field_validator("fit_decomposition", mode="before")
     @classmethod
-    def validate_computation_detail(cls, value: Any, info: ValidationInfo) -> Any:  # noqa: ANN401
-        if isinstance(value, ComputationDetail) or value is None:
+    def validate_fit_decomposition(cls, value: Any, info: ValidationInfo) -> Any:  # noqa: ANN401
+        if isinstance(value, FitDecomposition) or value is None:
             return value
         if context_is_dict(info) and (save_folder := save_folder_from_info(info)) is not None:
-            return ComputationDetail.model_validate(
+            return FitDecomposition.model_validate(
                 value, context=info.context | {"save_folder": Path(save_folder) / info.field_name}
             )
         return value
@@ -443,9 +443,9 @@ class OptimizationResult(BaseModel):
         meta_attrs = self.meta.model_dump(exclude_defaults=True)
         if self.residuals is not None:
             self.residuals.attrs |= meta_attrs
-        if self.computation_detail is not None:
-            self.computation_detail.clp.attrs |= meta_attrs
-            self.computation_detail.matrix.attrs |= meta_attrs
+        if self.fit_decomposition is not None:
+            self.fit_decomposition.clp.attrs |= meta_attrs
+            self.fit_decomposition.matrix.attrs |= meta_attrs
         for field_name in ["elements", "activations"]:
             field_value = getattr(self, field_name)
             for value in field_value.values():
@@ -472,7 +472,7 @@ class OptimizationResult(BaseModel):
         """
 
         def mapping_path_iterator() -> Iterator[Path]:
-            for field_name in ["elements", "activations", "computation_detail"]:
+            for field_name in ["elements", "activations", "fit_decomposition"]:
                 if field_name in serialized:
                     if serialized[field_name] is None:
                         continue
@@ -683,7 +683,7 @@ class OptimizationObjective:
                     }
                 )
             },
-            computation_detail=ComputationDetail(clp=clp, matrix=matrix),
+            fit_decomposition=FitDecomposition(clp=clp, matrix=matrix),
             meta=self.create_result_metadata(label, self._data, result_dataset),
         )
         return OptimizationObjectiveResult(
@@ -754,7 +754,7 @@ class OptimizationObjective:
             residuals=result_dataset.residual,
             elements=element_results,
             activations=activations,
-            computation_detail=ComputationDetail(clp=amplitudes, matrix=concentration),
+            fit_decomposition=FitDecomposition(clp=amplitudes, matrix=concentration),
             meta=self.create_result_metadata(label, self._data, result_dataset),
         )
         return OptimizationObjectiveResult(
@@ -923,7 +923,7 @@ class OptimizationObjective:
             residuals=result_dataset.residual,
             elements=element_results,
             activations=activations,
-            computation_detail=ComputationDetail(clp=amplitudes, matrix=concentrations),
+            fit_decomposition=FitDecomposition(clp=amplitudes, matrix=concentrations),
             meta=self.create_result_metadata(label, data, result_dataset),
         )
 
