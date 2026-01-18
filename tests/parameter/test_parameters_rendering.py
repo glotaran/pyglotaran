@@ -89,7 +89,7 @@ def test_parameters_repr():
     """Repr creates code to recreate the object with from_dict."""
 
     # Needed to eval the Parameters repr
-    from glotaran.parameter.parameter import Parameter  # noqa: F401
+    from glotaran.parameter.parameter import Parameter  # noqa: F401, PLC0415
 
     result = Parameters.from_dict(
         {

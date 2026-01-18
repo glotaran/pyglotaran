@@ -4,7 +4,7 @@ from __future__ import annotations
 
 
 def __getattr__(attribute_name: str):
-    from glotaran.deprecation import deprecate_module_attribute
+    from glotaran.deprecation import deprecate_module_attribute  # noqa: PLC0415
 
     if attribute_name == "deprecated_attribute":
         return deprecate_module_attribute(
@@ -21,4 +21,5 @@ def __getattr__(attribute_name: str):
             module_load_overwrite="glotaran.deprecation.deprecation_utils.parse_version",
         )
 
-    raise AttributeError(f"module {__name__} has no attribute {attribute_name}")
+    msg = f"module {__name__} has no attribute {attribute_name}"
+    raise AttributeError(msg)

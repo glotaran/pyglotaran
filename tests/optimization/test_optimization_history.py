@@ -27,8 +27,8 @@ def test_optimization_history_init_no_data():
 
 
 @pytest.mark.parametrize(
-    "optimize_stdout, expected_df",
-    (
+    ("optimize_stdout", "expected_df"),
+    [
         (
             "random string",
             pd.DataFrame(
@@ -73,7 +73,7 @@ def test_optimization_history_init_no_data():
                 ],
             ).set_index("iteration"),
         ),
-    ),
+    ],
 )
 def test_optimization_history_init_from_stdout_str(
     optimize_stdout: str, expected_df: pd.DataFrame, tmp_path: Path

@@ -13,7 +13,15 @@ from tests.optimization.data import TestDataModelConstantIndexIndependent
 from tests.optimization.data import TestDataModelGlobal
 
 
-@pytest.mark.parametrize("weight", (True, False))
+def test_data_model_has_original_dataset_attributes():
+    """Test that original dataset attributes are stored in OptimizationData."""
+    data_model = deepcopy(TestDataModelConstantIndexIndependent)
+    data = OptimizationData(data_model)
+
+    assert data.original_dataset_attributes == {"test_attr": "test_value"}
+
+
+@pytest.mark.parametrize("weight", [True, False])
 def test_optimization_data(weight: bool):
     data_model = deepcopy(TestDataModelConstantIndexIndependent)
     if weight:
@@ -21,10 +29,10 @@ def test_optimization_data(weight: bool):
     data = OptimizationData(data_model)
 
     dataset = data_model.data
-    assert data.model_dimension == "model"
-    assert data.global_dimension == "global"
-    assert np.array_equal(dataset.coords["model"], data.model_axis)
-    assert np.array_equal(dataset.coords["global"], data.global_axis)
+    assert data.model_dimension == "model_dim"
+    assert data.global_dimension == "global_dim"
+    assert np.array_equal(dataset.coords["model_dim"], data.model_axis)
+    assert np.array_equal(dataset.coords["global_dim"], data.global_axis)
     if weight:
         assert np.array_equal(dataset.data * dataset.weight, data.data)
         assert np.array_equal(dataset.weight, data.weight)
@@ -32,7 +40,7 @@ def test_optimization_data(weight: bool):
         assert np.array_equal(dataset.data, data.data)
 
 
-@pytest.mark.parametrize("weight", (True, False))
+@pytest.mark.parametrize("weight", [True, False])
 def test_optimization_data_global_model(weight: bool):
     data_model = deepcopy(TestDataModelGlobal)
     if weight:
@@ -41,10 +49,10 @@ def test_optimization_data_global_model(weight: bool):
 
     dataset = data_model.data
     print(dataset.data)
-    assert data.model_dimension == "model"
-    assert data.global_dimension == "global"
-    assert np.array_equal(dataset.coords["model"], data.model_axis)
-    assert np.array_equal(dataset.coords["global"], data.global_axis)
+    assert data.model_dimension == "model_dim"
+    assert data.global_dimension == "global_dim"
+    assert np.array_equal(dataset.coords["model_dim"], data.model_axis)
+    assert np.array_equal(dataset.coords["global_dim"], data.global_axis)
     if weight:
         assert np.array_equal(
             dataset.data.data.T.flatten() * dataset.weight.data.T.flatten(), data.flat_data
@@ -75,9 +83,6 @@ def test_linked_optimization_data():
     assert "dataset1dataset2" in data.group_definitions
     assert data.group_definitions["dataset1dataset2"] == ["dataset1", "dataset2"]
 
-    #  global_axis1 = [1, 5, 6]
-    #  global_axis2 = [0, 3, 7, 10]
-
     assert np.array_equal(data.global_axis, [1, 3, 5, 6, 10])
 
     assert len(data.group_labels) == data.global_axis.size
@@ -94,8 +99,8 @@ def test_linked_optimization_data():
     assert np.array_equal(data.data_indices[3], [2, 2])
     assert np.array_equal(data.data_indices[4], [3])
 
-    dataset1_size = dataset_one.coords["model"].size
-    dataset2_size = dataset_two.coords["model"].size
+    dataset1_size = dataset_one.coords["model_dim"].size
+    dataset2_size = dataset_two.coords["model_dim"].size
 
     assert data.data_slices[0].size == dataset1_size + dataset2_size
     assert data.data_slices[1].size == dataset2_size
@@ -112,9 +117,6 @@ def test_linking_methods(method: str):
     }
     tolerance = 1
     data = LinkedOptimizationData(all_data, tolerance, method, {})
-
-    #  global_axis1 = [1, 5, 6]
-    #  global_axis2 = [0, 3, 7, 10]
 
     wanted_global_axis = [1, 3, 5, 6, 10]
     if method == "backward":

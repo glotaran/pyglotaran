@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from collections.abc import Sequence
 from pathlib import Path
+from typing import TypeAlias
 from typing import TypeVar
-from typing import Union
 
 import numpy as np
 
@@ -16,12 +16,19 @@ except ImportError:
     # numpy < 1.23
     from numpy.typing._array_like import _SupportsArray  # type:ignore[no-redef]  # noqa: F401
 
+try:
+    from typing import Self  # type: ignore[attr-defined]
+except ImportError:
+    from typing_extensions import Self  # noqa: F401
+
 import xarray as xr
 
 T = TypeVar("T")
-StrOrPath = Union[str, Path]
-LoadableDataset = Union[StrOrPath, xr.Dataset, xr.DataArray]
-DatasetMappable = Union[LoadableDataset, Sequence[LoadableDataset], Mapping[str, LoadableDataset]]
+StrOrPath: TypeAlias = str | Path
+LoadableDataset: TypeAlias = StrOrPath | xr.Dataset | xr.DataArray
+DatasetMappable: TypeAlias = (
+    LoadableDataset | Sequence[LoadableDataset] | Mapping[str, LoadableDataset]
+)
 
 
 ArrayLike = np.ndarray

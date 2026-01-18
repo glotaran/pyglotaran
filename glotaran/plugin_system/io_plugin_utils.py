@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import os
 from collections.abc import Callable
+from copy import deepcopy
 from functools import partial
 from functools import wraps
 from pathlib import Path
@@ -15,14 +15,16 @@ from typing import cast
 DecoratedFunc = TypeVar("DecoratedFunc", bound=Callable[..., Any])  # decorated function
 
 if TYPE_CHECKING:
+    import os
     from collections.abc import Iterable
     from collections.abc import Iterator
 
+    from glotaran.io.interface import SavingOptions
     from glotaran.typing import StrOrPath
 
 
 def infer_file_format(
-    file_path: StrOrPath, *, needs_to_exist: bool = True, allow_folder=False
+    file_path: StrOrPath, *, needs_to_exist: bool = True, allow_folder: bool = False
 ) -> str:
     """Infer format of a file if it exists.
 
@@ -51,7 +53,8 @@ def infer_file_format(
     """
     file_path = Path(file_path)
     if file_path.is_file() is False and needs_to_exist and not allow_folder:
-        raise ValueError(f"There is no file {file_path!r}.")
+        msg = f"There is no file {file_path!r}."
+        raise ValueError(msg)
 
     file_format = file_path.suffix
     if file_format != "":
@@ -60,9 +63,8 @@ def infer_file_format(
 
     if allow_folder:
         return "yaml"
-    raise ValueError(
-        f"Cannot determine format of file {file_path!r}, please provide an explicit format."
-    )
+    msg = f"Cannot determine format of file {file_path!r}, please provide an explicit format."
+    raise ValueError(msg)
 
 
 def not_implemented_to_value_error(func: DecoratedFunc) -> DecoratedFunc:
@@ -84,13 +86,13 @@ def not_implemented_to_value_error(func: DecoratedFunc) -> DecoratedFunc:
     """
 
     @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
+    def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
         try:
             return func(*args, **kwargs)
         except NotImplementedError as error:
             raise ValueError(error.args) from error
 
-    return cast(DecoratedFunc, wrapper)
+    return cast("DecoratedFunc", wrapper)
 
 
 def protect_from_overwrite(path: str | os.PathLike[str], *, allow_overwrite: bool = False) -> None:
@@ -123,14 +125,14 @@ def protect_from_overwrite(path: str | os.PathLike[str], *, allow_overwrite: boo
     if allow_overwrite:
         return
     if path.is_file():
-        raise FileExistsError(f"The file {path!r} already exists. \n{user_info}")
-    if path.is_dir() and os.listdir(str(path)):
-        raise FileExistsError(
-            f"The folder {path.as_posix()!r} already exists and is not empty. \n{user_info}"
-        )
+        msg = f"The file {path!r} already exists. \n{user_info}"
+        raise FileExistsError(msg)
+    if path.is_dir() and len(list(path.iterdir())) > 0:
+        msg = f"The folder {path.as_posix()!r} already exists and is not empty. \n{user_info}"
+        raise FileExistsError(msg)
 
 
-def bool_str_repr(value: Any, true_repr: str = "*", false_repr: str = "/") -> Any:
+def bool_str_repr(value: Any, true_repr: str = "*", false_repr: str = "/") -> Any:  # noqa: ANN401
     """Replace boolean value with string repr.
 
     This function is a helper for table representation (e.g. with tabulate)
@@ -201,3 +203,42 @@ def bool_table_repr(
     """
     bool_repr = partial(bool_str_repr, true_repr=true_repr, false_repr=false_repr)
     return ((bool_repr(value) for value in values) for values in table_data)
+
+
+def resolve_saving_option_plugin_names(saving_options: SavingOptions) -> SavingOptions:
+    """Resolve saving option plugins to actual plugin instances.
+
+    Parameters
+    ----------
+    saving_options : SavingOptions
+        Saving options with plugin names.
+
+    Returns
+    -------
+    SavingOptions
+        Saving options with actual plugin instances.
+    """
+    from glotaran.plugin_system.base_registry import full_plugin_name  # noqa: PLC0415
+    from glotaran.plugin_system.data_io_registration import get_data_io  # noqa: PLC0415
+    from glotaran.plugin_system.project_io_registration import get_project_io  # noqa: PLC0415
+
+    resolved_plugins = deepcopy(saving_options)
+    if saving_options.get("data_plugin") is None:
+        data_format_name = saving_options.get("data_format", "nc")
+        data_plugin_instance = get_data_io(data_format_name)
+        resolved_plugins["data_plugin"] = (
+            f"{full_plugin_name(data_plugin_instance)}_{data_format_name}"
+        )
+    if saving_options.get("parameters_plugin") is None:
+        parameters_format_name = saving_options.get("parameters_format", "csv")
+        parameters_plugin_instance = get_project_io(parameters_format_name)
+        resolved_plugins["parameters_plugin"] = (
+            f"{full_plugin_name(parameters_plugin_instance)}_{parameters_format_name}"
+        )
+    if saving_options.get("scheme_plugin") is None:
+        scheme_format_name = saving_options.get("scheme_format", "yml")
+        scheme_plugin_instance = get_project_io(scheme_format_name)
+        resolved_plugins["scheme_plugin"] = (
+            f"{full_plugin_name(scheme_plugin_instance)}_{scheme_format_name}"
+        )
+    return resolved_plugins

@@ -49,7 +49,7 @@ def test_monkeypatch_project_io():
     assert "test_full" not in known_project_formats()
 
 
-@pytest.mark.parametrize("create_new_registry", (True, False))
+@pytest.mark.parametrize("create_new_registry", [True, False])
 def test_monkeypatch_plugin_registry_full(create_new_registry: bool):
     """Create a completely new registry."""
 

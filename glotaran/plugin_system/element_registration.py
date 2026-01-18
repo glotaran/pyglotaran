@@ -78,7 +78,7 @@ def get_model(element_type: str) -> type[Element]:
     )
 
 
-def known_model_names(full_names: bool = False) -> list[str]:
+def known_model_names(*, full_names: bool = False) -> list[str]:
     """Names of the registered models.
 
     Parameters

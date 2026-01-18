@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from functools import reduce
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 from typing import Literal
 
@@ -13,12 +14,11 @@ from glotaran.builtin.elements.kinetic.matrix import calculate_matrix_gaussian_a
 from glotaran.builtin.elements.kinetic.matrix import calculate_matrix_gaussian_activation_on_index
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
-from glotaran.builtin.items.activation import add_activation_to_result_data
-from glotaran.model.data_model import DataModel
-from glotaran.model.data_model import is_data_model_global
 from glotaran.model.element import ExtendableElement
+from glotaran.model.item import ParameterType  # noqa:F401
 
 if TYPE_CHECKING:
+    from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
 
 
@@ -28,13 +28,13 @@ class KineticElement(ExtendableElement, Kinetic):
     data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
     dimension: str = "time"
 
-    def extend(self, other: KineticElement):  # type:ignore[override]
+    def extend(self, other: KineticElement) -> KineticElement:  # type:ignore[override]
         return other.model_copy(update={"rates": self.rates | other.rates})
 
     # TODO: consolidate parent method.
     @classmethod
     def combine(cls, kinetics: list[KineticElement]) -> KineticElement:  # type:ignore[override]
-        """Creates a combined matrix.
+        """Create a combined matrix.
 
         When combining k-matrices km1 and km2 (km1.combine(km2)),
         entries in km1 will be overwritten by corresponding entries in km2.
@@ -48,7 +48,6 @@ class KineticElement(ExtendableElement, Kinetic):
         -------
         combined :
             The combined KMatrix.
-
         """
         return cls(
             type="kinetic",
@@ -69,11 +68,11 @@ class KineticElement(ExtendableElement, Kinetic):
         model: ActivationDataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-        **kwargs,
+        **kwargs: Any,  # noqa: ANN401
     ) -> tuple[list[str], ArrayLike]:
-        compartments = self.species
+        compartments = self.compartments
         matrices = []
-        for activation in model.activation:
+        for activation in model.activations.values():
             initial_concentrations = np.array(
                 [float(activation.compartments.get(label, 0)) for label in compartments]
             )
@@ -94,9 +93,8 @@ class KineticElement(ExtendableElement, Kinetic):
             )
 
             if not np.all(np.isfinite(matrix)):
-                raise ValueError(
-                    f"Non-finite concentrations for kinetic of element '{self.label}'"
-                )
+                msg = f"Non-finite concentrations for kinetic of element '{self.label}'"
+                raise ValueError(msg)
 
             # apply A matrix
             matrix = matrix @ self.a_matrix(initial_concentrations)
@@ -120,105 +118,110 @@ class KineticElement(ExtendableElement, Kinetic):
         if index_dependent:
             matrix_shape = (global_axis.size, *matrix_shape)  # type:ignore[assignment]
         matrix = np.zeros(matrix_shape, dtype=np.float64)
-        scales = np.array(
-            [
-                p.scale  # type:ignore[union-attr]
-                for p in (
-                    parameters[0] if index_dependent else parameters  # type:ignore[union-attr]
-                )
-            ]
-        )
+        scales = np.array([p.scale for p in (parameters[0] if index_dependent else parameters)])  # type:ignore[union-attr]
         if index_dependent:
             calculate_matrix_gaussian_activation(
                 matrix,
                 rates,
                 model_axis,
-                np.array([[p.center for p in ps] for ps in parameters]),  # type:ignore[union-attr]
-                np.array([[p.width for p in ps] for ps in parameters]),  # type:ignore[union-attr]
+                np.array([[p.center for p in ps] for ps in parameters]),
+                np.array([[p.width for p in ps] for ps in parameters]),
                 scales,
-                parameters[0][0].backsweep_period,  # type:ignore[index]
+                parameters[0][0].backsweep_period,
             )
         else:
             calculate_matrix_gaussian_activation_on_index(
                 matrix,
                 rates,
                 model_axis,
-                np.array([p.center for p in parameters]),  # type:ignore[union-attr]
-                np.array([p.width for p in parameters]),  # type:ignore[union-attr]
+                np.array([p.center for p in parameters]),  # type:ignore[attr-defined]
+                np.array([p.width for p in parameters]),  # type:ignore[attr-defined]
                 scales,
-                parameters[0].backsweep_period,  # type:ignore[union-attr]
+                parameters[0].backsweep_period,  # type:ignore[attr-defined]
             )
         if activation.normalize:
             matrix /= np.sum(scales)
 
         return matrix
 
-    def add_to_result_data(  # type:ignore[override]
-        self, model: ActivationDataModel, data: xr.Dataset, as_global: bool
-    ):
-        add_activation_to_result_data(model, data)
-        if "species" in data.coords or is_data_model_global(model):
-            return
-        kinetic = self.combine([m for m in model.elements if isinstance(m, KineticElement)])
-        species = kinetic.species
-        global_dimension = data.attrs["global_dimension"]
-        model_dimension = data.attrs["model_dimension"]
-
-        data.coords["species"] = species
-        matrix = data.global_matrix if as_global else data.matrix
-        clp_dim = "global_clp_label" if as_global else "clp_label"
-        concentration_shape = (
-            global_dimension if as_global else model_dimension,
-            "species",
+    def create_result(
+        self,
+        model: ActivationDataModel,  # type:ignore[override]
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        species_amplitudes = amplitudes.sel(amplitude_label=self.compartments).rename(
+            amplitude_label="compartment"
         )
-        if len(matrix.shape) > 2:
-            concentration_shape = (  # type:ignore[assignment]
-                (model_dimension if as_global else global_dimension),
-                *concentration_shape,
-            )
-        data["species_concentration"] = (
-            concentration_shape,
-            matrix.sel({clp_dim: species}).to_numpy(),
+        species_concentrations = concentrations.sel(amplitude_label=self.compartments).rename(
+            amplitude_label="compartment"
         )
 
-        data["k_matrix"] = xr.DataArray(kinetic.full_array, dims=(("species"), ("species")))
-        data["k_matrix_reduced"] = xr.DataArray(kinetic.array, dims=(("species"), ("species")))
+        k_matrix = xr.DataArray(
+            self.full_array, coords={"to": self.compartments, "from": self.compartments}
+        )
+        reduced_k_matrix = xr.DataArray(
+            self.array, coords={"to": self.compartments, "from": self.compartments}
+        )
 
-        rates = kinetic.calculate()
+        # TODO: do we want to store it in this format?
+        rates = self.calculate()
         lifetimes = 1 / rates
-        data.coords["kinetic"] = np.arange(1, rates.size + 1)
-        data.coords["rate"] = ("kinetic", rates)
-        data.coords["lifetime"] = ("kinetic", lifetimes)
+        kinetic_coords = {
+            "kinetic": np.arange(1, rates.size + 1),
+            "rate": ("kinetic", rates),
+            "lifetime": ("kinetic", lifetimes),
+        }
 
-        if hasattr(data, "global_matrix"):
-            return
-
-        species_associated_estimation = data.clp.sel(clp_label=species).data
-        data["species_associated_estimation"] = (
-            (global_dimension, "species"),
-            species_associated_estimation,
-        )
-        initial_concentrations = []
+        initial_concentrations_list = []
         a_matrices = []
-        kinetic_associated_estimations = []
-        for activation in model.activation:
-            initial_concentration = np.array(
-                [float(activation.compartments.get(label, 0)) for label in species]
+        kinetic_amplitudes_list = []
+        activation_names = list(model.activations.keys())
+        for activation in model.activations.values():
+            initial_concentration_activation = np.array(
+                [float(activation.compartments.get(label, 0)) for label in self.compartments]
             )
-            initial_concentrations.append(initial_concentration)
-            a_matrix = kinetic.a_matrix(initial_concentration)
+            initial_concentrations_list.append(initial_concentration_activation)
+            a_matrix = self.a_matrix(initial_concentration_activation)
             a_matrices.append(a_matrix)
-            kinetic_associated_estimations.append(species_associated_estimation @ a_matrix.T)
+            kinetic_amplitudes_list.append(species_amplitudes.to_numpy() @ a_matrix.T)
 
-        data["initial_concentration"] = (
-            ("activation", "species"),
-            initial_concentrations,
+        initial_concentrations = xr.DataArray(
+            initial_concentrations_list,
+            coords={
+                "activation": activation_names,
+                "compartment": self.compartments,
+            },
         )
-        data["a_matrix"] = (
-            ("activation", "species", "kinetic"),
+        a_matrix = xr.DataArray(
             a_matrices,
+            coords={
+                "activation": activation_names,
+                "compartment": self.compartments,
+            }
+            | kinetic_coords,
+            dims=("activation", "compartment", "kinetic"),
         )
-        data["kinetic_associated_estimation"] = (
-            ("activation", global_dimension, "kinetic"),
-            kinetic_associated_estimations,
+        kinetic_amplitudes_coords = (
+            {"activation": activation_names} | kinetic_coords | dict(species_amplitudes.coords)
+        )
+        del kinetic_amplitudes_coords["compartment"]
+        kinetic_amplitudes = xr.DataArray(
+            kinetic_amplitudes_list,
+            coords=kinetic_amplitudes_coords,
+            dims=("activation", global_dimension, "kinetic"),
+        )
+
+        return xr.Dataset(
+            {
+                "amplitudes": species_amplitudes,
+                "concentrations": species_concentrations,
+                "initial_concentrations": initial_concentrations,
+                "kinetic_amplitudes": kinetic_amplitudes,
+                "k_matrix": k_matrix,
+                "reduced_k_matrix": reduced_k_matrix,
+                "a_matrix": a_matrix,
+            }
         )

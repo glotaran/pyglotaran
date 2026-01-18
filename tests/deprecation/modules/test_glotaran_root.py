@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from typing import Any
 from warnings import warn
 
 import pytest
@@ -10,14 +11,14 @@ from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
 from tests.deprecation.modules import deprecation_warning_on_call_test_helper
 
 
-def dummy_warn(foo, bar=False):
+def dummy_warn(foo: Any, bar: bool = False):
     warn(GlotaranApiDeprecationWarning("foo"), stacklevel=2)
     if not isinstance(bar, bool):
-        raise ValueError("not a bool")
+        raise TypeError("not a bool")
     return foo, bar
 
 
-def dummy_no_warn(foo, bar=False):
+def dummy_no_warn(foo: Any, bar: bool = False):
     return foo, bar
 
 
@@ -33,7 +34,7 @@ def test_deprecation_warning_on_call_test_helper():
 def test_deprecation_warning_on_call_test_helper_error_reraise():
     """Raise if raise_exception and args or kwargs"""
 
-    with pytest.raises(ValueError, match="not a bool"):
+    with pytest.raises(TypeError, match="not a bool"):
         deprecation_warning_on_call_test_helper(
             dummy_warn, args=["foo"], kwargs={"bar": "baz"}, raise_exception=True
         )

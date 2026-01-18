@@ -12,7 +12,7 @@ import numpy as np
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import model_validator
-from pydantic.functional_validators import BeforeValidator  # noqa: TCH002
+from pydantic.functional_validators import BeforeValidator
 
 from glotaran.utils.helpers import nan_or_equal
 from glotaran.utils.ipython import MarkdownStr
@@ -81,7 +81,7 @@ VALID_LABEL_REGEX = re.compile(r"\W", flags=re.ASCII)
 """A regular expression to validate labels."""
 
 
-def validate_label(label: Any) -> str:
+def validate_label(label: Any) -> str:  # noqa: ANN401
     """Check if a label is a valid label for :class:`Parameter`.
 
     Parameters
@@ -96,7 +96,8 @@ def validate_label(label: Any) -> str:
     """
     label = str(label)
     if VALID_LABEL_REGEX.search(label.replace(".", "_")) is not None or label in RESERVED_LABELS:
-        raise ValueError(f"'{label}' is not a valid parameter label.")
+        msg = f"'{label}' is not a valid parameter label."
+        raise ValueError(msg)
     return label
 
 
@@ -209,10 +210,12 @@ class Parameter(BaseModel):
         """
         return all(
             nan_or_equal(self_val, other_val)
-            for self_val, other_val in zip(self.as_dict().values(), other.as_dict().values())
+            for self_val, other_val in zip(
+                self.as_dict().values(), other.as_dict().values(), strict=False
+            )
         )
 
-    def as_list(self, label_short: bool = False) -> list[str | float | dict[str, Any]]:
+    def as_list(self, *, label_short: bool = False) -> list[str | float | dict[str, Any]]:
         """Get the parameter as a dictionary.
 
         Parameters
@@ -254,7 +257,7 @@ class Parameter(BaseModel):
 
         return value, minimum, maximum
 
-    def set_value_from_optimization(self, value: float):
+    def set_value_from_optimization(self, value: float) -> None:
         """Set the value from an optimization result and reverses non-negative transformation.
 
         Parameters
@@ -288,7 +291,7 @@ class Parameter(BaseModel):
         parameter = self if all_parameters is None else all_parameters.get(self.label)
         value = f"{parameter.value:.2e}"
         if parameter.vary:
-            if parameter.standard_error is not np.nan:
+            if np.isnan(parameter.standard_error) is False:
                 t_value = pretty_format_numerical(parameter.value / parameter.standard_error)
                 value += f"±{parameter.standard_error:.2e}, t-value: {t_value}"
 
@@ -313,7 +316,7 @@ class Parameter(BaseModel):
 
         return MarkdownStr(md)
 
-    def __array__(self):
+    def __array__(self) -> np.ndarray:
         """array"""  # noqa: D400, D403
         return np.array(self.value, dtype=float)
 
@@ -325,123 +328,129 @@ class Parameter(BaseModel):
             f" _Non-Negative_: {self.non_negative}, _Expr_: {self.expression}"
         )
 
-    def __abs__(self):
+    def __abs__(self) -> float:
         """abs"""  # noqa: D400, D403
         return abs(self.value)
 
-    def __neg__(self):
+    def __neg__(self) -> float:
         """neg"""  # noqa: D400, D403
         return -self.value
 
-    def __pos__(self):
+    def __pos__(self) -> float:
         """positive"""  # noqa: D400, D403
         return +self.value
 
-    def __int__(self):
+    def __int__(self) -> int:
         """int"""  # noqa: D400, D403
         return int(self.value)
 
-    def __float__(self):
+    def __float__(self) -> float:
         """float"""  # noqa: D400, D403
         return float(self.value)
 
-    def __trunc__(self):
+    def __trunc__(self) -> int:
         """trunc"""  # noqa: D400, D403
         return self.value.__trunc__()
 
-    def __add__(self, other):
+    def __add__(self, other):  # noqa: ANN001, ANN204
         """+"""  # noqa: D400
         return self.value + other
 
-    def __sub__(self, other):
+    def __sub__(self, other):  # noqa: ANN001, ANN204
         """-"""  # noqa: D400
         return self.value - other
 
-    def __truediv__(self, other):
+    def __truediv__(self, other):  # noqa: ANN001, ANN204
         """/"""  # noqa: D400
         return self.value / other
 
-    def __floordiv__(self, other):
+    def __floordiv__(self, other):  # noqa: ANN001, ANN204
         """//"""  # noqa: D400
         return self.value // other
 
-    def __divmod__(self, other):
+    def __divmod__(self, other):  # noqa: ANN001, ANN204
         """divmod"""  # noqa: D400, D403
         return divmod(self.value, other)
 
-    def __mod__(self, other):
+    def __mod__(self, other):  # noqa: ANN001, ANN204
         """%"""  # noqa: D400
         return self.value % other
 
-    def __mul__(self, other):
+    def __mul__(self, other):  # noqa: ANN001, ANN204
         """*"""  # noqa: D400
         return self.value * other
 
-    def __pow__(self, other):
+    def __pow__(self, other):  # noqa: ANN001, ANN204
         """**"""  # noqa: D400
         return self.value**other
 
-    def __gt__(self, other):
+    def __gt__(self, other):  # noqa: ANN001, ANN204
         """>"""  # noqa: D400
         return self.value > other
 
-    def __ge__(self, other):
+    def __ge__(self, other):  # noqa: ANN001, ANN204
         """>="""  # noqa: D400
         return self.value >= other
 
-    def __le__(self, other):
+    def __le__(self, other):  # noqa: ANN001, ANN204
         """<="""  # noqa: D400
         return self.value <= other
 
-    def __lt__(self, other):
+    def __lt__(self, other):  # noqa: ANN001, ANN204
         """<"""  # noqa: D400
         return self.value < other
 
-    def __eq__(self, other):
+    def __eq__(self, other):  # noqa: ANN001, ANN204
         """=="""  # noqa: D400
         return self.value == other
 
-    def __ne__(self, other):
+    def __ne__(self, other):  # noqa: ANN001, ANN204
         """!="""  # noqa: D400
         return self.value != other
 
-    def __radd__(self, other):
+    def __radd__(self, other):  # noqa: ANN001, ANN204
         """+ (right)"""  # noqa: D400
         return other + self.value
 
-    def __rtruediv__(self, other):
+    def __rtruediv__(self, other):  # noqa: ANN001, ANN204
         """/ (right)"""  # noqa: D400
         return other / self.value
 
-    def __rdivmod__(self, other):
+    def __rdivmod__(self, other):  # noqa: ANN001, ANN204
         """divmod (right)"""  # noqa: D400, D403
         return divmod(other, self.value)
 
-    def __rfloordiv__(self, other):
+    def __rfloordiv__(self, other):  # noqa: ANN001, ANN204
         """// (right)"""  # noqa: D400
         return other // self.value
 
-    def __rmod__(self, other):
+    def __rmod__(self, other):  # noqa: ANN001, ANN204
         """% (right)"""  # noqa: D400
         return other % self.value
 
-    def __rmul__(self, other):
+    def __rmul__(self, other):  # noqa: ANN001, ANN204
         """* (right)"""  # noqa: D400
         return other * self.value
 
-    def __rpow__(self, other):
+    def __rpow__(self, other):  # noqa: ANN001, ANN204
         """** (right)"""  # noqa: D400
         return other**self.value
 
-    def __rsub__(self, other):
+    def __rsub__(self, other):  # noqa: ANN001, ANN204
         """- (right)"""  # noqa: D400
         return other - self.value
 
     def __repr_args__(self) -> _repr.ReprArgs:
         """Strip defaults from args shown in repr."""
         for key, val in super().__repr_args__():
-            if key in self.model_fields and not nan_or_equal(val, self.model_fields[key].default):
+            if key in self.model_fields_set and not nan_or_equal(
+                val, self.__class__.model_fields[key].default
+            ):
                 yield key, val
+
+    def __hash__(self) -> int:
+        """Hash function for the class."""
+        return hash(repr(self))
 
 
 def _log_value(value: float) -> float:
@@ -467,8 +476,10 @@ def _log_value(value: float) -> float:
 
 
 def _retrieve_item_from_list_by_type(
-    item_list: list, item_type: type | tuple[type, ...], default: Any
-) -> Any:
+    item_list: list,
+    item_type: type | tuple[type, ...],
+    default: Any,  # noqa: ANN401
+) -> Any:  # noqa: ANN401
     """Retrieve an item from list which matches a given type.
 
     Parameters

@@ -16,8 +16,8 @@ shared_deprecation_mapping = {
 }
 
 
-def __getattr__(attribute_name: str):
-    from glotaran.deprecation.deprecation_utils import deprecate_module_attribute
+def __getattr__(attribute_name: str):  # noqa: ANN202
+    from glotaran.deprecation.deprecation_utils import deprecate_module_attribute  # noqa: PLC0415
 
     for deprecated, new in shared_deprecation_mapping.items():
         if attribute_name == deprecated:
@@ -35,4 +35,5 @@ def __getattr__(attribute_name: str):
                 to_be_removed_in_version="0.8.0",
             )
 
-    raise AttributeError(f"module {__name__} has no attribute {attribute_name}")
+    msg = f"module {__name__} has no attribute {attribute_name}"
+    raise AttributeError(msg)
