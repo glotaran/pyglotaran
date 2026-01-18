@@ -98,15 +98,15 @@ def test_parameters_equal():
 
 
 @pytest.mark.parametrize(
-    "key_name, value_1, value_2",
-    (
+    ("key_name", "value_1", "value_2"),
+    [
         ("vary", True, False),
         ("min", -np.inf, -1),
         ("max", np.inf, 1),
         ("expression", None, "$a.1*10"),
         ("standard-error", np.nan, 1),
         ("non-negative", True, False),
-    ),
+    ],
 )
 def test_parameters_not_equal(key_name: str, value_1: Any, value_2: Any):
     """Instances of ``Parameters`` that have the same values are equal."""
@@ -120,7 +120,7 @@ def test_parameters_equal_error():
     """Raise if rhs operator is not an instance of ``Parameters``."""
     param_dict = {"foo": Parameter(label="foo")}
     with pytest.raises(NotImplementedError) as excinfo:
-        Parameters(param_dict) == param_dict
+        Parameters(param_dict) == param_dict  # noqa: B015
 
     assert (
         str(excinfo.value)
@@ -214,7 +214,7 @@ def test_parameters_array_conversion():
     values[1] = np.exp(values[1])
 
     for i in range(3):
-        assert parameters.get(f"{i+1}").value == values[i]
+        assert parameters.get(f"{i + 1}").value == values[i]
 
 
 def test_parameters_to_from_df():
@@ -270,14 +270,14 @@ def test_parameters_from_dataframe_minimal_required_columns():
 
 
 @pytest.mark.parametrize(
-    "column_name, expected_error_str",
-    (
+    ("column_name", "expected_error_str"),
+    [
         ("minimum", "Column 'minimum' in 'DataFrame' has non numeric values."),
         ("maximum", "Column 'maximum' in 'DataFrame' has non numeric values."),
         ("value", "Column 'value' in 'DataFrame' has non numeric values."),
         ("non_negative", "Column 'non_negative' in 'DataFrame' has non boolean values."),
         ("vary", "Column 'vary' in 'DataFrame' has non boolean values."),
-    ),
+    ],
 )
 def test_parameters_from_dataframe(column_name: str, expected_error_str: str):
     """Check error message on bad column values."""

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from pydantic import ValidationError
 
 from glotaran.builtin.elements.kinetic import Kinetic
 
@@ -169,13 +170,47 @@ class ParallelModelWithEquilibria:
     )
 
 
+def test_rate_string_key_validations():
+    """Test that string keys for rates are properly converted to tuple keys (common serde case)."""
+    kinetic_element = Kinetic.model_validate(
+        {
+            "rates": {
+                " s2 ,  s1  ": "rates.1",
+                ("s2", "s2"): "rates.2",
+                "(s2, s3)": "rates.3",
+            },
+        }
+    )
+    assert ("s2", "s1") in kinetic_element.rates
+    assert ("s2", "s2") in kinetic_element.rates
+    assert ("s2", "s3") in kinetic_element.rates
+
+    with pytest.raises(ValidationError, match="Invalid rate key format: 's1'"):
+        Kinetic.model_validate(
+            {
+                "rates": {
+                    "s1": "rates.1",
+                },
+            }
+        )
+
+    with pytest.raises(ValidationError, match="Invalid rate key format: 's1,s2,s3'"):
+        Kinetic.model_validate(
+            {
+                "rates": {
+                    "s1,s2,s3": "rates.1",
+                },
+            }
+        )
+
+
 @pytest.mark.parametrize(
     "model",
     [SequentialModel, SequentialModelWithBacktransfer, ParallelModel, ParallelModelWithEquilibria],
 )
-def test_a_matrix_general(model):
+def test_a_matrix_general(model):  # noqa: ANN001
     kinetic = Kinetic(rates=model.rates)
-    assert kinetic.species == model.species
+    assert kinetic.compartments == model.species
 
     initial_concentration = model.initial_concentration
 

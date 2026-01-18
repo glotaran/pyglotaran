@@ -9,6 +9,7 @@ and causing an [override] type error in the plugins implementation.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import TypeVar
@@ -48,8 +49,6 @@ if TYPE_CHECKING:
 
     ProjectIoMethods = TypeVar(
         "ProjectIoMethods",
-        Literal["load_model"],
-        Literal["save_model"],
         Literal["load_parameters"],
         Literal["save_parameters"],
         Literal["load_scheme"],
@@ -59,8 +58,6 @@ if TYPE_CHECKING:
     )
 
 PROJECT_IO_METHODS = (
-    "load_model",
-    "save_model",
     "load_parameters",
     "save_parameters",
     "load_scheme",
@@ -129,7 +126,7 @@ def is_known_project_format(format_name: str) -> bool:
     )
 
 
-def known_project_formats(full_names: bool = False) -> list[str]:
+def known_project_formats(*, full_names: bool = False) -> list[str]:
     """Names of the registered project io plugins.
 
     Parameters
@@ -157,8 +154,6 @@ def set_project_plugin(
 
     Effected functions:
 
-    - :func:`load_model`
-    - :func:`save_model`
     - :func:`load_parameters`
     - :func:`save_parameters`
     - :func:`load_scheme`
@@ -204,7 +199,11 @@ def get_project_io(format_name: str) -> ProjectIoInterface:
 
 
 @not_implemented_to_value_error
-def load_parameters(file_name: StrOrPath, format_name: str | None = None, **kwargs) -> Parameters:
+def load_parameters(
+    file_name: StrOrPath,
+    format_name: str | None = None,
+    **kwargs: Any,  # noqa: ANN401
+) -> Parameters:
     """Create a :class:`Parameters` instance from the specs defined in a file.
 
     Parameters
@@ -219,7 +218,7 @@ def load_parameters(file_name: StrOrPath, format_name: str | None = None, **kwar
 
     Returns
     -------
-    Parameters
+    :class:`Parameters`
         :class:`Parameters` instance created from the file.
 
     .. # noqa: D414
@@ -241,7 +240,7 @@ def save_parameters(
     *,
     allow_overwrite: bool = False,
     update_source_path: bool = True,
-    **kwargs: Any,
+    **kwargs: Any,  # noqa: ANN401
 ) -> None:
     """Save a :class:`Parameters` instance to a spec file.
 
@@ -270,7 +269,7 @@ def save_parameters(
 
 
 @not_implemented_to_value_error
-def load_scheme(file_name: StrOrPath, format_name: str | None = None, **kwargs: Any) -> Scheme:
+def load_scheme(file_name: StrOrPath, format_name: str | None = None, **kwargs: Any) -> Scheme:  # noqa: ANN401
     """Create a :class:`Scheme` instance from the specs defined in a file.
 
     Parameters
@@ -289,8 +288,12 @@ def load_scheme(file_name: StrOrPath, format_name: str | None = None, **kwargs: 
         :class:`Scheme` instance created from the file.
     """
     io = get_project_io(format_name or infer_file_format(file_name))
-
-    return io.load_scheme(Path(file_name).as_posix(), **kwargs)
+    # Path.is_file raises an OSError if the path is too long (i.e. yaml_str)
+    if os.path.isfile(file_name) is True:  # noqa: PTH113
+        file_name = Path(file_name).resolve().as_posix()
+    scheme = io.load_scheme(str(file_name), **kwargs)
+    scheme.source_path = Path(file_name)
+    return scheme
 
 
 @not_implemented_to_value_error
@@ -301,7 +304,7 @@ def save_scheme(
     *,
     allow_overwrite: bool = False,
     update_source_path: bool = True,
-    **kwargs: Any,
+    **kwargs: Any,  # noqa: ANN401
 ) -> None:
     """Save a :class:`Scheme` instance to a spec file.
 
@@ -324,13 +327,14 @@ def save_scheme(
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name or infer_file_format(file_name, needs_to_exist=False))
-    io.save_scheme(file_name=Path(file_name).as_posix(), scheme=scheme, **kwargs)
-    # if update_source_path is True:
-    #     scheme.source_path = Path(file_name).as_posix()
+    save_path = Path(file_name).resolve()
+    io.save_scheme(file_name=save_path.as_posix(), scheme=scheme, **kwargs)
+    if update_source_path is True:
+        scheme.source_path = save_path
 
 
 @not_implemented_to_value_error
-def load_result(result_path: StrOrPath, format_name: str | None = None, **kwargs: Any) -> Result:
+def load_result(result_path: StrOrPath, format_name: str | None = None, **kwargs: Any) -> Result:  # noqa: ANN401
     """Create a :class:`Result` instance from the specs defined in a file.
 
     Parameters
@@ -351,9 +355,9 @@ def load_result(result_path: StrOrPath, format_name: str | None = None, **kwargs
     """
     io = get_project_io(format_name or infer_file_format(result_path, allow_folder=True))
 
-    return io.load_result(Path(result_path).as_posix(), **kwargs)
-    # result.source_path = Path(result_path).as_posix()
-    # return result
+    result = io.load_result(Path(result_path).as_posix(), **kwargs)
+    result.source_path = Path(result_path)
+    return result
 
 
 @not_implemented_to_value_error
@@ -363,9 +367,9 @@ def save_result(
     format_name: str | None = None,
     *,
     allow_overwrite: bool = False,
-    # update_source_path: bool = True,
+    update_source_path: bool = True,
     saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
-    **kwargs: Any,
+    **kwargs: Any,  # noqa: ANN401
 ) -> list[str]:
     """Write a :class:`Result` instance to a spec file.
 
@@ -398,15 +402,15 @@ def save_result(
     io = get_project_io(
         format_name or infer_file_format(result_path, needs_to_exist=False, allow_folder=True)
     )
-    return io.save_result(
+    return_paths = io.save_result(
         result_path=Path(result_path).as_posix(),
         result=result,
         saving_options=saving_options,
         **kwargs,
     )
-    # if update_source_path is True:
-    #     result.source_path = Path(result_path).as_posix()
-    # return paths
+    if update_source_path is True:
+        result.source_path = Path(result_path)
+    return return_paths
 
 
 def get_project_io_method(format_name: str, method_name: ProjectIoMethods) -> Callable[..., Any]:
@@ -419,9 +423,9 @@ def get_project_io_method(format_name: str, method_name: ProjectIoMethods) -> Ca
     ----------
     format_name : str
         Format the dataloader should be able to read.
-    method_name : {'load_model', 'write_model', 'load_parameters', 'write_parameters',\
+    method_name : {'load_parameters', 'write_parameters',\
     'load_scheme', 'write_scheme', 'load_result', 'write_result'}
-        Method name, e.g. load_model.
+        Method name, e.g. load_scheme.
 
     Returns
     -------
@@ -442,7 +446,7 @@ def show_project_io_method_help(format_name: str, method_name: ProjectIoMethods)
     ----------
     format_name : str
         Format the method should support.
-    method_name : {'load_model', 'write_model', 'load_parameters', 'write_parameters',\
+    method_name : {'load_parameters', 'write_parameters',\
     'load_scheme', 'write_scheme', 'load_result', 'write_result'}
         Method name.
 
@@ -494,7 +498,7 @@ def project_io_plugin_table(
 
 def supported_file_extensions_project_io(
     method_names: str | Sequence[str],
-) -> Generator[str, None, None]:
+) -> Generator[str]:
     """Get project io formats that support all methods in ``method_names``.
 
     Parameters

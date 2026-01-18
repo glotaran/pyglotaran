@@ -104,37 +104,41 @@ test_clp = xr.DataArray(
 
 @pytest.mark.parametrize(
     "shape",
-    (
+    [
         "gaussian",
         "skewed_gaussian_neg",
         "skewed_gaussian_pos",
         "skewed_gaussian_zero",
-    ),
+    ],
 )
 def test_spectral(shape: str):
+    dataset_label = "dataset1"
     data_model = SpectralDataModel(elements=[shape])
     data_model.data = simulate(
         data_model, test_library, test_parameters_simulation, test_axies, clp=test_clp
     )
     experiments = [
         ExperimentModel(
-            datasets={"spectral": data_model},
+            datasets={dataset_label: data_model},
         )
     ]
     optimization = Optimization(
-        experiments,
-        test_parameters,
-        test_library,
+        models=experiments,
+        parameters=test_parameters,
+        library=test_library,
         raise_exception=True,
         maximum_number_function_evaluations=25,
     )
-    optimized_parameters, optimized_data, result = optimization.run()
-    assert result.success
-    print(test_parameters_simulation)
-    print(optimized_parameters)
+    optimized_parameters, optimization_results, optimization_info = optimization.run()
+    assert optimization_info.success
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
 
-    assert "spectral" in optimized_data
-    assert "spectrum" in optimized_data["spectral"]
-    assert "spectrum_associated_estimation" in optimized_data["spectral"]
-    assert "spectra" in optimized_data["spectral"]
+    assert dataset_label in optimization_results
+    assert shape in optimization_results[dataset_label].elements
+    element_result = optimization_results[dataset_label].elements[shape]
+    assert "amplitudes" in element_result
+    assert "concentrations" in element_result
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])

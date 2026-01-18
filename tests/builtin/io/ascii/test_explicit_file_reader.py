@@ -32,7 +32,7 @@ def test_read_explicit_file():
     test_dataset.sel(spectral=[620, 630, 650], method="nearest")
 
 
-def test_write_explicit_file(tmp_path):
+def test_write_explicit_file(tmp_path: Path):
     data_file = ExplicitFile(TEST_FILE_ASCII)
     test_dataarray_read = data_file.read(prepare=False)
     test_data_file = tmp_path.joinpath("test.ascii")

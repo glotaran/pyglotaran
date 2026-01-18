@@ -19,7 +19,7 @@ class SpectralShape(TypedItem):
 
 
 class SpectralShapeGaussian(SpectralShape):
-    """A Gaussian spectral shape"""
+    """A Gaussian spectral shape."""
 
     type: Literal["gaussian"]  # type:ignore[assignment]
     amplitude: ParameterType | None = None
@@ -72,7 +72,7 @@ class SpectralShapeGaussian(SpectralShape):
 
 
 class SpectralShapeSkewedGaussian(SpectralShapeGaussian):
-    """A skewed Gaussian spectral shape"""
+    """A skewed Gaussian spectral shape."""
 
     type: Literal["skewed-gaussian"]  # type:ignore[assignment]
     skewness: ParameterType
@@ -140,12 +140,12 @@ class SpectralShapeSkewedGaussian(SpectralShapeGaussian):
             -np.log(2) * np.square(np.log(log_args[valid_arg_mask]) / self.skewness)
         )
         if self.amplitude is not None:
-            shape *= self.amplitude  # type:ignore[arg-type]
+            shape *= self.amplitude
         return shape
 
 
 class SpectralShapeOne(SpectralShape):
-    """A constant spectral shape with value 1"""
+    """A constant spectral shape with value 1."""
 
     type: Literal["one"]  # type:ignore[assignment]
 
@@ -166,7 +166,7 @@ class SpectralShapeOne(SpectralShape):
 
 
 class SpectralShapeZero(SpectralShape):
-    """A constant spectral shape with value 0"""
+    """A constant spectral shape with value 0."""
 
     type: Literal["zero"]  # type:ignore[assignment]
 

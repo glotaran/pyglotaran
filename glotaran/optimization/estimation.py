@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from glotaran.model.clp_relation import ClpRelation
     from glotaran.typing.types import ArrayLike
 
-SUPPORTED_RESIUDAL_FUNCTIONS = {
+SUPPORTED_RESIDUAL_FUNCTIONS = {
     "variable_projection": residual_variable_projection,
     "non_negative_least_squares": residual_nnls,
 }
@@ -45,7 +45,7 @@ class OptimizationEstimation:
         tuple[ArrayLike, ArrayLike]
             The estimated clp and residual.
         """
-        residual_fn = SUPPORTED_RESIUDAL_FUNCTIONS[residual_function]
+        residual_fn = SUPPORTED_RESIDUAL_FUNCTIONS[residual_function]
         return cls(*residual_fn(matrix, data))
 
     def resolve_clp(

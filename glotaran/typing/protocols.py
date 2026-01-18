@@ -4,24 +4,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Protocol
-from typing import TypeVar
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-    from collections.abc import Mapping
-    from collections.abc import Sequence
-
+    from glotaran.typing.types import Self
     from glotaran.typing.types import StrOrPath
 
 
-class FileLoadableProtocol(Protocol):
-    """Protocol class that a file loadable class need adherer to."""
+class ToFromCsvSerializable(Protocol):
+    """Protocol class that a CSV serializable class needs to adhere to."""
 
-    loader: Callable[
-        [StrOrPath | Sequence[StrOrPath] | Mapping[str, StrOrPath]],
-        FileLoadableProtocol,
-    ]
-    source_path: StrOrPath | Sequence[StrOrPath] | Mapping[str, StrOrPath]
+    def to_csv(self, path: StrOrPath, delimiter: str = ",") -> None: ...
 
-
-FileLoadable = TypeVar("FileLoadable", bound=FileLoadableProtocol)
+    @classmethod
+    def from_csv(cls: type[Self], path: StrOrPath) -> Self: ...

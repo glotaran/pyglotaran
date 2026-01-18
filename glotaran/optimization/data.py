@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import abc
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import Literal
 
 import numpy as np
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
 class AlignDatasetError(ValueError):
     """Indicates that datasets can not be aligned."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize a AlignDatasetError."""
         super().__init__(
             "Cannot link datasets, aligning is ambiguous. \n\n"
@@ -43,7 +44,7 @@ class OptimizationDataProvider:
 class OptimizationData(OptimizationDataProvider):
     """A class to provide prepared data for optimization."""
 
-    def __init__(self, model: DataModel):
+    def __init__(self, model: DataModel) -> None:
         """Initialize a data provider for an experiment.
 
         Parameters
@@ -56,6 +57,7 @@ class OptimizationData(OptimizationDataProvider):
         data = model.data
         assert isinstance(data, xr.Dataset)
 
+        self._original_dataset_attributes = data.attrs.copy()
         self._model = model
         self._model_dimension = get_data_model_dimension(model)
         self._model_axis = data.coords[self._model_dimension].data
@@ -79,6 +81,10 @@ class OptimizationData(OptimizationDataProvider):
             self._data_slices = []
         else:
             self._data_slices = [self._data[:, i] for i in range(self.global_axis.size)]
+
+    @property
+    def original_dataset_attributes(self) -> dict[Any, Any]:
+        return self._original_dataset_attributes
 
     @property
     def data(self) -> ArrayLike:
@@ -235,6 +241,15 @@ class OptimizationData(OptimizationDataProvider):
                 data = data.T
         return data
 
+    def unweight_result_dataset(self, result_dataset: xr.Dataset) -> None:
+        if self.weight is None:
+            return
+
+        if "weight" not in result_dataset:
+            result_dataset["weight"] = xr.DataArray(self.weight, coords=result_dataset.data.coords)
+        result_dataset["weighted_residual"] = result_dataset["residual"]
+        result_dataset["residual"] = result_dataset["residual"] / self.weight
+
 
 class LinkedOptimizationData(OptimizationDataProvider):
     def __init__(
@@ -243,7 +258,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
         tolerance: float,
         method: Literal["nearest", "backward", "forward"],
         scales: dict[str, Parameter],
-    ):
+    ) -> None:
         self._datasets = datasets
         self._scales = {label: scales.get(label, 1.0) for label in self._datasets}
         aligned_global_axes = self.align_global_axes(tolerance, method)
@@ -361,7 +376,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
             if aligned_axis_values is None:
                 aligned_axis_values = aligned_global_axis
             else:
-                aligned_global_axis = [
+                aligned_global_axis = [  # type:ignore[assignment]
                     self.align_index(index, aligned_axis_values, tolerance, method)
                     for index in aligned_global_axis
                 ]

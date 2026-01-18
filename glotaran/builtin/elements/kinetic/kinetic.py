@@ -1,12 +1,15 @@
-"""K-Matrix"""
+"""K-Matrix."""
 
 from __future__ import annotations
 
 import itertools
 from functools import reduce
 from typing import TYPE_CHECKING
+from typing import Annotated
 
 import numpy as np
+from pydantic import BeforeValidator
+from pydantic import PlainSerializer
 from scipy.linalg import eig
 from scipy.linalg import solve
 
@@ -17,14 +20,51 @@ if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
 
 
+def convert_string_key_to_tuple(value: str | tuple[str, str]) -> tuple[str, str]:
+    """Ensure the value is a tuple of two strings."""
+    if isinstance(value, str):
+        to_compartment, _, from_compartment = value.partition(",")
+        to_compartment, from_compartment = (
+            to_compartment.strip().lstrip("("),
+            from_compartment.strip().rstrip(")"),
+        )
+        if any(
+            compartment == "" or "," in compartment
+            for compartment in (to_compartment, from_compartment)
+        ):
+            msg = (
+                f"Invalid rate key format: '{value}'. "
+                "Expected format 'to_compartment,from_compartment'."
+            )
+            raise ValueError(msg)
+        return (to_compartment.strip(), from_compartment.strip())
+    return value
+
+
+def ensure_keys(
+    value: dict[tuple[str, str] | str, ParameterType],
+) -> dict[tuple[str, str], ParameterType]:
+    """Ensure all keys are tuples of strings."""
+    return {convert_string_key_to_tuple(k): v for k, v in value.items()}
+
+
+def tuple_to_string_keys(value: dict[tuple[str, str], ParameterType]) -> dict[str, ParameterType]:
+    """Convert a tuple keys to string keys."""
+    return {f"({key[0]}, {key[1]})": value for key, value in value.items()}
+
+
 class Kinetic(Item):
     """A scheme for kinetic dynamics, e.g. anergy transfers between states."""
 
-    rates: dict[tuple[str, str], ParameterType]
+    rates: Annotated[
+        dict[tuple[str, str], ParameterType],
+        BeforeValidator(ensure_keys),
+        PlainSerializer(tuple_to_string_keys, when_used="json"),
+    ]
 
     @classmethod
     def combine(cls, kinetics: list[Kinetic]) -> Kinetic:
-        """Creates a combined matrix.
+        """Create a combined matrix.
 
         When combining k-matrices km1 and km2 (km1.combine(km2)),
         entries in km1 will be overwritten by corresponding entries in km2.
@@ -43,8 +83,8 @@ class Kinetic(Item):
         return cls(rates=reduce(lambda lhs, rhs: lhs | rhs, [k.rates for k in kinetics]))
 
     @property
-    def species(self) -> list[str]:
-        """A list of all species involved in the kinetic scheme."""
+    def compartments(self) -> list[str]:
+        """A list of all compartments involved in the kinetic scheme."""
         return list(dict.fromkeys([c for cs in self.rates for c in reversed(cs)]))
 
     @property
@@ -57,12 +97,11 @@ class Kinetic(Item):
             The compartment order.
         """
 
-        species = self.species
-        size = len(species)
+        size = len(self.compartments)
         array = np.zeros((size, size), dtype=np.float64)
         for (to_comp, from_comp), rate in self.rates.items():
-            to_idx = species.index(to_comp)
-            fr_idx = species.index(from_comp)
+            to_idx = self.compartments.index(to_comp)
+            fr_idx = self.compartments.index(from_comp)
             array[to_idx, fr_idx] = rate
         return array
 
@@ -75,12 +114,11 @@ class Kinetic(Item):
         compartments :
             The compartment order.
         """
-        species = self.species
-        size = len(species)
+        size = len(self.compartments)
         array = np.zeros((size, size), np.float64)
         for (to_comp, from_comp), rate in self.rates.items():
-            to_idx = species.index(to_comp)
-            fr_idx = species.index(from_comp)
+            to_idx = self.compartments.index(to_comp)
+            fr_idx = self.compartments.index(from_comp)
 
             if to_idx == fr_idx:
                 array[to_idx, fr_idx] -= rate
@@ -90,7 +128,7 @@ class Kinetic(Item):
         return array
 
     def eigen(self) -> tuple[ArrayLike, ArrayLike]:
-        """Returns the eigenvalues and eigenvectors of the k matrix.
+        """Return the eigenvalues and eigenvectors of the k matrix.
 
         Parameters
         ----------
@@ -104,7 +142,7 @@ class Kinetic(Item):
         return (eigenvalues.real, eigenvectors.real)
 
     def calculate(self, concentrations: ArrayLike | None = None) -> ArrayLike:
-        """The resulting rates of the matrix.
+        """Calculate resulting rates of the matrix.
 
         By definition, the eigenvalues of the compartmental model are negative and
         the rates are the negatives of the eigenvalues, thus the eigenvalues need to be
@@ -123,7 +161,7 @@ class Kinetic(Item):
         return -eigenvalues
 
     def a_matrix(self, concentrations: ArrayLike) -> ArrayLike:
-        """The A matrix of the KMatrix.
+        """Return A matrix of the KMatrix.
 
         Parameters
         ----------
@@ -137,7 +175,7 @@ class Kinetic(Item):
         )
 
     def a_matrix_general(self, concentrations: ArrayLike) -> np.ndarray:
-        """The A matrix of the KMatrix for a general model.
+        """Return A matrix of the KMatrix for a general model.
 
         Parameters
         ----------
@@ -153,7 +191,7 @@ class Kinetic(Item):
         return a_matrix.T
 
     def a_matrix_sequential(self) -> np.ndarray:
-        """The A matrix of the KMatrix for a sequential model.
+        """Return A matrix of the KMatrix for a sequential model.
 
         Parameters
         ----------
@@ -175,7 +213,7 @@ class Kinetic(Item):
         return a_matrix
 
     def is_sequential(self, concentrations: ArrayLike) -> bool:
-        """Returns true in the KMatrix represents an unibranched model.
+        """Return true in the KMatrix represents an unibranched model.
 
         Parameters
         ----------
@@ -186,6 +224,6 @@ class Kinetic(Item):
             return False
         array = self.array
         return not any(
-            np.nonzero(array[:, i])[0].size != 1 or i != 0 and array[i, i - 1] == 0
+            np.nonzero(array[:, i])[0].size != 1 or (i != 0 and array[i, i - 1] == 0)
             for i in range(array.shape[1])
         )

@@ -4,19 +4,27 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from glotaran.io.interface import SAVING_OPTIONS_DEFAULT
 from glotaran.plugin_system.io_plugin_utils import bool_str_repr
 from glotaran.plugin_system.io_plugin_utils import bool_table_repr
 from glotaran.plugin_system.io_plugin_utils import infer_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
+from glotaran.plugin_system.io_plugin_utils import resolve_saving_option_plugin_names
+from glotaran.testing.plugin_system import monkeypatch_plugin_registry_data_io
+from glotaran.testing.plugin_system import monkeypatch_plugin_registry_project_io
+from tests.plugin_system.test_data_io_registration import MockDataIo
+from tests.plugin_system.test_project_io_registration import MockProjectIo
 
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from glotaran.io.interface import SavingOptions
+
 
 @pytest.mark.parametrize(
-    "extension,expected",
-    (
+    ("extension", "expected"),
+    [
         (
             "yaml",
             "yaml",
@@ -33,7 +41,7 @@ if TYPE_CHECKING:
             "something.sdt",
             "sdt",
         ),
-    ),
+    ],
 )
 def test_infer_file_format(tmp_path: Path, extension: str, expected: str):
     """Infer type from existing files with extension."""
@@ -49,12 +57,12 @@ def test_inferr_file_format_no_extension(tmp_path: Path):
     file_path.touch()
 
     with pytest.raises(
-        ValueError, match="Cannot determine format of file .+?, please provide an explicit format"
+        ValueError, match=r"Cannot determine format of file .+?, please provide an explicit format"
     ):
         infer_file_format(file_path)
 
 
-@pytest.mark.parametrize("is_file", (True, False))
+@pytest.mark.parametrize("is_file", [True, False])
 def test_infer_file_format_allow_folder(tmp_path: Path, is_file: bool):
     """If there is no extension, return legacy."""
     file_path = tmp_path / "dummy"
@@ -94,7 +102,7 @@ def test_protect_from_overwrite_file_exists(tmp_path: Path):
     path = tmp_path / "dummy.txt"
     path.touch()
 
-    with pytest.raises(FileExistsError, match="The file .+? already exists"):
+    with pytest.raises(FileExistsError, match=r"The file .+? already exists"):
         protect_from_overwrite(path)
 
 
@@ -113,7 +121,7 @@ def test_protect_from_overwrite_not_empty_dir(tmp_path: Path):
 
     (path / "dummy.txt").write_text("test", encoding="utf8")
 
-    with pytest.raises(FileExistsError, match="The folder .+? already exists and is not empty"):
+    with pytest.raises(FileExistsError, match=r"The folder .+? already exists and is not empty"):
         protect_from_overwrite(path)
 
 
@@ -131,5 +139,55 @@ def test_bool_table_repr():
     table_data = [["foo", True, False], ["bar", False, True]]
     expected = [["foo", "*", "/"], ["bar", "/", "*"]]
 
-    for row, expected_row in zip(bool_table_repr(table_data), expected):
+    for row, expected_row in zip(bool_table_repr(table_data), expected, strict=True):
         assert list(row) == expected_row
+
+
+def test_resolve_saving_option_plugin_names_default():
+    """Default saving options uses default plugins."""
+    saving_options = SAVING_OPTIONS_DEFAULT
+    resolved = resolve_saving_option_plugin_names(saving_options)
+    assert saving_options == SAVING_OPTIONS_DEFAULT
+    assert resolved == SAVING_OPTIONS_DEFAULT | {
+        "data_plugin": "glotaran.builtin.io.netCDF.netCDF.NetCDFDataIo_nc",
+        "parameters_plugin": "glotaran.builtin.io.pandas.csv.CsvProjectIo_csv",
+        "scheme_plugin": "glotaran.builtin.io.yml.yml.YmlProjectIo_yml",
+    }
+
+
+def test_resolve_saving_option_plugin_names_empty():
+    """Empty saving options uses default plugins."""
+    saving_options: SavingOptions = {}
+    resolved = resolve_saving_option_plugin_names(saving_options)
+    assert saving_options == {}
+    assert resolved == {
+        "data_plugin": "glotaran.builtin.io.netCDF.netCDF.NetCDFDataIo_nc",
+        "parameters_plugin": "glotaran.builtin.io.pandas.csv.CsvProjectIo_csv",
+        "scheme_plugin": "glotaran.builtin.io.yml.yml.YmlProjectIo_yml",
+    }
+
+
+def test_resolve_saving_option_plugin_names_non_default_plugins():
+    """Non-default saving options resolve correctly."""
+    saving_options: SavingOptions = {
+        "data_format": "foo",
+        "parameters_format": "bar",
+        "scheme_format": "baz",
+    }
+    with (
+        monkeypatch_plugin_registry_data_io({"foo": MockDataIo("foo")}),
+        monkeypatch_plugin_registry_project_io(
+            {"bar": MockProjectIo("bar"), "baz": MockProjectIo("baz")}
+        ),
+    ):
+        resolved = resolve_saving_option_plugin_names(saving_options)
+    assert saving_options == {
+        "data_format": "foo",
+        "parameters_format": "bar",
+        "scheme_format": "baz",
+    }
+    assert resolved == saving_options | {
+        "data_plugin": "tests.plugin_system.test_data_io_registration.MockDataIo_foo",
+        "parameters_plugin": "tests.plugin_system.test_project_io_registration.MockProjectIo_bar",
+        "scheme_plugin": "tests.plugin_system.test_project_io_registration.MockProjectIo_baz",
+    }

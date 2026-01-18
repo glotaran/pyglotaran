@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from typing import Annotated
 from typing import Literal
+
+from pydantic import AfterValidator
 
 from glotaran.model.interval_item import IntervalItem
 from glotaran.model.item import TypedItem
@@ -15,7 +18,7 @@ class ClpConstraint(TypedItem, IntervalItem):
     the respective classes for details.
     """
 
-    target: str
+    target: Annotated[str | list[str], AfterValidator(lambda v: [v] if isinstance(v, str) else v)]
 
 
 class ZeroConstraint(ClpConstraint):

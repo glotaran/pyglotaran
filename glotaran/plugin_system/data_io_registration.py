@@ -18,6 +18,7 @@ from tabulate import tabulate
 from glotaran.io.interface import DataIoInterface
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.base_registry import add_instantiated_plugin_to_registry
+from glotaran.plugin_system.base_registry import full_plugin_name
 from glotaran.plugin_system.base_registry import get_method_from_plugin
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
@@ -106,7 +107,7 @@ def is_known_data_format(format_name: str) -> bool:
     )
 
 
-def known_data_formats(full_names: bool = False) -> list[str]:
+def known_data_formats(*, full_names: bool = False) -> list[str]:
     """Names of the registered data io plugins.
 
     Parameters
@@ -175,7 +176,9 @@ def get_data_io(format_name: str) -> DataIoInterface:
 
 @not_implemented_to_value_error
 def load_dataset(
-    file_name: StrOrPath, format_name: str | None = None, **kwargs: Any
+    file_name: StrOrPath,
+    format_name: str | None = None,
+    **kwargs: Any,  # noqa: ANN401
 ) -> xr.Dataset:
     """Read data from a file to :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
 
@@ -200,8 +203,9 @@ def load_dataset(
 
     if isinstance(dataset, xr.DataArray):
         dataset = dataset.to_dataset(name="data")
-    dataset.attrs["loader"] = load_dataset
-    dataset.attrs["source_path"] = Path(file_name).as_posix()
+    dataset.attrs["source_path"] = Path(file_name).resolve().as_posix()
+    dataset.attrs["io_plugin_name"] = full_plugin_name(io)
+
     return dataset
 
 
@@ -211,10 +215,10 @@ def save_dataset(
     file_name: StrOrPath,
     format_name: str | None = None,
     *,
-    data_filters: list[str] | None = None,
+    data_filters: list[str] | None = None,  # noqa: ARG001
     allow_overwrite: bool = False,
     update_source_path: bool = True,
-    **kwargs: Any,
+    **kwargs: Any,  # noqa: ANN401
 ) -> None:
     """Save data from :xarraydoc:`Dataset` or :xarraydoc:`DataArray` to a file.
 
@@ -240,12 +244,10 @@ def save_dataset(
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_data_io(format_name or infer_file_format(file_name, needs_to_exist=False))
-    if "loader" in dataset.attrs:
-        del dataset.attrs["loader"]
     io.save_dataset(file_name=Path(file_name).as_posix(), dataset=dataset, **kwargs)
-    dataset.attrs["loader"] = load_dataset
     if update_source_path is True or "source_path" not in dataset.attrs:
         dataset.attrs["source_path"] = Path(file_name).as_posix()
+        dataset.attrs["io_plugin_name"] = full_plugin_name(io)
 
 
 def get_dataloader(format_name: str) -> DataLoader:
@@ -343,7 +345,7 @@ def data_io_plugin_table(*, plugin_names: bool = False, full_names: bool = False
 
 def supported_file_extensions_data_io(
     method_names: str | Sequence[str],
-) -> Generator[str, None, None]:
+) -> Generator[str]:
     """Get data io formats that support all methods in ``method_names``.
 
     Parameters

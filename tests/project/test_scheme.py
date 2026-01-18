@@ -27,9 +27,9 @@ test_scheme_dict = {
             "datasets": {
                 "kinetic_parallel": {
                     "elements": ["parallel"],
-                    "activation": [
-                        {"type": "instant", "compartments": {"s1": 1}},
-                    ],
+                    "activations": {
+                        "irf": {"type": "instant", "compartments": {"s1": 1}},
+                    },
                 }
             }
         }
@@ -65,16 +65,19 @@ def test_scheme():
     assert isinstance(
         scheme.experiments["test_experiment"].datasets["kinetic_parallel"], ActivationDataModel
     )
-    scheme.load_data(
-        {
-            "kinetic_parallel": simulate(
-                scheme.experiments["test_experiment"].datasets["kinetic_parallel"],
-                scheme.library,
-                test_parameters,
-                test_axies,
-                clp=test_clp,
-            )
-        }
-    )
-    result = scheme.optimize(test_parameters)
-    assert result.optimization.success
+    datasets = {
+        "kinetic_parallel": simulate(
+            scheme.experiments["test_experiment"].datasets["kinetic_parallel"],
+            scheme.library,
+            test_parameters,
+            test_axies,
+            clp=test_clp,
+        )
+    }
+    result = scheme.optimize(test_parameters, datasets)
+    assert result.optimization_info.success
+
+
+def test_scheme_round_trip_serialization():
+    """Dumping a scheme returns the original dict."""
+    assert Scheme.from_dict(test_scheme_dict).model_dump(exclude_unset=True) == test_scheme_dict

@@ -51,9 +51,9 @@ def _load_datasets(dataset_mappable: DatasetMappable, index: int = 1) -> dict[st
         If the type of ``dataset_mappable`` is not explicitly supported.
     """
     dataset_mapping = {}
-    if isinstance(dataset_mappable, (str, Path)):
+    if isinstance(dataset_mappable, str | Path):
         dataset_mapping[Path(dataset_mappable).stem] = load_dataset(dataset_mappable)
-    elif isinstance(dataset_mappable, (xr.Dataset, xr.DataArray)):
+    elif isinstance(dataset_mappable, xr.Dataset | xr.DataArray):
         if isinstance(dataset_mappable, xr.DataArray):
             dataset_mappable: xr.Dataset = dataset_mappable.to_dataset(  # type:ignore[no-redef]
                 name="data"
@@ -62,19 +62,20 @@ def _load_datasets(dataset_mappable: DatasetMappable, index: int = 1) -> dict[st
             dataset_mappable.attrs["source_path"] = f"dataset_{index}.nc"
         dataset_mapping[Path(dataset_mappable.source_path).stem] = dataset_mappable
     elif isinstance(dataset_mappable, Sequence):
-        for index, dataset in enumerate(dataset_mappable, start=1):
-            key, value = next(iter(_load_datasets(dataset, index=index).items()))
+        for dataset_index, dataset in enumerate(dataset_mappable, start=1):
+            key, value = next(iter(_load_datasets(dataset, index=dataset_index).items()))
             dataset_mapping[key] = value
     elif isinstance(dataset_mappable, Mapping):
         for key, dataset in dataset_mappable.items():
             _, value = next(iter(_load_datasets(dataset).items()))
             dataset_mapping[key] = value
     else:
-        raise TypeError(
+        msg = (
             f"Type '{type(dataset_mappable).__name__}' for 'dataset_mappable' of value "
             f"'{dataset_mappable}' is not supported."
             f"\nSupported types are:\n {DatasetMappable}."
         )
+        raise TypeError(msg)
     return dataset_mapping
 
 
@@ -112,7 +113,7 @@ class DatasetMapping(MutableMapping):
         return cls(_load_datasets(dataset_mappable))
 
     @property
-    def source_path(self):
+    def source_path(self) -> Mapping[str, str]:
         """Map the ``source_path`` attribute of each dataset to a standalone mapping.
 
         Note
@@ -193,7 +194,7 @@ def load_datasets(dataset_mappable: DatasetMappable) -> DatasetMapping:
 
 
 @contextmanager
-def chdir_context(folder_path: StrOrPath) -> Generator[Path, None, None]:
+def chdir_context(folder_path: StrOrPath) -> Generator[Path]:
     """Context manager to change directory to ``folder_path``.
 
     Parameters
@@ -214,7 +215,8 @@ def chdir_context(folder_path: StrOrPath) -> Generator[Path, None, None]:
     original_dir = Path(os.curdir).resolve()
     folder_path = Path(folder_path)
     if folder_path.is_file() is True:
-        raise ValueError("Value of 'folder_path' needs to be a folder but was an existing file.")
+        msg = "Value of 'folder_path' needs to be a folder but was an existing file."
+        raise ValueError(msg)
     folder_path.mkdir(parents=True, exist_ok=True)
     try:
         os.chdir(folder_path)
@@ -244,8 +246,13 @@ def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = No
         ``source_path`` as posix path relative to ``base_path`` if defined.
     """
     source_path = Path(source_path)
-    if base_path is not None and (
-        source_path.is_absolute() or Path(base_path).resolve() in source_path.resolve().parents
+    # Base path and source path have common parents except the file system root (drive on Windows)
+    if (
+        base_path is not None
+        and set(source_path.resolve().parents[:-1]).isdisjoint(
+            Path(base_path).resolve().parents[:-1]
+        )
+        is False
     ):
         with contextlib.suppress(ValueError):
             source_path = os.path.relpath(source_path.as_posix(), Path(base_path).as_posix())
@@ -281,7 +288,9 @@ def normalize_dataframe_columns(
 
 
 def safe_dataframe_fillna(
-    input_df: pd.DataFrame, column_name: str, fill_value: Any
+    input_df: pd.DataFrame,
+    column_name: str,
+    fill_value: Any,  # noqa: ANN401
 ) -> pd.DataFrame:
     """Fill NaN values with ``fill_value``  if the column exists or do nothing.
 
@@ -304,7 +313,10 @@ def safe_dataframe_fillna(
 
 
 def safe_dataframe_replace(
-    input_df: pd.DataFrame, column_name: str, to_be_replaced_values: Any, replace_value: Any
+    input_df: pd.DataFrame,
+    column_name: str,
+    to_be_replaced_values: Any,  # noqa: ANN401
+    replace_value: Any,  # noqa: ANN401
 ) -> pd.DataFrame:
     """Replace column values with ``replace_value`` if the column exists or do nothing.
 
@@ -326,7 +338,7 @@ def safe_dataframe_replace(
     -------
         pd.DataFrame
     """
-    if not isinstance(to_be_replaced_values, (list, tuple)):
+    if not isinstance(to_be_replaced_values, list | tuple):
         to_be_replaced_values = [to_be_replaced_values]
     if column_name in input_df.columns:
         return input_df.assign(
@@ -342,12 +354,14 @@ def get_script_dir(*, nesting: int = 0) -> Path:
     In notebooks the global ``__file__`` variable isn't set, thus we need different
     means to get the folder a script is defined in, which doesn't change with the
     current working director the ``python interpreter`` was called from.
+
     Parameters
     ----------
     nesting : int
         Number to go up in the call stack to get to the initially calling function.
         This is only needed for library code and not for user code.
         , by default 0 (direct call)
+
     Returns
     -------
     Path
@@ -366,6 +380,7 @@ def make_path_absolute_if_relative(path: Path) -> Path:
     ----------
     path : Path
         The path to make absolute.
+
     Returns
     -------
     Path
@@ -432,24 +447,27 @@ def create_clp_guide_dataset(
     """
     if isinstance(result, xr.Dataset):
         dataset = result
-    elif dataset_name is None or dataset_name not in result.data:
-        raise ValueError(
+    elif dataset_name is None or dataset_name not in result.optimization_results:
+        msg = (
             f"Unknown dataset {dataset_name!r}. "
-            f"Known datasets are:\n {list(result.data.keys())}"
+            f"Known datasets are:\n {list(result.optimization_results.keys())}"
         )
+        raise ValueError(msg)
     else:
-        dataset = result.data[dataset_name]
+        dataset = result.optimization_results[dataset_name]
     if clp_label not in dataset.clp_label:
-        raise ValueError(
+        msg = (
             f"Unknown clp_label {clp_label!r}. "
             f"Known clp_labels are:\n {[str(label) for label in dataset.clp_label.to_numpy()]}"
         )
+        raise ValueError(msg)
     if "model_dimension" not in dataset.attrs:
-        raise ValueError(
+        msg = (
             "Result dataset is missing attribute 'model_dimension', "
             "which means that it was created with pyglotaran<0.6.0."
             "Please recreate the result with the latest version of pyglotaran."
         )
+        raise ValueError(msg)
 
     clp_values = dataset.clp.sel(clp_label=[clp_label])
     value_dimension = next(filter(lambda x: x != dataset.model_dimension, clp_values.dims))

@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from types import TracebackType
 
+    from typing_extensions import Self
+
 
 class TeeContext:
     """Context manager that allows to work with string written to stdout.
@@ -22,7 +24,7 @@ class TeeContext:
         self.buffer = StringIO()
         self.stdout = sys.stdout
 
-    def __enter__(self) -> TeeContext:
+    def __enter__(self) -> Self:
         """Replace ``sys.stdout`` on entering the context.
 
         Returns
@@ -30,7 +32,7 @@ class TeeContext:
         TeeContext
             Instance that can be read from.
         """
-        sys.stdout = self  # type:ignore[assignment]
+        sys.stdout = self
         return self
 
     def __exit__(

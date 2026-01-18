@@ -49,7 +49,8 @@ def prepare_time_trace_dataset(
     if irf is not None:
         if isinstance(irf, np.ndarray):
             if len(irf.shape) != 1:
-                raise ValueError("IRF with more than one dimension must be `xarray.DataArray`.")
+                msg = "IRF with more than one dimension must be `xarray.DataArray`."
+                raise ValueError(msg)
             dataset["irf"] = (("time",), irf)
         else:
             dataset["irf"] = irf

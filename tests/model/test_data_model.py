@@ -1,17 +1,19 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 from typing import Literal
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model.data_model import DataModel
 from glotaran.model.element import Element
 from glotaran.model.item import get_item_issues
 from glotaran.parameter import Parameters
-from tests.model.test_item import MockItem  # noqa: TCH001
-from tests.model.test_item import MockTypedItem  # noqa: TCH001
+from tests.model.test_item import MockItem  # noqa: TC001
+from tests.model.test_item import MockTypedItem  # noqa: TC001
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
@@ -31,9 +33,19 @@ class MockElementWithDataModel(Element):
         model: DataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-        **kwargs,
+        **kwargs: Any,
     ):
         return ["a"], np.array([[1]])
+
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
 
 
 class MockElementWithItem(Element):
@@ -46,9 +58,19 @@ class MockElementWithItem(Element):
         model: DataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-        **kwargs,
+        **kwargs: Any,
     ):
         return ["a"], np.array([[1]])
+
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
 
 
 class MockElementNonUniqueExclusive(Element):
@@ -56,6 +78,16 @@ class MockElementNonUniqueExclusive(Element):
 
     def calculate_matrix():
         pass
+
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
 
 
 class MockElementExclusive(Element):
@@ -65,6 +97,16 @@ class MockElementExclusive(Element):
     def calculate_matrix():
         pass
 
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
+
 
 class MockElementUnique(Element):
     type: Literal["test_element_unique"]
@@ -72,6 +114,16 @@ class MockElementUnique(Element):
 
     def calculate_matrix():
         pass
+
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
 
 
 class MockElementDim1(Element):
@@ -81,6 +133,16 @@ class MockElementDim1(Element):
     def calculate_matrix():
         pass
 
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
+
 
 class MockElementDim2(Element):
     type: Literal["test_element_dim2"]
@@ -88,6 +150,16 @@ class MockElementDim2(Element):
 
     def calculate_matrix():
         pass
+
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
 
 
 def test_data_model_from_dict():
@@ -134,3 +206,15 @@ def test_get_data_model_issues():
     assert len(get_item_issues(ok, Parameters({}))) == 0
     assert len(get_item_issues(exclusive, Parameters({}))) == 1
     assert len(get_item_issues(unique, Parameters({}))) == 2
+
+
+def test_data_model_data_path():
+    """Test that dataset ``source_path`` is returned when set."""
+    data_model = DataModel(elements=[])
+    assert data_model.data_path is None
+
+    data_model.data = xr.Dataset()
+    assert data_model.data_path is None
+
+    data_model.data = xr.Dataset(attrs={"source_path": "path-to-file"})
+    assert data_model.data_path == "path-to-file"

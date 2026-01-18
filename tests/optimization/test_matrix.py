@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -17,12 +18,15 @@ from tests.optimization.data import TestDataModelConstantIndexIndependent
 from tests.optimization.data import TestDataModelConstantThreeCompartments
 from tests.optimization.data import TestDataModelGlobal
 
+if TYPE_CHECKING:
+    from glotaran.model.data_model import DataModel
 
-@pytest.mark.parametrize("weight", (True, False))
+
+@pytest.mark.parametrize("weight", [True, False])
 @pytest.mark.parametrize(
-    "data_model", (TestDataModelConstantIndexIndependent, TestDataModelConstantIndexDependent)
+    "data_model", [TestDataModelConstantIndexIndependent, TestDataModelConstantIndexDependent]
 )
-def test_from_data(weight, data_model):
+def test_from_data(weight: bool, data_model: DataModel):
     data_model = deepcopy(data_model)
     if weight:
         data_model.data["weight"] = xr.ones_like(data_model.data.data) * 0.5
@@ -40,13 +44,13 @@ def test_from_data(weight, data_model):
     assert (matrix.array == matrix_value).all()
 
 
-@pytest.mark.parametrize("weight", (True, False))
+@pytest.mark.parametrize("weight", [True, False])
 def test_from_global_data(weight: bool):
     data_model = deepcopy(TestDataModelGlobal)
     if weight:
         data_model.data["weight"] = xr.ones_like(data_model.data.data) * 0.5
     data = OptimizationData(data_model)
-    matrix, global_matrix, full_matrix = OptimizationMatrix.from_global_data(data)
+    _matrix, global_matrix, full_matrix = OptimizationMatrix.from_global_data(data)
     assert global_matrix.array.shape == (data.global_axis.size, 1)
     assert full_matrix.array.shape == (data.global_axis.size * data.model_axis.size, 1)
     assert full_matrix.clp_axis == ["c4@c4"]
@@ -54,16 +58,18 @@ def test_from_global_data(weight: bool):
 
 def test_constraints():
     data_model = deepcopy(TestDataModelConstantThreeCompartments)
-    constraints = [ZeroConstraint(type="zero", target="c3_3", interval=[(3, 7)])]
+    data_model.elements[0].clp_constraints = [
+        ZeroConstraint(type="zero", target="c3_3", interval=[(3, 7)])
+    ]
     data = OptimizationData(data_model)
     matrix = OptimizationMatrix.from_data(data)
 
     assert matrix.array.shape == (5, 3)
     assert matrix.clp_axis == ["c3_1", "c3_2", "c3_3"]
-    reduced_matrix = matrix.reduce(0, constraints, [])
+    reduced_matrix = matrix.reduce(0, [])
     assert reduced_matrix.array.shape == (5, 3)
     assert reduced_matrix.clp_axis == ["c3_1", "c3_2", "c3_3"]
-    reduced_matrix = matrix.reduce(3, constraints, [])
+    reduced_matrix = matrix.reduce(3, [])
     assert reduced_matrix.array.shape == (5, 2)
     assert reduced_matrix.clp_axis == ["c3_1", "c3_2"]
 
@@ -82,10 +88,10 @@ def test_relations():
     assert matrix.array.shape == (5, 3)
     assert matrix.clp_axis == ["c3_1", "c3_2", "c3_3"]
 
-    reduced_matrix = matrix.at_index(0).reduce(0, [], relations)
+    reduced_matrix = matrix.at_index(0).reduce(0, relations)
     assert reduced_matrix.array.shape == (5, 3)
     assert reduced_matrix.clp_axis == ["c3_1", "c3_2", "c3_3"]
-    reduced_matrix = matrix.at_index(3).reduce(3, [], relations)
+    reduced_matrix = matrix.at_index(3).reduce(3, relations)
     assert reduced_matrix.array.shape == (5, 2)
     assert reduced_matrix.clp_axis == ["c3_1", "c3_2"]
     assert np.array_equal(reduced_matrix.array[:, 1], matrix.array[:, 1] + matrix.array[:, 2] * 3)

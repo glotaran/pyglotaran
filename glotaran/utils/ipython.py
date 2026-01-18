@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class MarkdownStr(UserString):
     """String wrapper class for rich display integration of markdown in ipython."""
 
-    def __init__(self, wrapped_str: str, *, syntax: str | None = None):
+    def __init__(self, wrapped_str: str, *, syntax: str | None = None) -> None:
         """Initialize string class that is automatically displayed as markdown by ``ipython``.
 
         Parameters
@@ -59,9 +59,13 @@ class MarkdownStr(UserString):
 
     def __eq__(self, other: object) -> bool:
         """Equality check."""
-        if isinstance(other, (str, MarkdownStr)):
+        if isinstance(other, str | MarkdownStr):
             return str(self) == str(other)
         return NotImplemented
+
+    def __hash__(self) -> int:
+        """Hash function for the class."""
+        return super().__hash__()
 
 
 def display_file(path: StrOrPath, *, syntax: str | None = None) -> MarkdownStr:

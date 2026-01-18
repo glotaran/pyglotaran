@@ -36,7 +36,7 @@ def yaml_reference_subset() -> Parameters:
     return load_parameters(PANDAS_TEST_DATA / "reference_parameters_subset.yaml")
 
 
-@pytest.mark.parametrize("reference_path", (PATH_XLSX, PATH_ODS, PATH_CSV, PATH_TSV))
+@pytest.mark.parametrize("reference_path", [PATH_XLSX, PATH_ODS, PATH_CSV, PATH_TSV])
 def test_references(yaml_reference: Parameters, reference_path: Path):
     """References are the same"""
     result = load_parameters(reference_path)
@@ -55,8 +55,8 @@ def test_csv_subset_notations(yaml_reference_subset: Parameters):
 
 
 @pytest.mark.parametrize(
-    "format_name,reference_path",
-    (("xlsx", PATH_XLSX), ("ods", PATH_ODS), ("csv", PATH_CSV), ("tsv", PATH_TSV)),
+    ("format_name", "reference_path"),
+    [("xlsx", PATH_XLSX), ("ods", PATH_ODS), ("csv", PATH_CSV), ("tsv", PATH_TSV)],
 )
 def test_roundtrips(
     yaml_reference: Parameters, tmp_path: Path, format_name: str, reference_path: Path
@@ -85,7 +85,7 @@ def test_roundtrips(
         )
 
 
-@pytest.mark.parametrize("format_name,sep", (("csv", ","), ("tsv", "\t")))
+@pytest.mark.parametrize(("format_name", "sep"), [("csv", ","), ("tsv", "\t")])
 def test_replace_infinity(yaml_reference: Parameters, tmp_path: Path, format_name: str, sep: str):
     parameter_path = tmp_path / f"test_parameters.{format_name}"
     save_parameters(

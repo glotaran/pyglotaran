@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -8,16 +10,19 @@ import xarray as xr
 from glotaran.builtin.io.sdt.sdt_file_reader import SdtDataIo
 from tests.builtin.io.sdt import TEMPORAL_DATA
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 @pytest.mark.parametrize(
-    "test_file_path, result_file_path, index",
+    ("test_file_path", "result_file_path", "index"),
     [
-        (TEMPORAL_DATA["sdt"], TEMPORAL_DATA["csv"], [1]),
+        (TEMPORAL_DATA["sdt"], TEMPORAL_DATA["csv"], np.array([1])),
         (TEMPORAL_DATA["sdt"], TEMPORAL_DATA["csv"], None),
     ],
 )
 @pytest.mark.filterwarnings("ignore:There was no `index`:UserWarning")
-def test_read_sdt(test_file_path, result_file_path, index):
+def test_read_sdt(test_file_path: Path, result_file_path: Path, index: np.ndarray | None):
     sdt_reader = SdtDataIo("sdt")
     test_dataset = sdt_reader.load_dataset(test_file_path, index=index)
     result_df = pd.read_csv(

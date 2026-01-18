@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 def write_dict(
-    data: Mapping[str, Any] | Sequence[Any], file_name: str | Path | None = None, offset: int = 0
+    data: Mapping[str, Any] | Sequence[Any], file_name: str | Path | None = None, offset: int = 2
 ) -> str | None:
     """Write a mapping (e.g. ``dict``) or sequence (e.g. ``list``) as ``yaml`` to file or str.
 
@@ -30,8 +30,8 @@ def write_dict(
         Path of the file to write the ``yaml`` code to.
         Defaults to None which makes this function return a string.
     offset: int
-        Block indentation level. Defaults to 0
-        See https://yaml.readthedocs.io/en/latest/detail/#indentation-of-block-sequences
+        Block indentation level. Defaults to 2.
+        See https://yaml.dev/doc/ruamel.yaml/detail/#Indentation_of_block_sequences
 
     Returns
     -------
@@ -52,7 +52,7 @@ def write_dict(
     return None
 
 
-def load_dict(source: str | Path, is_file: bool) -> dict[str, Any]:
+def load_dict(source: str | Path, *, is_file: bool) -> dict[str, Any]:
     """Load ``yaml`` code from a file or string and returns the dict interpretation.
 
     Parameters
@@ -74,7 +74,7 @@ def load_dict(source: str | Path, is_file: bool) -> dict[str, Any]:
     return yaml.load(source)
 
 
-def _yaml_none_representer(representer: BaseRepresenter, data: Mapping[str, Any]) -> ScalarNode:
+def _yaml_none_representer(representer: BaseRepresenter, data: Mapping[str, Any]) -> ScalarNode:  # noqa: ARG001
     """Yaml repr for ``None`` python values.
 
     Parameters

@@ -25,7 +25,7 @@ authors = ("Joern Weissenborn", "Joris Snellenburg", "Ivo van Stokkum")
 
 project = "pyglotaran"
 title = f"{project} Documentation"
-copyright = ", ".join(("2018", *authors))
+copyright = ", ".join(("2018", *authors))  # noqa: A001
 author = ", ".join(authors)
 
 # The version info for the project you're documenting, acts as replacement
@@ -165,9 +165,9 @@ nbsphinx_execute_arguments = [
 try:
     from subprocess import check_output
 
-    release = check_output(["git", "describe", "--tags", "--always"])
+    release = check_output(["git", "describe", "--tags", "--always"])  # noqa: S607
     release = release.decode().strip()
-    today = check_output(["git", "show", "-s", "--format=%ad", "--date=short"])
+    today = check_output(["git", "show", "-s", "--format=%ad", "--date=short"])  # noqa: S607
     today = today.decode().strip()
 except Exception:
     release = "<unknown>"
@@ -314,4 +314,4 @@ extlinks = {
 
 # cleanup notebook data
 
-subprocess.run([sys.executable, DOC_FOLDER / "remove_notebook_written_data.py"], check=True)
+subprocess.run([sys.executable, DOC_FOLDER / "remove_notebook_written_data.py"], check=True)  # noqa: S603

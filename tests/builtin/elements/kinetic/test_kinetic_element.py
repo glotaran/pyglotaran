@@ -10,7 +10,6 @@ from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import GaussianActivation
 from glotaran.builtin.items.activation import InstantActivation
 from glotaran.builtin.items.activation import MultiGaussianActivation
-from glotaran.model.clp_constraint import ZeroConstraint
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization import Optimization
 from glotaran.parameter import Parameters
@@ -46,6 +45,10 @@ test_library = {
                 ("s2", "s2"): "rates.2",
                 ("s1", "s2"): "rates.3",
             },
+            "clp_constraints": [
+                {"type": "zero", "target": "s1", "interval": (1, 1)},
+                {"type": "zero", "target": "s2", "interval": (0, 0)},
+            ],
         }
     ),
 }
@@ -70,10 +73,10 @@ test_clp = xr.DataArray(
 ).T
 
 
-@pytest.mark.parametrize("decay", ("parallel", "sequential", "equilibrium"))
+@pytest.mark.parametrize("decay_method", ["parallel", "sequential", "equilibrium"])
 @pytest.mark.parametrize(
     "activation",
-    (
+    [
         InstantActivation(type="instant", compartments={}),
         GaussianActivation(
             type="gaussian",
@@ -94,44 +97,46 @@ test_clp = xr.DataArray(
             center=["gaussian.center"],
             width=["gaussian.width", "gaussian.width"],
         ),
-    ),
+    ],
 )
-def test_decay(decay: str, activation: Activation):
-    if decay == "parallel":
+def test_decay(decay_method: str, activation: Activation):
+    dataset_label = "dataset1"
+    if decay_method == "parallel":
         activation.compartments = {"s1": 1, "s2": 1}
     else:
         activation.compartments = {"s1": 1}
-    data_model = ActivationDataModel(elements=[decay], activation=[activation])
+    data_model = ActivationDataModel(elements=[decay_method], activations={"irf": activation})
     data_model.data = simulate(
         data_model, test_library, test_parameters_simulation, test_axies, clp=test_clp
     )
-    experiments = [
-        ExperimentModel(
-            datasets={"decay": data_model},
-            clp_constraints=[
-                ZeroConstraint(type="zero", target="s1", interval=(1, 1)),
-                ZeroConstraint(type="zero", target="s2", interval=(0, 0)),
-            ]
-            if decay == "equilibrium"
-            else [],
-        )
-    ]
+    experiments = [ExperimentModel(datasets={"dataset1": data_model})]
     optimization = Optimization(
-        experiments,
-        test_parameters,
-        test_library,
+        models=experiments,
+        parameters=test_parameters,
+        library=test_library,
         raise_exception=True,
         maximum_number_function_evaluations=25,
     )
-    optimized_parameters, optimized_data, result = optimization.run()
-    assert result.success
+    optimized_parameters, optimization_results, optimization_info = optimization.run()
+    assert optimization_info.success
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
-    assert "decay" in optimized_data
-    assert "clp" in optimized_data["decay"]
-    assert "residual" in optimized_data["decay"]
-    assert "species_concentration" in optimized_data["decay"]
-    assert "species_associated_estimation" in optimized_data["decay"]
-    assert "kinetic_associated_estimation" in optimized_data["decay"]
+    assert dataset_label in optimization_results
+    optimization_result = optimization_results[dataset_label]
+
+    assert optimization_result.residuals is not None
+    assert optimization_result.elements is not None
+    assert optimization_result.elements[decay_method] is not None
+    decay_result = optimization_result.elements[decay_method]
+    assert "amplitudes" in decay_result
+    assert "concentrations" in decay_result
+    assert "initial_concentrations" in decay_result
+    assert "k_matrix" in decay_result
+    assert "reduced_k_matrix" in decay_result
+    assert "a_matrix" in decay_result
+    assert "kinetic_amplitudes" in decay_result
+
     if isinstance(activation, MultiGaussianActivation):
-        assert "gaussian_activation" in optimized_data["decay"].coords
-        assert "gaussian_activation_function" in optimized_data["decay"]
+        assert optimization_result.activations["irf"] is not None
+        # TODO: check if we need more tests here
+        # assert "gaussian_activation" in optimization_result["dataset1"].coords
+        # assert "gaussian_activation_function" in optimization_result["dataset1"]

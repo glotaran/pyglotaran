@@ -15,14 +15,12 @@ from glotaran.parameter import Parameters
 from glotaran.simulation import simulate
 
 test_library = {
-    "coherent-artifact": CoherentArtifactElement(
-        label="coherent-artifact", type="coherent-artifact", order=3
-    ),
+    "ca": CoherentArtifactElement(label="ca", type="coherent-artifact", order=3),
 }
 
 
-test_parameters_simulation = Parameters.from_dict({"gaussian": [["center", 50], ["width", 20]]})
-test_parameters = Parameters.from_dict({"gaussian": [["center", 60], ["width", 8]]})
+test_parameters_simulation = Parameters.from_dict({"irf": [["center", 50], ["width", 20]]})
+test_parameters = Parameters.from_dict({"irf": [["center", 60], ["width", 8]]})
 
 test_global_axis = np.array([0])
 test_model_axis = np.arange(-10, 1500, 1)
@@ -37,9 +35,9 @@ test_clp = xr.DataArray(
         (
             "clp_label",
             [
-                "coherent_artifact_coherent-artifact_order_1_activation_0",
-                "coherent_artifact_coherent-artifact_order_2_activation_0",
-                "coherent_artifact_coherent-artifact_order_3_activation_0",
+                "ca_derivative_0",
+                "ca_derivative_1",
+                "ca_derivative_2",
             ],
         ),
         ("spectral", test_global_axis.data),
@@ -49,51 +47,57 @@ test_clp = xr.DataArray(
 
 @pytest.mark.parametrize(
     "activation",
-    (
+    [
         GaussianActivation(
             type="gaussian",
-            compartments={"coherent-artifact": 1},
-            center="gaussian.center",
-            width="gaussian.width",
+            compartments={"ca": 1},
+            center="irf.center",
+            width="irf.width",
         ),
         GaussianActivation(
             type="gaussian",
-            compartments={"coherent-artifact": 1},
-            center="gaussian.center",
-            width="gaussian.width",
+            compartments={"ca": 1},
+            center="irf.center",
+            width="irf.width",
             shift=[0],
         ),
         MultiGaussianActivation(
             type="multi-gaussian",
-            compartments={"coherent-artifact": 1},
-            center=["gaussian.center"],
-            width=["gaussian.width", "gaussian.width"],
+            compartments={"ca": 1},
+            center=["irf.center"],
+            width=["irf.width", "irf.width"],
         ),
-    ),
+    ],
 )
 def test_coherent_artifact(activation: Activation):
-    data_model = ActivationDataModel(elements=["coherent-artifact"], activation=[activation])
+    element_label = "ca"
+    dataset_label = "dataset1"
+    data_model = ActivationDataModel(elements=[element_label], activations={"irf": activation})
     data_model.data = simulate(
         data_model, test_library, test_parameters_simulation, test_axies, clp=test_clp
     )
     experiments = [
         ExperimentModel(
-            datasets={"coherent_artifact": data_model},
+            datasets={dataset_label: data_model},
         )
     ]
     optimization = Optimization(
-        experiments,
-        test_parameters,
-        test_library,
+        models=experiments,
+        parameters=test_parameters,
+        library=test_library,
         raise_exception=True,
         maximum_number_function_evaluations=25,
     )
-    optimized_parameters, optimized_data, result = optimization.run()
-    assert result.success
-    print(test_parameters_simulation)
-    print(optimized_parameters)
+    optimized_parameters, optimization_results, optimization_info = optimization.run()
+    assert optimization_info.success
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
 
-    assert "coherent_artifact" in optimized_data
-    assert "coherent_artifact_response" in optimized_data["coherent_artifact"]
-    assert "coherent_artifact_associated_estimation" in optimized_data["coherent_artifact"]
+    assert dataset_label in optimization_results
+    assert element_label in optimization_results[dataset_label].elements
+    ca_result = optimization_results[dataset_label].elements[element_label]
+    assert "amplitudes" in ca_result.data_vars
+    assert "concentrations" in ca_result.data_vars
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])

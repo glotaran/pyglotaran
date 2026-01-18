@@ -3,13 +3,20 @@
 from __future__ import annotations
 
 import abc
+from dataclasses import dataclass
+from dataclasses import field
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import final
 
 from pydantic import ConfigDict
+from pydantic import Field
+from pydantic import PrivateAttr
 
+from glotaran.model.clp_constraint import ClpConstraint  # noqa: TC001
 from glotaran.model.item import TypedItem
+from glotaran.plugin_system.base_registry import full_plugin_name
 from glotaran.plugin_system.element_registration import register_element
 
 if TYPE_CHECKING:
@@ -17,6 +24,7 @@ if TYPE_CHECKING:
 
     from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
+    from glotaran.typing.types import Self
 
 
 def _sanitize_json_schema(json_schema: dict[str, Any]) -> None:
@@ -31,20 +39,30 @@ def _sanitize_json_schema(json_schema: dict[str, Any]) -> None:
     json_schema["required"].remove("label")
 
 
+@dataclass
+class ElementResult:
+    amplitudes: dict[str, xr.DataArray]
+    concentrations: dict[str, xr.DataArray]
+    extra: dict[str, xr.DataArray] = field(default_factory=dict)
+
+
 class Element(TypedItem, abc.ABC):
     """Subclasses must overwrite :method:`glotaran.model.Element.calculate_matrix`."""
 
-    data_model_type: ClassVar[type | None] = None
+    data_model_type: ClassVar[type[DataModel] | None] = None  # type: ignore[valid-type]
     is_exclusive: ClassVar[bool] = False
     is_unique: ClassVar[bool] = False
     register_as: ClassVar[str | None] = None
 
     dimension: str | None = None
-    label: str
+    label: str = Field(exclude=True)
+    clp_constraints: list[ClpConstraint.get_annotated_type()] = (  # type:ignore[valid-type]
+        Field(default_factory=list)
+    )
 
     model_config = ConfigDict(json_schema_extra=_sanitize_json_schema)
 
-    def __init_subclass__(cls):
+    def __init_subclass__(cls) -> None:
         """Register the model if necessary."""
         super().__init_subclass__()
         if cls.register_as is not None:
@@ -56,7 +74,7 @@ class Element(TypedItem, abc.ABC):
         model: DataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-        **kwargs,
+        **kwargs: Any,  # noqa: ANN401
     ) -> tuple[list[str], ArrayLike]:
         """Calculate the model matrix.
 
@@ -79,8 +97,16 @@ class Element(TypedItem, abc.ABC):
         .. # noqa: DAR202
         """
 
-    def add_to_result_data(self, model: DataModel, data: xr.Dataset, as_global: bool):
-        """
+    @abc.abstractmethod
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        """Create the result dataset for the element.
 
         Parameters
         ----------
@@ -94,9 +120,60 @@ class Element(TypedItem, abc.ABC):
             Whether model is calculated as global model.
         """
 
+    @final
+    def create_result_with_uid(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        """Create a result dataset with a unique element identifier.
+
+        This method calls the underlying ``create_result`` method to build the
+        basic result dataset and then adds an ``element_uid`` attribute to it.
+        The attribute holds the fully qualified name of the element (obtained via
+        ``full_plugin_name``), allowing the origin of the result to be traced back
+        to the specific element class. This is needed for plotting.
+
+        Parameters
+        ----------
+        model : DataModel
+            The data model instance associated with the element.
+        global_dimension : str
+            The label for the global dimension.
+        model_dimension : str
+            The label for the model dimension.
+        amplitudes : xr.Dataset
+            The dataset containing amplitude data.
+        concentrations : xr.Dataset
+            The dataset containing concentration data.
+
+        Returns
+        -------
+        xr.Dataset
+            The result dataset with an added ``element_uid`` attribute.
+        """
+        result = self.create_result(
+            model, global_dimension, model_dimension, amplitudes, concentrations
+        )
+        result.attrs |= {"element_uid": full_plugin_name(self)}
+        return result
+
 
 class ExtendableElement(Element):
     extends: list[str] | None = None
+    _original: Self = PrivateAttr(init=False)
+
+    def model_post_init(self, __context: Any) -> None:  # noqa: ANN401, PYI063
+        """Save a copy of the original instance before extending.
+
+        This is needed for roundtrip serialization, where you want to dump the unextended
+        instance even after the ``extend`` method was called.
+        """
+        super().model_post_init(__context)
+        self._original = self.model_copy(deep=True)
 
     def is_extended(self) -> bool:
         return self.extends is not None
