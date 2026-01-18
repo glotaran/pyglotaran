@@ -1,5 +1,5 @@
 ci:
-  skip: [interrogate]
+  skip: [interrogate, taplo-lint]
 
 default_language_version:
   python: python3.10
