@@ -7,7 +7,7 @@ from typing import Any
 import numpy as np
 
 
-def nan_or_equal(lhs: Any, rhs: Any) -> bool:
+def nan_or_equal(lhs: Any, rhs: Any) -> bool:  # noqa: ANN401
     """Compare values which can be nan for equality.
 
     This helper function is needed because ``np.nan == np.nan`` returns ``False``.
@@ -24,6 +24,6 @@ def nan_or_equal(lhs: Any, rhs: Any) -> bool:
     bool
         Whether or not values are equal.
     """
-    if isinstance(lhs, (int, float)) and isinstance(rhs, (int, float)):
+    if isinstance(lhs, int | float) and isinstance(rhs, int | float):
         return (np.isnan(lhs) and np.isnan(rhs)) or lhs == rhs
     return lhs == rhs

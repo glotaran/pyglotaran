@@ -25,6 +25,7 @@ def simulate(
     parameters: Parameters,
     coordinates: dict[str, ArrayLike],
     clp: xr.DataArray | None = None,
+    *,
     noise: bool = False,
     noise_std_dev: float = 1.0,
     noise_seed: int | None = None,
@@ -70,9 +71,8 @@ def simulate(
 
     if clp is None:
         if not model.global_elements:
-            raise GlotaranUserError(
-                "Cannot simulate dataset without global megacomplexes if no clp are provided."
-            )
+            msg = "Cannot simulate dataset without global megacomplexes if no clp are provided."
+            raise GlotaranUserError(msg)
         global_matrix = OptimizationMatrix.from_data_model(
             model, global_axis, model_axis, None, global_matrix=True
         )
@@ -92,7 +92,7 @@ def simulate(
     for i in range(global_axis.size):
         result[:, i] = np.dot(
             matrix.at_index(i).array,
-            clp.isel({global_dimension: i}).sel({"clp_label": matrix.clp_axis}),
+            clp.isel({global_dimension: i}).sel({"clp_label": matrix.clp_axis}).to_numpy(),
         )
 
     if noise and noise_seed is not None:

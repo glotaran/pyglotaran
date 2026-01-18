@@ -2,12 +2,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from glotaran.model.interval_item import IntervalItem
-
-if TYPE_CHECKING:
-    from glotaran.model.item import ParameterType
+from glotaran.model.item import ParameterType  # noqa: TC001
 
 
 class ClpRelation(IntervalItem):

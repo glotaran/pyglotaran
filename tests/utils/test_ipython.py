@@ -13,11 +13,11 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.parametrize(
-    "raw_str, result_str, syntax",
-    (
+    ("raw_str", "result_str", "syntax"),
+    [
         ("# Model", "# Model", None),
         ("kinetic:\n  - ['1', 1]", "```yaml\nkinetic:\n  - ['1', 1]\n```", "yaml"),
-    ),
+    ],
 )
 def test_markdown_str_render(raw_str: str, result_str: str, syntax: str):
     """Rendering"""

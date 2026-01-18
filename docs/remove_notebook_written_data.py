@@ -15,8 +15,8 @@ from pathlib import Path
 NOTEBOOK_PATH = Path(__file__).parent / "source/notebooks"
 
 
-def remove_files(path: Path, glob_pattern: str):
-    """Removes files with a given pattern from a folder.
+def remove_files(path: Path, glob_pattern: str) -> None:
+    """Remove files with a given pattern from a folder.
 
     To not accidentally delete files, we only use glob and not rglob.
 

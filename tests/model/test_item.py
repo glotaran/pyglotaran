@@ -63,7 +63,7 @@ def test_item_fields_structures_and_type():
     )
 
     assert len(item_fields) == len(wanted)
-    for field, field_wanted in zip(item_fields, wanted):
+    for field, field_wanted in zip(item_fields, wanted, strict=True):
         assert get_structure_and_type_from_field(field) == field_wanted
 
 
@@ -157,12 +157,14 @@ B_DICT = {
 }
 
 
-def _add_parameters_to_initial(labels, parameters, initial_parameters):
+def _add_parameters_to_initial(
+    labels: list[str], parameters: Parameters, initial_parameters: Parameters
+):
     for label in labels:
         add_to_initial(label, parameters, initial_parameters)
 
 
-def _test_add_to_initial(initial_parameters):
+def _test_add_to_initial(initial_parameters: Parameters):
     # test_ordered_addition
     parameters = Parameters.empty()
     _add_parameters_to_initial(
@@ -209,28 +211,28 @@ def _test_add_to_initial(initial_parameters):
 
         keys_list = list(parameters._parameters.keys())
 
-        assert keys_list.index("rates.k2") > keys_list.index(
-            "b.2"
-        ), f"rates.k2 should come after b.2 for permutation {perm}"
-        assert keys_list.index("b.2") > keys_list.index(
-            "b.1"
-        ), f"b.2 should come after b.1 for permutation {perm}"
-        assert keys_list.index("rates.k1") > keys_list.index(
-            "rates.k1sum"
-        ), f"rates.k1 should come after rates.k1sum for permutation {perm}"
-        assert keys_list.index("rates.k2") > keys_list.index(
-            "rates.k1sum"
-        ), f"rates.k2 should come after rates.k1sum for permutation {perm}"
+        assert keys_list.index("rates.k2") > keys_list.index("b.2"), (
+            f"rates.k2 should come after b.2 for permutation {perm}"
+        )
+        assert keys_list.index("b.2") > keys_list.index("b.1"), (
+            f"b.2 should come after b.1 for permutation {perm}"
+        )
+        assert keys_list.index("rates.k1") > keys_list.index("rates.k1sum"), (
+            f"rates.k1 should come after rates.k1sum for permutation {perm}"
+        )
+        assert keys_list.index("rates.k2") > keys_list.index("rates.k1sum"), (
+            f"rates.k2 should come after rates.k1sum for permutation {perm}"
+        )
 
-        assert (
-            parameters.get("b.2").expression == "1.0 - $b.1"
-        ), f"Incorrect expression for b.2. Got: {parameters.get('b.2').expression}"
-        assert (
-            parameters.get("rates.k1").expression == "$b.1 * $rates.k1sum"
-        ), f"Incorrect expression for rates.k1. Got: {parameters.get('rates.k1').expression}"
-        assert (
-            parameters.get("rates.k2").expression == "$b.2 * $rates.k1sum"
-        ), f"Incorrect expression for rates.k2. Got: {parameters.get('rates.k2').expression}"
+        assert parameters.get("b.2").expression == "1.0 - $b.1", (
+            f"Incorrect expression for b.2. Got: {parameters.get('b.2').expression}"
+        )
+        assert parameters.get("rates.k1").expression == "$b.1 * $rates.k1sum", (
+            f"Incorrect expression for rates.k1. Got: {parameters.get('rates.k1').expression}"
+        )
+        assert parameters.get("rates.k2").expression == "$b.2 * $rates.k1sum", (
+            f"Incorrect expression for rates.k2. Got: {parameters.get('rates.k2').expression}"
+        )
 
 
 def test_add_to_initial_b_first():

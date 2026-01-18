@@ -75,7 +75,7 @@ MOCK_REGISTRY_VALUES = {
 }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def mocked_registry():
     with monkeypatch_plugin_registry_data_io(MOCK_REGISTRY_VALUES, create_new_registry=True):
         yield
@@ -109,7 +109,7 @@ def test_register_data_io():
 def test_register_data_io_warning():
     """PluginOverwriteWarning raised pointing to correct file."""
 
-    with pytest.warns(PluginOverwriteWarning, match="Dummy.+dummy.+Dummy2") as record:
+    with pytest.warns(PluginOverwriteWarning, match="Dummy.+dummy.+Dummy2") as record:  # noqa: PT031
 
         @register_data_io("dummy")
         class Dummy(DataIoInterface):
@@ -119,8 +119,8 @@ def test_register_data_io_warning():
         class Dummy2(DataIoInterface):
             pass
 
-        assert len(record) == 1
-        assert Path(record[0].filename) == Path(__file__)
+    assert len(record) == 1
+    assert Path(record[0].filename) == Path(__file__)
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -144,12 +144,12 @@ def test_known_data_format_actual_register():
 
 
 @pytest.mark.parametrize(
-    "format_name, io_class",
-    (
+    ("format_name", "io_class"),
+    [
         ("sdt", SdtDataIo),
         ("ascii", AsciiDataIo),
         ("nc", NetCDFDataIo),
-    ),
+    ],
 )
 def test_get_data_io(format_name: str, io_class: type[DataIoInterface]):
     """Get the right instance"""
@@ -172,12 +172,12 @@ def test_set_data_plugin():
 
 
 @pytest.mark.parametrize(
-    "format_name, io_class",
-    (
+    ("format_name", "io_class"),
+    [
         ("sdt", SdtDataIo),
         ("ascii", AsciiDataIo),
         ("nc", NetCDFDataIo),
-    ),
+    ],
 )
 def test_get_dataloader(format_name: str, io_class: type[DataIoInterface]):
     """Code of the dataloader is the same as original classes method code"""
@@ -186,12 +186,12 @@ def test_get_dataloader(format_name: str, io_class: type[DataIoInterface]):
 
 
 @pytest.mark.parametrize(
-    "format_name, io_class",
-    (
+    ("format_name", "io_class"),
+    [
         ("sdt", SdtDataIo),
         ("ascii", AsciiDataIo),
         ("nc", NetCDFDataIo),
-    ),
+    ],
 )
 def test_get_datawriter(format_name: str, io_class: type[DataIoInterface]):
     """Code of the datawriter is the same as original classes method code"""
@@ -211,6 +211,7 @@ def test_load_dataset(tmp_path: Path):
     assert result == {"file_name": file_path.as_posix(), "dummy_arg": "baz"}
     assert np.all(dataset.data == xr.DataArray([1, 2]).to_dataset(name="data").data)
     assert dataset.source_path == file_path.as_posix()
+    assert dataset.io_plugin_name == "tests.plugin_system.test_data_io_registration.MockDataIo"
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -220,13 +221,13 @@ def test_protect_from_overwrite_write_functions(tmp_path: Path):
     file_path = tmp_path / "dummy.foo"
     file_path.touch()
 
-    with pytest.raises(FileExistsError, match="The file .+? already exists"):
+    with pytest.raises(FileExistsError, match=r"The file .+? already exists"):
         save_dataset(xr.DataArray([1, 2]), str(file_path))
 
 
-@pytest.mark.parametrize("sub_dir", ("", "sub_dir"))
+@pytest.mark.parametrize("sub_dir", ["", "sub_dir"])
 @pytest.mark.usefixtures("mocked_registry")
-def test_write_dataset(tmp_path: Path, sub_dir: str):
+def test_save_dataset(tmp_path: Path, sub_dir: str):
     """All args and kwargs are passes correctly."""
     file_path = tmp_path / sub_dir / "dummy.mock"
 
@@ -242,6 +243,38 @@ def test_write_dataset(tmp_path: Path, sub_dir: str):
     assert result["file_name"] == file_path.as_posix()
     assert result["dummy_arg"] == "baz"
     assert np.all(result["dataset"] == xr.DataArray([1, 2]))
+
+
+@pytest.mark.usefixtures("mocked_registry")
+def test_save_dataset_source_update(tmp_path: Path):
+    """Update source path if not set or explicitly using ``update_source_path=False``."""
+    file_path = tmp_path / "dummy.mock"
+    dataset = xr.DataArray([1, 2])
+
+    save_dataset(dataset, file_path, result_container={})
+
+    assert dataset.source_path == file_path.as_posix()
+    assert dataset.io_plugin_name == "tests.plugin_system.test_data_io_registration.MockDataIo"
+
+    @register_data_io("foo_bar")
+    class FooBar(DataIoInterface):
+        def save_dataset(  # type:ignore[override]
+            self,
+            file_name: StrOrPath,
+            dataset: xr.Dataset | xr.DataArray,
+            **kwargs: Any,
+        ) -> None:
+            pass
+
+    foo_bar_path = tmp_path / "dummy.foo_bar"
+
+    save_dataset(dataset, foo_bar_path, update_source_path=False)
+    assert dataset.source_path == file_path.as_posix()
+    assert dataset.io_plugin_name == "tests.plugin_system.test_data_io_registration.MockDataIo"
+
+    save_dataset(dataset, foo_bar_path)
+    assert dataset.source_path == foo_bar_path.as_posix()
+    assert dataset.io_plugin_name == "tests.plugin_system.test_data_io_registration.FooBar"
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -300,12 +333,12 @@ def test_data_io_plugin_table_full():
         """  # noqa: E501
     )
 
-    assert f"{data_io_plugin_table(plugin_names=True,full_names=True)}\n" == expected
+    assert f"{data_io_plugin_table(plugin_names=True, full_names=True)}\n" == expected
 
 
 @pytest.mark.parametrize(
-    "method_names, expected",
-    (
+    ("method_names", "expected"),
+    [
         (
             "load_dataset",
             [".mock", ".mock_partial"],
@@ -318,7 +351,7 @@ def test_data_io_plugin_table_full():
             ["load_dataset", "save_dataset"],
             [".mock"],
         ),
-    ),
+    ],
 )
 def test_supported_file_extensions_data_io(method_names: str | Sequence[str], expected: list[str]):
     """Extension don't list full plugin name and omit extension that don't support all methods."""

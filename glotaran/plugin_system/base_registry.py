@@ -8,8 +8,6 @@ This is to prevent issues with circular imports.
 from __future__ import annotations
 
 import os
-import sys
-from collections.abc import Iterable
 from importlib import metadata
 from typing import TYPE_CHECKING
 from typing import cast
@@ -18,6 +16,7 @@ from warnings import warn
 if TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Generator
+    from collections.abc import Iterable
     from collections.abc import MutableMapping
     from collections.abc import Sequence
     from typing import Any
@@ -36,7 +35,7 @@ if TYPE_CHECKING:
     GenericPluginInstance = TypeVar("GenericPluginInstance", bound=object)
 
 
-class __PluginRegistry:  # noqa: N801
+class __PluginRegistry:
     """Central Plugin Registry.
 
     This is super private since if anyone messes with it, the pluginsystem could break.
@@ -78,12 +77,12 @@ class PluginOverwriteWarning(UserWarning):
 
     def __init__(
         self,
-        *args: Any,
+        *args: Any,  # noqa: ANN401
         old_key: str,
         old_plugin: object | type[object],
         new_plugin: object | type[object],
         plugin_set_func_name: str,
-    ):
+    ) -> None:
         """Use old and new plugin and keys to give verbose warning message.
 
         Parameters
@@ -110,7 +109,7 @@ class PluginOverwriteWarning(UserWarning):
         super().__init__(message, *args)
 
 
-def load_plugins():
+def load_plugins() -> None:
     """Initialize plugins registered under the entrypoint 'glotaran.plugins'.
 
     For an entry_point to be considered a glotaran plugin it just needs to start with
@@ -172,20 +171,22 @@ def set_plugin(
     full_plugin_name
     """
     if "." in plugin_register_key:
-        raise ValueError(
+        msg = (
             f"The value of {plugin_register_key_name!r} isn't "
             "allowed to contain the character '.' ."
         )
+        raise ValueError(msg)
     if "." not in full_plugin_name or not is_registered_plugin(
         plugin_register_key=full_plugin_name, plugin_registry=plugin_registry
     ):
         known_plugins = list(
             filter(lambda plugin_name: "." in plugin_name, plugin_registry.keys())
         )
-        raise ValueError(
+        msg = (
             f"There isn't a plugin registered under the full name {full_plugin_name!r}.\n"
             f"Maybe you need to install a plugin? Known plugins are:\n {known_plugins}"
         )
+        raise ValueError(msg)
     plugin_registry[plugin_register_key] = plugin_registry[full_plugin_name]
 
 
@@ -226,10 +227,11 @@ def add_plugin_to_registry(
     full_plugin_name
     """
     if "." in plugin_register_key:
-        raise ValueError(
+        msg = (
             "The character '.' isn't allowed in the name of a plugin, "
             f"you provided the name {plugin_register_key!r}."
         )
+        raise ValueError(msg)
     if plugin_register_key in plugin_registry:
         old_key = plugin_register_key
         plugin_register_key = full_plugin_name(plugin)
@@ -286,7 +288,7 @@ def add_instantiated_plugin_to_registry(
 
 
 def registered_plugins(
-    plugin_registry: MutableMapping[str, _PluginType], full_names: bool = False
+    plugin_registry: MutableMapping[str, _PluginType], *, full_names: bool = False
 ) -> list[str]:
     """Names of the plugins in the given registry.
 
@@ -371,7 +373,7 @@ def get_method_from_plugin(
     plugin : object | type[object],
         Plugin instance or class.
     method_name : str
-        Method name, e.g. load_model.
+        Method name, e.g. load_scheme.
 
     Returns
     -------
@@ -452,6 +454,7 @@ def methods_differ_from_baseclass_table(
     plugin_registry_keys: str | Sequence[str],
     get_plugin_function: Callable[[str], GenericPluginInstance | type[GenericPluginInstance]],
     base_class: type[GenericPluginInstance],
+    *,
     plugin_names: bool = False,
 ) -> Generator[list[str | bool]]:
     """Create table of which plugins methods differ from their baseclass.
@@ -538,8 +541,8 @@ def supported_file_extensions(
     for plugin_registry_key, *differs_list in methods_differ_from_baseclass_table(
         method_names, plugin_registry_keys, get_plugin_function, base_class
     ):
-        format_name_str: str = cast(str, plugin_registry_key).replace("`", "")
+        format_name_str: str = cast("str", plugin_registry_key).replace("`", "")
         if format_name_str.endswith("_str"):
             continue
-        if all(cast(Iterable[bool], differs_list)) is True:
+        if all(cast("Iterable[bool]", differs_list)) is True:
             yield f".{format_name_str}"

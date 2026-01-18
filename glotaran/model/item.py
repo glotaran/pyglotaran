@@ -13,7 +13,6 @@ from types import UnionType
 from typing import Annotated
 from typing import Any
 from typing import ClassVar
-from typing import Literal
 from typing import TypeAlias
 from typing import TypeVar
 from typing import Union
@@ -70,7 +69,7 @@ def extract_glotaran_field_metadata(info: FieldInfo) -> GlotaranFieldMetadata:
     return GlotaranFieldMetadata()
 
 
-class ItemAttribute(FieldInfo):
+class ItemAttribute(FieldInfo):  # type:ignore[misc]
     """An attribute for items.
 
     A thin wrapper around pydantic.fields.FieldInfo.
@@ -80,10 +79,10 @@ class ItemAttribute(FieldInfo):
         self,
         *,
         description: str,
-        default: Any = PydanticUndefined,
+        default: Any = PydanticUndefined,  # noqa: ANN401
         factory: Callable[[], Any] | None = None,
         validator: Callable | None = None,
-    ):
+    ) -> None:
         """Create an attribute for an item.
 
         Parameters
@@ -110,10 +109,10 @@ class ItemAttribute(FieldInfo):
 def Attribute(  # noqa: N802
     *,
     description: str,
-    default: Any = PydanticUndefined,
+    default: Any = PydanticUndefined,  # noqa: ANN401
     factory: Callable[[], Any] | None = None,
     validator: Callable | None = None,
-) -> Any:
+) -> Any:  # noqa: ANN401
     """Create an attribute for an item.
 
     Parameters
@@ -147,10 +146,10 @@ class Item(BaseModel):
 class TypedItem(Item):
     """An item with a type."""
 
-    type: Literal[None]
+    type: None
     __item_types__: ClassVar[list[type[Item]]]  # type:ignore[valid-type]
 
-    def __init_subclass__(cls):
+    def __init_subclass__(cls) -> None:
         """Create an item from a class."""
         if cls.__qualname__ == "LibraryItemTyped":
             return
@@ -169,7 +168,7 @@ class TypedItem(Item):
         -------
         object
         """
-        return Annotated[Union[tuple(cls.__item_types__)], Field(discriminator="type")]
+        return Annotated[Union[tuple(cls.__item_types__)], Field(discriminator="type")]  # noqa: UP007
 
 
 @cache
@@ -243,7 +242,7 @@ def strip_structure_type_from_definition(
 
 def iterate_fields_of_type(
     item: type[ItemT] | ItemT, field_type: type
-) -> Generator[tuple[str, FieldInfo], None, None]:
+) -> Generator[tuple[str, FieldInfo]]:
     """Iterate over all fields of the given types.
 
     Parameters
@@ -258,7 +257,8 @@ def iterate_fields_of_type(
     tuple[str, FieldInfo]
         The matching attributes.
     """
-    for name, info in item.model_fields.items():
+    item_class = item if isinstance(item, type) else item.__class__
+    for name, info in item_class.model_fields.items():
         _, item_type = get_structure_and_type_from_field(info)
         with contextlib.suppress(TypeError):
             # issubclass does for some reason not work with e.g. tuple as item_type
@@ -278,7 +278,7 @@ def iterate_fields_of_type(
 
 def iterate_item_fields(
     item: type[ItemT] | ItemT,
-) -> Generator[tuple[str, FieldInfo], None, None]:
+) -> Generator[tuple[str, FieldInfo]]:
     """Iterate over all item fields.
 
     Parameters
@@ -296,7 +296,7 @@ def iterate_item_fields(
 
 def iterate_parameter_fields(
     item: type[ItemT] | ItemT,
-) -> Generator[tuple[str, FieldInfo], None, None]:
+) -> Generator[tuple[str, FieldInfo]]:
     """Iterate over all parameter fields.
 
     Parameters
@@ -328,7 +328,7 @@ def resolve_parameter(
     return parameter
 
 
-def resolve_item_parameters(
+def resolve_item_parameters(  # noqa: C901
     item: ItemT, parameters: Parameters, initial: Parameters | None = None
 ) -> ItemT:
     resolved: dict[str, Any] = {}
@@ -352,7 +352,7 @@ def resolve_item_parameters(
         value = getattr(item, name)
         if value is None:
             continue
-        structure, item_type = get_structure_and_type_from_field(info)
+        structure, _item_type = get_structure_and_type_from_field(info)
         if structure is None:
             resolved[name] = resolve_item_parameters(value, parameters, initial)
         elif structure is list:

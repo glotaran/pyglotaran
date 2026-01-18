@@ -16,8 +16,8 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.parametrize(
-    "key_name, value_1, value_2",
-    (
+    ("key_name", "value_1", "value_2"),
+    [
         ("value", 1, 2),
         ("vary", True, False),
         ("minimum", -np.inf, -1),
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
         ("expression", None, "$a.1*10"),
         ("standard_error", np.nan, 1),
         ("non_negative", True, False),
-    ),
+    ],
 )
 def test_parameter__deep_equals(key_name: str, value_1: Any, value_2: Any):
     parameter_1 = Parameter(label="foo", **{key_name: value_1})
@@ -37,7 +37,7 @@ def test_parameter__deep_equals(key_name: str, value_1: Any, value_2: Any):
     assert not parameter_3._deep_equals(parameter_4)
 
 
-@pytest.mark.parametrize("label, expected", (("foo", "foo"), (0, "0"), (1, "1")))
+@pytest.mark.parametrize(("label", "expected"), [("foo", "foo"), (0, "0"), (1, "1")])
 def test_parameter_label_always_str_or_none(label: str | int, expected: str):
     """Parameter.label is always a string"""
     parameter = Parameter(label=label)
@@ -46,17 +46,17 @@ def test_parameter_label_always_str_or_none(label: str | int, expected: str):
 
 @pytest.mark.parametrize(
     "label",
-    ("exp", np.nan),
+    ["exp", np.nan],
 )
-def test_parameter_label_error_wrong_label_pattern(label: str | int | float):
+def test_parameter_label_error_wrong_label_pattern(label: str | float):
     """Error if label can't be casted to a valid label str"""
     with pytest.raises(ValueError, match=f"'{label}' is not a valid parameter label."):
         Parameter(label=label)
 
 
 @pytest.mark.parametrize(
-    "parameter, expected_repr",
-    (
+    ("parameter", "expected_repr"),
+    [
         (
             Parameter(label="foo"),
             "Parameter(label='foo')",
@@ -66,7 +66,7 @@ def test_parameter_label_error_wrong_label_pattern(label: str | int | float):
             # vary gets set to False due to the usage of expression
             "Parameter(label='foo', value=1.0, expression='$foo.bar', vary=False)",
         ),
-    ),
+    ],
 )
 def test_parameter_repr(parameter: Parameter, expected_repr: str):
     """Repr creates code to recreate the object."""
@@ -181,7 +181,6 @@ def test_parameter_non_negative():
             "$foo.7.bar + $kinetic6",
             "parameters.get('foo.7.bar').value + parameters.get('kinetic6').value",
         ),
-        ("$1", "parameters.get('1').value"),
         ("$1-$2", "parameters.get('1').value-parameters.get('2').value"),
         ("$1-$5", "parameters.get('1').value-parameters.get('5').value"),
         (
@@ -191,7 +190,7 @@ def test_parameter_non_negative():
         ),
     ],
 )
-def test_transform_expression(case):
+def test_transform_expression(case: tuple[str, str]):
     expression, wanted_parameters = case
     parameter = Parameter(label="", expression=expression)
     assert parameter._transformed_expression == wanted_parameters
@@ -243,7 +242,7 @@ def test_parameter_pickle(tmp_path: Path):
     with pickle_path.open("wb") as f:
         pickle.dump(parameter, f)
     with pickle_path.open("rb") as f:
-        pickled_parameter = pickle.load(f)
+        pickled_parameter = pickle.load(f)  # noqa: S301
 
     assert parameter == pickled_parameter
 
