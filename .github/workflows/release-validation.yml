@@ -20,7 +20,7 @@ jobs:
 
       - name: 🏷️ Get tag name
         id: tag
-        uses: devops-actions/action-get-tag@v1.0.3
+        uses: devops-actions/action-get-tag@v1.0.4
 
       - name: 📚 Create release body
         run: |
@@ -49,7 +49,7 @@ jobs:
 
       - name: 🏷️ Get tag name
         id: tag
-        uses: devops-actions/action-get-tag@v1.0.3
+        uses: devops-actions/action-get-tag@v1.0.4
 
       - name: 📚 Create release body
         run: |
