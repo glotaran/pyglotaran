@@ -1,5 +1,19 @@
 # Changelog
 
+(changes-0_7_5)=
+
+## 🚀 0.7.5 (Unreleased)
+
+### ✨ Features
+
+### 🩹 Bug fixes
+
+- 🩹 Add pandas 3 compatibility (#1607)
+
+### 📚 Documentation
+
+### 🚧 Maintenance
+
 (changes-0_7_4)=
 
 ## 🚀 0.7.4 (2025-12-31)

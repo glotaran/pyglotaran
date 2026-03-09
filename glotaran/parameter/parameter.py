@@ -121,6 +121,28 @@ def set_transformed_expression(parameter: Parameter, attribute: Attribute, expre
         )
 
 
+def nan_repr_to_none(val: str | float | None) -> str | None:
+    """Convert a value that is "nan" or np.nan to None.
+
+    Parameters
+    ----------
+    val : str | float | None
+        The value to be converted.
+
+    Returns
+    -------
+    str | None
+        The converted value.
+    """
+    if isinstance(val, str) and val.lower() == "nan":
+        return None
+    if isinstance(val, float) and np.isnan(val):
+        return None
+    if isinstance(val, (int, float)):
+        return str(val)
+    return val
+
+
 @no_default_vals_in_repr
 @define
 class Parameter(_SupportsArray):
@@ -133,7 +155,9 @@ class Parameter(_SupportsArray):
         validator=[validators.instance_of(float)],
     )
     standard_error: float = np.nan
-    expression: str | None = ib(default=None, validator=[set_transformed_expression])
+    expression: str | None = ib(
+        default=None, converter=nan_repr_to_none, validator=[set_transformed_expression]
+    )
     maximum: float = ib(default=np.inf, validator=[validators.instance_of((int, float))])
     minimum: float = ib(default=-np.inf, validator=[validators.instance_of((int, float))])
     non_negative: bool = False
