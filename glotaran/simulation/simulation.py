@@ -85,7 +85,11 @@ def simulate(
     if noise:
         if noise_seed is not None:
             np.random.seed(noise_seed)
-        result["data"] = (result.data.dims, np.random.normal(result.data, noise_std_dev))
+        sorted_dims = sorted(result.data.dims)
+        data_with_noise = np.random.normal(result.data.transpose(*sorted_dims), noise_std_dev)
+        # Build inverse permutation: for each orig dim, find its position in sorted_dims
+        inv = [sorted_dims.index(d) for d in result.data.dims]
+        result["data"] = (result.data.dims, data_with_noise.transpose(inv))
 
     return result
 

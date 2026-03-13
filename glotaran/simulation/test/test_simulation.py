@@ -1,7 +1,10 @@
+from copy import deepcopy
+
 import numpy as np
 import pytest
 
 from glotaran.optimization.test.models import SimpleTestModel
+from glotaran.optimization.test.suites import FullModel
 from glotaran.parameter import Parameters
 from glotaran.simulation import simulate
 
@@ -56,3 +59,43 @@ def test_simulate_dataset(index_dependent, noise):
                 ]
             ).T,
         )
+
+
+def test_simulate_full_model_same_result_when_swapping_global_and_model_megacomplex():
+    """Same result when swapping the global and model megacomplex of a dataset model.
+
+    The difference originated from applying the noise, which operated on the raw
+    transposed numpy array. This then lead to the noise being applied differently.
+    """
+    model = deepcopy(FullModel.model)
+    swapped_model = deepcopy(FullModel.model)
+    noise_seed = 42
+
+    dataset_model = model.dataset["dataset1"]
+    swapped_dataset_model = swapped_model.dataset["dataset1"]
+    swapped_dataset_model.megacomplex = dataset_model.global_megacomplex
+    swapped_dataset_model.global_megacomplex = dataset_model.megacomplex
+
+    result = simulate(
+        model,
+        "dataset1",
+        FullModel.parameters,
+        FullModel.coordinates,
+        noise=True,
+        noise_std_dev=0.1,
+        noise_seed=noise_seed,
+    )
+    swapped_result = simulate(
+        swapped_model,
+        "dataset1",
+        FullModel.parameters,
+        FullModel.coordinates,
+        noise=True,
+        noise_std_dev=0.1,
+        noise_seed=noise_seed,
+    )
+
+    assert np.array_equal(result["global"], swapped_result["global"])
+    assert np.array_equal(result["model"], swapped_result["model"])
+    assert result.data.shape == swapped_result.data.T.shape
+    np.testing.assert_allclose(result.data, swapped_result.data.T)
