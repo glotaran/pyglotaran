@@ -34,7 +34,7 @@ jobs:
       matrix:
         example_name: ${{fromJson(needs.create-example-list.outputs.example-list)}}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
@@ -118,7 +118,7 @@ jobs:
     needs: [collect-artifacts]
     steps:
       - name: Checkout compare results
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: "glotaran/pyglotaran-examples"
           ref: comparison-results
