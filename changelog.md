@@ -9,6 +9,7 @@
 ### 🩹 Bug fixes
 
 - 🩹 Add pandas 3 compatibility (#1607)
+- 🩹 Fix array dimensionality issues in add_svd_to_dataset and simulation (#1608)
 
 ### 📚 Documentation
 
