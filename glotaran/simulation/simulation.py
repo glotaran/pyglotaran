@@ -85,7 +85,14 @@ def simulate(
     if noise:
         if noise_seed is not None:
             np.random.seed(noise_seed)
-        result["data"] = (result.data.dims, np.random.normal(result.data, noise_std_dev))
+        sorted_dims = sorted(result.data.dims)
+        data_with_noise = np.random.normal(result.data.transpose(*sorted_dims), noise_std_dev)
+        result["data"] = (
+            result.data.dims,
+            xr.DataArray(data_with_noise, dims=sorted_dims, coords=result.data.coords)
+            .transpose(*result.data.dims)
+            .to_numpy(),
+        )
 
     return result
 
