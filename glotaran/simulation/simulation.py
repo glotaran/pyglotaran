@@ -87,12 +87,9 @@ def simulate(
             np.random.seed(noise_seed)
         sorted_dims = sorted(result.data.dims)
         data_with_noise = np.random.normal(result.data.transpose(*sorted_dims), noise_std_dev)
-        result["data"] = (
-            result.data.dims,
-            xr.DataArray(data_with_noise, dims=sorted_dims, coords=result.data.coords)
-            .transpose(*result.data.dims)
-            .to_numpy(),
-        )
+        # Build inverse permutation: for each orig dim, find its position in sorted_dims
+        inv = [sorted_dims.index(d) for d in result.data.dims]
+        result["data"] = (result.data.dims, data_with_noise.transpose(inv))
 
     return result
 
