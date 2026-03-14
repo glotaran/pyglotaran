@@ -10,13 +10,11 @@ from glotaran.plugin_system.project_io_registration import known_project_formats
 def plugin_list_cmd():
     """Prints a list of installed plugins."""
 
-    output = dedent(
-        """
+    output = dedent("""
         Installed Glotaran Plugins:
 
         Megacomplex Models:
-        """
-    )
+        """)
     output += "\n"
 
     for name in known_megacomplex_names():

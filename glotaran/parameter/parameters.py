@@ -463,7 +463,7 @@ def flatten_parameter_dict(
             for sub_key, sub_value, sub_dict in flatten_parameter_dict(value):
                 yield f"{key}.{sub_key}", sub_value, sub_dict
         elif isinstance(value, list):
-            sub_dict: dict[str, Any] | None = next(  # type:ignore[no-redef]
+            sub_dict: dict[str, Any] | None = next(  # type: ignore[no-redef]
                 (item for item in value if isinstance(item, dict)), None
             )
             for index, list_value in enumerate(
