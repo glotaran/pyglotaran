@@ -71,7 +71,7 @@ class OptimizationMatrix:
 
     @classmethod
     def combine(cls, matrices: list[OptimizationMatrix]) -> OptimizationMatrix:
-        clp_axis = list({c for m in matrices for c in m.clp_axis})
+        clp_axis = list(dict.fromkeys(c for m in matrices for c in m.clp_axis))
         clp_size = len(clp_axis)
         model_axis_size = matrices[0].model_axis_size
         index_dependent_matrices = [m for m in matrices if m.is_index_dependent]

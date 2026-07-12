@@ -10,6 +10,9 @@
 
 ### 🩹 Bug fixes
 
+- 🩹 Preserve CLP label ordering when combining element matrices with mixed dimensionality
+  (#1512)
+
 ### 📚 Documentation
 
 ### 🗑️ Deprecations (due in 0.9.0)
