@@ -3,8 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+import pytest
 import xarray as xr
 
+from glotaran.builtin.io.ascii.wavelength_time_explicit_file import DataFileType
 from glotaran.builtin.io.ascii.wavelength_time_explicit_file import ExplicitFile
 
 DATA_DIR = Path(__file__).parent
@@ -32,11 +34,21 @@ def test_read_explicit_file():
     test_dataset.sel(spectral=[620, 630, 650], method="nearest")
 
 
-def test_write_explicit_file(tmp_path: Path):
+@pytest.mark.parametrize(
+    "file_format",
+    [DataFileType.time_explicit, DataFileType.wavelength_explicit],
+)
+def test_write_explicit_file(tmp_path: Path, file_format: DataFileType):
     data_file = ExplicitFile(TEST_FILE_ASCII)
     test_dataarray_read = data_file.read(prepare=False)
     test_data_file = tmp_path.joinpath("test.ascii")
     test_data_file_write = ExplicitFile(filepath=str(test_data_file), dataset=test_dataarray_read)
-    test_data_file_write.write(comment="written \n in \n test.", overwrite=True)
+    test_data_file_write.write(
+        comment="written \n in \n test.", overwrite=True, file_format=file_format
+    )
     test_dataarray_reread = test_data_file_write.read(prepare=False)
+    assert np.array_equal(test_dataarray_read.coords["time"], test_dataarray_reread.coords["time"])
+    assert np.array_equal(
+        test_dataarray_read.coords["spectral"], test_dataarray_reread.coords["spectral"]
+    )
     assert np.array_equal(test_dataarray_read.values, test_dataarray_reread.values)

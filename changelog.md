@@ -15,6 +15,7 @@
 
 ### 🩹 Bug fixes
 
+- 🩹 Save NumPy scalar coordinates as valid numbers in explicit ASCII files (#1591)
 - 🩹 Preserve CLP label ordering when combining element matrices with mixed dimensionality
   (#1512)
 
