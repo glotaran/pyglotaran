@@ -16,6 +16,8 @@ from glotaran.parameter.parameter import Parameter
 from glotaran.utils.ipython import MarkdownStr
 from glotaran.utils.sanitize import pretty_format_numerical
 
+MINIMUM_STANDARD_ERROR = 1e-15
+
 if TYPE_CHECKING:
     from collections.abc import Generator
 
@@ -551,20 +553,26 @@ def param_dict_to_markdown(
     if label is not None:
         return_string += f"{node_indentation}* __{label}__:\n"
     if isinstance(parameters, list):
-        parameter_rows = [
-            [
-                parameter.label_short,
-                parameter.value,
-                parameter.standard_error,
-                repr(pretty_format_numerical(parameter.value / parameter.standard_error)),
-                parameter.minimum,
-                parameter.maximum,
-                parameter.vary,
-                parameter.non_negative,
-                f"`{parameter.expression}`",
-            ]
-            for parameter in parameters
-        ]
+        parameter_rows = []
+        for parameter in parameters:
+            standard_error = (
+                np.nan
+                if abs(parameter.standard_error) < MINIMUM_STANDARD_ERROR
+                else parameter.standard_error
+            )
+            parameter_rows.append(
+                [
+                    parameter.label_short,
+                    parameter.value,
+                    standard_error,
+                    repr(pretty_format_numerical(parameter.value / standard_error)),
+                    parameter.minimum,
+                    parameter.maximum,
+                    parameter.vary,
+                    parameter.non_negative,
+                    f"`{parameter.expression}`",
+                ]
+            )
         parameter_table = indent(
             tabulate(
                 parameter_rows,

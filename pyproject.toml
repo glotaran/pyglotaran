@@ -91,6 +91,7 @@ entry-points."glotaran.plugins.elements".clp_guide = "glotaran.builtin.elements.
 entry-points."glotaran.plugins.elements".coherent_artifact = "glotaran.builtin.elements.coherent_artifact"
 entry-points."glotaran.plugins.elements".damped_oscillation = "glotaran.builtin.elements.damped_oscillation"
 entry-points."glotaran.plugins.elements".kinetic = "glotaran.builtin.elements.kinetic"
+entry-points."glotaran.plugins.elements".pfid = "glotaran.builtin.elements.pfid"
 entry-points."glotaran.plugins.elements".spectral = "glotaran.builtin.elements.spectral"
 entry-points."glotaran.plugins.project_io".csv = "glotaran.builtin.io.pandas.csv"
 entry-points."glotaran.plugins.project_io".ods = "glotaran.builtin.io.pandas.xlsx"
