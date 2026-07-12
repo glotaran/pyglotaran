@@ -45,6 +45,26 @@ def test_parameter_label_always_str_or_none(label: str | int, expected: str):
 
 
 @pytest.mark.parametrize(
+    ("expression", "expected"),
+    [
+        (None, None),
+        ("nan", None),
+        ("NaN", None),
+        (np.nan, None),
+        (1, "1"),
+        (1.5, "1.5"),
+        ("$a.1 * 2", "$a.1 * 2"),
+    ],
+)
+def test_parameter_expression_normalizes_missing_and_numeric_values(
+    expression: str | float | None, expected: str | None
+):
+    parameter = Parameter(label="expression", expression=expression)
+
+    assert parameter.expression == expected
+
+
+@pytest.mark.parametrize(
     "label",
     ["exp", np.nan],
 )

@@ -41,6 +41,21 @@ def test_parameters_from_dict():
         assert parameters.get(label).value == value
 
 
+def test_parameters_from_dataframe_normalizes_pandas_missing_expression():
+    dataframe = pd.DataFrame(
+        {
+            "label": ["a", "b"],
+            "value": [1.0, 2.0],
+            "expression": [pd.NA, "$a * 2"],
+        }
+    )
+
+    parameters = Parameters.from_dataframe(dataframe)
+
+    assert parameters.get("a").expression is None
+    assert parameters.get("b").expression == "$a * 2"
+
+
 def test_parameters_from_dict_nested():
     params = {"a": {"b": [7, 8, 9]}}
 
