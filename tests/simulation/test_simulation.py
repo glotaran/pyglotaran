@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from copy import deepcopy
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -75,3 +77,30 @@ def test_simulate_from_global_model():
     assert np.array_equal(data["global_dim"], global_axis)
     assert np.array_equal(data["model_dim"], model_axis)
     assert data.data.shape == (3, 4)
+
+
+def test_seeded_noise_is_independent_of_full_model_dimension_order():
+    original = deepcopy(TestDataModelGlobal)
+    swapped = deepcopy(TestDataModelGlobal)
+    swapped.elements, swapped.global_elements = swapped.global_elements, swapped.elements
+    swapped.element_scale, swapped.global_element_scale = (
+        swapped.global_element_scale,
+        swapped.element_scale,
+    )
+    coordinates = {
+        "global_dim": np.asarray([0, 3, 7, 10]),
+        "model_dim": np.asarray([4, 11, 15]),
+    }
+
+    original_result = simulate(
+        original, {}, None, coordinates, noise=True, noise_std_dev=0.1, noise_seed=42
+    )
+    swapped_result = simulate(
+        swapped, {}, None, coordinates, noise=True, noise_std_dev=0.1, noise_seed=42
+    )
+
+    assert original_result.data.dims == ("model_dim", "global_dim")
+    assert swapped_result.data.dims == ("global_dim", "model_dim")
+    assert original_result.data.transpose(*sorted(original_result.data.dims)).identical(
+        swapped_result.data.transpose(*sorted(swapped_result.data.dims))
+    )
