@@ -553,7 +553,8 @@ def test_penalty_intervals_select_nearest_axis_value():
         weight=1,
     )
 
-    result = calculate_clp_penalties(matrices, estimations, np.array([0, 10, 20]), [penalty])
+    global_axis = xr.DataArray([0, 10, 20], dims="global")
+    result = calculate_clp_penalties(matrices, estimations, global_axis, [penalty])
 
     assert result == pytest.approx([1])
 

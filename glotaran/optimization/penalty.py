@@ -18,6 +18,7 @@ def _get_area(
     estimations: list[OptimizationEstimation],
     global_axis: ArrayLike,
 ) -> ArrayLike:
+    global_axis = np.asarray(global_axis)
     intervals = [(-np.inf, np.inf)] if intervals is None else intervals
     intervals = [intervals] if isinstance(intervals, tuple) else intervals
     area = []
@@ -28,8 +29,8 @@ def _get_area(
         upper = min(upper, np.max(global_axis))
         if lower > upper:
             lower, upper = upper, lower
-        start = np.abs(global_axis - lower).argmin()
-        stop = np.abs(global_axis - upper).argmin() + 1
+        start = int(np.argmin(np.abs(global_axis - lower)))
+        stop = int(np.argmin(np.abs(global_axis - upper))) + 1
         for matrix, estimation in zip(
             matrices[start:stop], estimations[start:stop], strict=True
         ):
