@@ -73,6 +73,27 @@ test_clp = xr.DataArray(
 ).T
 
 
+def test_initial_concentration_is_normalized_across_activation_compartments():
+    element = KineticElement(
+        label="subset",
+        type="kinetic",
+        rates={("s1", "s1"): 1},
+    )
+    model = ActivationDataModel(
+        elements=["subset"],
+        activations={
+            "instant": InstantActivation(
+                type="instant",
+                compartments={"s1": 1, "outside": 3},
+            )
+        },
+    )
+
+    _, matrix = element.calculate_matrix(model, np.array([0]), np.array([0]))
+
+    assert matrix[0, 0] == pytest.approx(0.25)
+
+
 @pytest.mark.parametrize("decay_method", ["parallel", "sequential", "equilibrium"])
 @pytest.mark.parametrize(
     "activation",
