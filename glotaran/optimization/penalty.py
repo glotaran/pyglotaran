@@ -11,6 +11,33 @@ if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
 
 
+def _get_area(
+    label: str,
+    intervals: list[tuple[float, float]] | tuple[float, float] | None,
+    matrices: list[OptimizationMatrix],
+    estimations: list[OptimizationEstimation],
+    global_axis: ArrayLike,
+) -> ArrayLike:
+    intervals = [(-np.inf, np.inf)] if intervals is None else intervals
+    intervals = [intervals] if isinstance(intervals, tuple) else intervals
+    area = []
+    for lower, upper in intervals:
+        if lower > global_axis[-1]:
+            continue
+        lower = max(lower, np.min(global_axis))
+        upper = min(upper, np.max(global_axis))
+        if lower > upper:
+            lower, upper = upper, lower
+        start = np.abs(global_axis - lower).argmin()
+        stop = np.abs(global_axis - upper).argmin() + 1
+        for matrix, estimation in zip(
+            matrices[start:stop], estimations[start:stop], strict=True
+        ):
+            if label in matrix.clp_axis:
+                area.append(estimation.clp[matrix.clp_axis.index(label)])
+    return np.asarray(area)
+
+
 def calculate_clp_penalties(
     matrices: list[OptimizationMatrix],
     estimations: list[OptimizationEstimation],
@@ -33,19 +60,30 @@ def calculate_clp_penalties(
     list[float]
         The clp penalty.
     """
-    sources: list[list[float]] = [[] for _ in penalties]
-    targets: list[list[float]] = [[] for _ in penalties]
-    for matrix, estimation, index in zip(matrices, estimations, global_axis, strict=False):
-        for i, penalty in enumerate(penalties):
-            if penalty.source in matrix.clp_axis and penalty.source_applies(index):
-                sources[i].append(estimation.clp[matrix.clp_axis.index(penalty.source)])
-            if penalty.target in matrix.clp_axis and penalty.target_applies(index):
-                targets[i].append(estimation.clp[matrix.clp_axis.index(penalty.target)])
-
     return np.array(
         [
-            np.abs(np.sum(np.abs(source)) - penalty.parameter * np.sum(np.abs(target)))
+            np.abs(
+                np.sum(
+                    _get_area(
+                        penalty.source,
+                        penalty.source_intervals,
+                        matrices,
+                        estimations,
+                        global_axis,
+                    )
+                )
+                - penalty.parameter
+                * np.sum(
+                    _get_area(
+                        penalty.target,
+                        penalty.target_intervals,
+                        matrices,
+                        estimations,
+                        global_axis,
+                    )
+                )
+            )
             * penalty.weight
-            for penalty, source, target in zip(penalties, sources, targets, strict=True)
+            for penalty in penalties
         ]
     )

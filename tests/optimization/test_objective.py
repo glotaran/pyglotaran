@@ -14,11 +14,14 @@ from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
+from glotaran.optimization.estimation import OptimizationEstimation
+from glotaran.optimization.matrix import OptimizationMatrix
 from glotaran.optimization.objective import FitDecomposition
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.objective import OptimizationResult
 from glotaran.optimization.objective import OptimizationResultMetaData
 from glotaran.optimization.objective import calculate_root_mean_square_error
+from glotaran.optimization.penalty import calculate_clp_penalties
 from glotaran.plugin_system.data_io_registration import get_data_io
 from glotaran.testing.plugin_system import monkeypatch_plugin_registry_data_io
 from tests.optimization.data import TestDataModelConstantIndexDependent
@@ -519,6 +522,40 @@ def test_penalty():
     )
     assert penalty.size == data_size_one + data_size_two + 1
     assert penalty[-1] == 20  # TODO: investigate
+
+
+def test_penalty_preserves_clp_sign():
+    matrices = [OptimizationMatrix(["source", "target"], np.zeros((1, 2)))] * 2
+    estimations = [OptimizationEstimation(np.array([1, -1]), np.array([]))] * 2
+    penalty = EqualAreaPenalty(
+        type="equal_area", source="source", target="target", parameter=1, weight=1
+    )
+
+    result = calculate_clp_penalties(matrices, estimations, np.array([0, 1]), [penalty])
+
+    assert result == pytest.approx([4])
+
+
+def test_penalty_intervals_select_nearest_axis_value():
+    matrices = [OptimizationMatrix(["source", "target"], np.zeros((1, 2)))] * 3
+    estimations = [
+        OptimizationEstimation(np.array([2, 0]), np.array([])),
+        OptimizationEstimation(np.array([100, 100]), np.array([])),
+        OptimizationEstimation(np.array([0, 1]), np.array([])),
+    ]
+    penalty = EqualAreaPenalty(
+        type="equal_area",
+        source="source",
+        source_intervals=[(4, 4)],
+        target="target",
+        target_intervals=[(16, 16)],
+        parameter=1,
+        weight=1,
+    )
+
+    result = calculate_clp_penalties(matrices, estimations, np.array([0, 10, 20]), [penalty])
+
+    assert result == pytest.approx([1])
 
 
 if __name__ == "__main__":
