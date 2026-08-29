@@ -524,6 +524,22 @@ def test_penalty():
     assert penalty[-1] == 20  # TODO: investigate
 
 
+def test_single_dataset_penalty_result():
+    data_model = deepcopy(TestDataModelConstantIndexIndependent)
+    experiment = ExperimentModel(
+        datasets={"dataset1": data_model},
+        clp_penalties=[
+            EqualAreaPenalty(type="equal_area", source="c1", target="c2", parameter=2, weight=4)
+        ],
+    )
+    objective = OptimizationObjective(experiment)
+
+    penalty = objective.calculate()[-1]
+    result = objective.get_result()
+
+    assert result.additional_penalty == pytest.approx(penalty)
+
+
 def test_penalty_preserves_clp_sign():
     matrices = [OptimizationMatrix(["source", "target"], np.zeros((1, 2)))] * 2
     estimations = [OptimizationEstimation(np.array([1, -1]), np.array([]))] * 2

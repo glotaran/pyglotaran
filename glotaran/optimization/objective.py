@@ -732,7 +732,7 @@ class OptimizationObjective:
         ).T
         additional_penalty = sum(
             calculate_clp_penalties(
-                [concentrations],
+                concentrations.as_global_list(global_axis),
                 estimations,
                 global_axis,
                 self._model.clp_penalties,
