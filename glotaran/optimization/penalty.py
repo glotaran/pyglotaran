@@ -22,18 +22,16 @@ def _get_area(
     intervals = [(-np.inf, np.inf)] if intervals is None else intervals
     intervals = [intervals] if isinstance(intervals, tuple) else intervals
     area = []
-    for lower, upper in intervals:
-        if lower > global_axis[-1]:
+    for interval_lower, interval_upper in intervals:
+        if interval_lower > global_axis[-1]:
             continue
-        lower = max(lower, np.min(global_axis))
-        upper = min(upper, np.max(global_axis))
+        lower = max(interval_lower, np.min(global_axis))
+        upper = min(interval_upper, np.max(global_axis))
         if lower > upper:
             lower, upper = upper, lower
         start = int(np.argmin(np.abs(global_axis - lower)))
         stop = int(np.argmin(np.abs(global_axis - upper))) + 1
-        for matrix, estimation in zip(
-            matrices[start:stop], estimations[start:stop], strict=True
-        ):
+        for matrix, estimation in zip(matrices[start:stop], estimations[start:stop], strict=True):
             if label in matrix.clp_axis:
                 area.append(estimation.clp[matrix.clp_axis.index(label)])
     return np.asarray(area)

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Literal
+from typing import cast
 
 import numpy as np
 import xarray as xr
@@ -15,6 +16,7 @@ from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 
 if TYPE_CHECKING:
+    from glotaran.builtin.items.activation import GaussianActivationParameters
     from glotaran.typing.types import ArrayLike
 
 
@@ -58,16 +60,20 @@ class PFIDElement(Element):
         elif model.spectral_axis_scale != 1:
             frequencies *= model.spectral_axis_scale
 
-        parameters = model.activation.parameters(global_axis)
-        if not any(isinstance(parameter, list) for parameter in parameters):
-            parameters = [parameters for _ in global_axis]
+        if model.activation.is_index_dependent():
+            parameters = model.activation.parameters(global_axis)
+        else:
+            activation_parameters = cast(
+                "list[GaussianActivationParameters]", model.activation.parameters()
+            )
+            parameters = [activation_parameters for _ in global_axis]
 
         matrix = np.zeros((global_axis.size, model_axis.size, len(clp_labels)), dtype=np.float64)
         calculate_pfid_matrix(
             matrix,
             frequencies,
             rates,
-            parameters,  # type:ignore[arg-type]
+            parameters,
             global_axis,
             model_axis,
         )
@@ -75,7 +81,7 @@ class PFIDElement(Element):
 
     def create_result(
         self,
-        model: PFIDDataModel,
+        model: DataModel,
         global_dimension: str,
         model_dimension: str,
         amplitudes: xr.DataArray,

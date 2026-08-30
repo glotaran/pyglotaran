@@ -6,9 +6,9 @@ import numpy as np
 import xarray as xr
 
 from glotaran.model.clp_constraint import ZeroConstraint
+from glotaran.model.clp_relation import ClpRelation
 from glotaran.model.data_model import DataModel
 from glotaran.model.experiment_model import ExperimentModel
-from glotaran.model.clp_relation import ClpRelation
 from glotaran.optimization.estimation import OptimizationEstimation
 from glotaran.optimization.optimization import Optimization
 from glotaran.parameter import Parameters
