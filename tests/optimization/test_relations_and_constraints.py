@@ -8,6 +8,8 @@ import xarray as xr
 from glotaran.model.clp_constraint import ZeroConstraint
 from glotaran.model.data_model import DataModel
 from glotaran.model.experiment_model import ExperimentModel
+from glotaran.model.clp_relation import ClpRelation
+from glotaran.optimization.estimation import OptimizationEstimation
 from glotaran.optimization.optimization import Optimization
 from glotaran.parameter import Parameters
 from glotaran.simulation import simulate
@@ -59,3 +61,12 @@ def test_zero_contraint():
     print(optimized_parameters)
     assert result.success
     assert optimized_parameters.close_or_equal(parameters)
+
+
+def test_resolve_clp_skips_relation_when_labels_are_absent() -> None:
+    estimation = OptimizationEstimation(clp=np.array([3.0]), residual=np.array([]))
+    relation = ClpRelation(source="missing_source", target="missing_target", parameter=2)
+
+    resolved = estimation.resolve_clp(["present"], ["present"], 0, [relation])
+
+    np.testing.assert_allclose(resolved.clp, [3.0])
