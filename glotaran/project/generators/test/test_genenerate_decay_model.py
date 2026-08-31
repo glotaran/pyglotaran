@@ -42,27 +42,24 @@ def test_generate_parallel_model(megacomplex_type: str, irf: bool, spectral: boo
         assert expected_shapes == list(megacomplex.shape.values())
 
         for i, shape in enumerate(expected_shapes):
-            assert shape in model.shape  # type:ignore[attr-defined]
-            assert model.shape[shape].type == "gaussian"  # type:ignore[attr-defined]
+            assert shape in model.shape  # type: ignore[attr-defined]
+            assert model.shape[shape].type == "gaussian"  # type: ignore[attr-defined]
             assert (
-                model.shape[shape].amplitude  # type:ignore[attr-defined]
+                model.shape[shape].amplitude  # type: ignore[attr-defined]
                 == f"shapes.species_{i+1}.amplitude"
             )
             assert (
-                model.shape[shape].location  # type:ignore[attr-defined]
+                model.shape[shape].location  # type: ignore[attr-defined]
                 == f"shapes.species_{i+1}.location"
             )
             assert (
-                model.shape[shape].width  # type:ignore[attr-defined]
+                model.shape[shape].width  # type: ignore[attr-defined]
                 == f"shapes.species_{i+1}.width"
             )
             assert dataset.global_megacomplex == ["megacomplex_spectral"]
 
     if irf:
-        assert dataset.irf == "gaussian_irf"  # type:ignore[attr-defined]
-        assert "gaussian_irf" in model.irf  # type:ignore[attr-defined]
-        assert (
-            model.irf["gaussian_irf"].center  # type:ignore[attr-defined]
-            == "irf.center"
-        )
-        assert model.irf["gaussian_irf"].width == "irf.width"  # type:ignore[attr-defined]
+        assert dataset.irf == "gaussian_irf"  # type: ignore[attr-defined]
+        assert "gaussian_irf" in model.irf  # type: ignore[attr-defined]
+        assert model.irf["gaussian_irf"].center == "irf.center"  # type: ignore[attr-defined]
+        assert model.irf["gaussian_irf"].width == "irf.width"  # type: ignore[attr-defined]

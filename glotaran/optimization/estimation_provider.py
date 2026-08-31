@@ -135,7 +135,7 @@ class EstimationProvider:
             clps[idx] = reduced_clps[i]
 
         for relation in model.clp_relations:
-            relation = fill_item(relation, model, parameters)  # type:ignore[arg-type]
+            relation = fill_item(relation, model, parameters)  # type: ignore[arg-type]
             if (
                 relation.target in clp_labels
                 and relation.applies(index)
@@ -184,7 +184,7 @@ class EstimationProvider:
         for penalty in model.clp_penalties:
             if not isinstance(penalty, EqualAreaPenalty):
                 continue
-            penalty = fill_item(penalty, model, parameters)  # type:ignore[arg-type]
+            penalty = fill_item(penalty, model, parameters)  # type: ignore[arg-type]
 
             source_area = _get_area(
                 penalty.source,
@@ -593,7 +593,7 @@ def _get_area(
             index_clp_labels: list[str] = (
                 clp_labels[i]
                 if isinstance(clp_labels[0], list)
-                else clp_labels  # type:ignore[assignment]
+                else clp_labels  # type: ignore[assignment]
             )
             if clp_label in index_clp_labels:
                 area.append(clps[i][index_clp_labels.index(clp_label)])

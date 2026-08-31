@@ -31,11 +31,11 @@ class Scheme:
     A scheme also holds options for optimization.
     """
 
-    model: Model = file_loadable_field(Model)  # type:ignore[type-var]
-    parameters: Parameters = file_loadable_field(Parameters)  # type:ignore[type-var]
+    model: Model = file_loadable_field(Model)  # type: ignore[type-var]
+    parameters: Parameters = file_loadable_field(Parameters)  # type: ignore[type-var]
     data: Mapping[str, xr.Dataset] = file_loadable_field(
         DatasetMapping, is_wrapper_class=True
-    )  # type:ignore[type-var]
+    )  # type: ignore[type-var]
 
     clp_link_tolerance: float = 0.0
     clp_link_method: Literal["nearest", "backward", "forward"] = "nearest"

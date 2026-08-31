@@ -106,14 +106,12 @@ def test_known_set_megacomplex_plugin_dot_in_megacomplex_name():
 @pytest.mark.usefixtures("mocked_registry")
 def test_megacomplex_plugin_table():
     """Short megacomplex table."""
-    expected = dedent(
-        """\
+    expected = dedent("""\
         |  __Megacomplex name__  |
         |------------------------|
         |         `bar`          |
         |         `foo`          |
-        """
-    )
+        """)
     print(f"{megacomplex_plugin_table()}\n")
     assert f"{megacomplex_plugin_table()}\n" == expected
 
@@ -121,14 +119,12 @@ def test_megacomplex_plugin_table():
 @pytest.mark.usefixtures("mocked_registry")
 def test_megacomplex_plugin_table_full():
     """Full Table with all extras."""
-    expected = dedent(
-        """\
+    expected = dedent("""\
         |                  __Megacomplex name__                   |                              __Plugin name__                              |
         |---------------------------------------------------------|---------------------------------------------------------------------------|
         |                          `bar`                          | `glotaran.builtin.megacomplexes.decay.decay_megacomplex.DecayMegacomplex` |
         |                          `foo`                          |                 `glotaran.model.megacomplex.Megacomplex`                  |
         | `glotaran.builtin.megacomplexes.decay.DecayMegacomplex` | `glotaran.builtin.megacomplexes.decay.decay_megacomplex.DecayMegacomplex` |
-        """  # noqa: E501
-    )
+        """)  # noqa: E501
 
     assert f"{megacomplex_plugin_table(plugin_names=True,full_names=True)}\n" == expected

@@ -1,4 +1,4 @@
-""" K-Matrix """
+"""K-Matrix"""
 
 from __future__ import annotations
 

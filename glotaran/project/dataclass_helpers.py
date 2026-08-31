@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 
 def exclude_from_dict_field(
-    default: DefaultType = MISSING,  # type:ignore[assignment]
+    default: DefaultType = MISSING,  # type: ignore[assignment]
 ) -> DefaultType:
     """Create a dataclass field with which will be excluded from ``asdict``.
 
@@ -94,13 +94,13 @@ def file_loader_factory(
             else:
                 target_obj = targetClass.loader(source_path)
             target_obj.source_path = str(source_path)
-            return target_obj  # type:ignore[return-value]
+            return target_obj  # type: ignore[return-value]
         if is_wrapper_class is True:
             if isinstance(source_path, Sequence) and folder is not None:
                 source_path = [Path(folder) / val for val in source_path]
             if isinstance(source_path, Mapping) and folder is not None:
                 source_path = {key: Path(folder) / val for key, val in source_path.items()}
-            return targetClass.loader(source_path)  # type:ignore[return-value, arg-type]
+            return targetClass.loader(source_path)  # type: ignore[return-value, arg-type]
         raise ValueError(
             f"The value of 'source_path' needs to be of class {targetClass.__name__} "
             "or a file path. If the class is a wrapper class, you can use the argument:\n"
@@ -187,7 +187,7 @@ def asdict(dataclass: DataclassInstance, folder: Path | None = None) -> dict[str
         if "exclude_from_dict" not in field_item.metadata:
             value = getattr(dataclass, field_item.name)
             dataclass_dict[field_item.name] = (
-                asdict(value) if is_dataclass(value) else value  # type:ignore[arg-type]
+                asdict(value) if is_dataclass(value) else value  # type: ignore[arg-type]
             )
         if "file_loader" in field_item.metadata:
             value = getattr(dataclass, field_item.name)
@@ -235,7 +235,7 @@ def fromdict(
             file_path = dataclass_dict.get(field_item.name)
             dataclass_dict[field_item.name] = field_item.metadata["file_loader"](file_path, folder)
         elif is_dataclass(field_item.default) and field_item.name in dataclass_dict:
-            dataclass_dict[field_item.name] = type(field_item.default)(  # type:ignore[misc]
+            dataclass_dict[field_item.name] = type(field_item.default)(  # type: ignore[misc]
                 **dataclass_dict[field_item.name]
             )
 
