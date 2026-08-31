@@ -48,7 +48,7 @@ def _generate_decay_model(
         "dataset": {"dataset_1": {"megacomplex": [f"megacomplex_{decay_type}_decay"]}},
     }
     if spectral:
-        model["megacomplex"]["megacomplex_spectral"] = {  # type:ignore[index]
+        model["megacomplex"]["megacomplex_spectral"] = {  # type: ignore[index]
             "type": "spectral",
             "shape": {
                 compartment: f"shape_species_{i+1}" for i, compartment in enumerate(compartments)
@@ -63,11 +63,11 @@ def _generate_decay_model(
             }
             for i in range(nr_compartments)
         }
-        model["dataset"]["dataset_1"]["global_megacomplex"] = [  # type:ignore[index]
+        model["dataset"]["dataset_1"]["global_megacomplex"] = [  # type: ignore[index]
             "megacomplex_spectral"
         ]
     if irf:
-        model["dataset"]["dataset_1"]["irf"] = "gaussian_irf"  # type:ignore[index]
+        model["dataset"]["dataset_1"]["irf"] = "gaussian_irf"  # type: ignore[index]
         model["irf"] = {
             "gaussian_irf": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},
         }

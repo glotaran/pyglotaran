@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
 
 class MockDataIo(DataIoInterface):
-    def load_dataset(  # type:ignore[override]
+    def load_dataset(  # type: ignore[override]
         self, file_name: StrOrPath, *, result_container: dict[str, Any], **kwargs: Any
     ) -> xr.Dataset | xr.DataArray:
         """This docstring is just for help testing of 'load_dataset'."""
@@ -46,7 +46,7 @@ class MockDataIo(DataIoInterface):
         return xr.DataArray([1, 2])
 
     # TODO: Investigate why this raises an [override] type error and read_dataset doesn't
-    def save_dataset(  # type:ignore[override]
+    def save_dataset(  # type: ignore[override]
         self,
         file_name: StrOrPath,
         dataset: xr.Dataset | xr.DataArray,
@@ -275,14 +275,12 @@ def test_show_data_io_method_help(capsys: CaptureFixture):
 @pytest.mark.usefixtures("mocked_registry")
 def test_data_io_plugin_table():
     """Plugin foo supports no function and mock supports all"""
-    expected = dedent(
-        """\
+    expected = dedent("""\
         |  __Format name__  |  __load_dataset__  |  __save_dataset__  |
         |-------------------|--------------------|--------------------|
         |       `foo`       |         /          |         /          |
         |      `mock`       |         *          |         *          |
-        """
-    )
+        """)
 
     assert f"{data_io_plugin_table()}\n" == expected
 
@@ -290,15 +288,13 @@ def test_data_io_plugin_table():
 @pytest.mark.usefixtures("mocked_registry")
 def test_data_io_plugin_table_full():
     """Full Table with all extras"""
-    expected = dedent(
-        """\
+    expected = dedent("""\
         |              __Format name__               |  __load_dataset__  |  __save_dataset__  |               __Plugin name__               |
         |--------------------------------------------|--------------------|--------------------|---------------------------------------------|
         |                   `foo`                    |         /          |         /          | `glotaran.io.interface.DataIoInterface_foo` |
         |                   `mock`                   |         *          |         *          | `test_data_io_registration.MockDataIo_mock` |
         | `test_data_io_registration.MockDataIo_bar` |         *          |         *          | `test_data_io_registration.MockDataIo_bar`  |
-        """  # noqa: E501
-    )
+        """)  # noqa: E501
 
     assert f"{data_io_plugin_table(plugin_names=True,full_names=True)}\n" == expected
 
