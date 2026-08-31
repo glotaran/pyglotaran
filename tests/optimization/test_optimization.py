@@ -47,6 +47,54 @@ def test_single_data():
     assert optimization_result.fitted_data is not None
 
 
+def test_only_unused_free_parameter_evaluates_model_successfully():
+    data_model = DataModel(elements=["decay_independent"])
+    experiment = ExperimentModel(datasets={"decay_independent": data_model})
+    parameters = Parameters.from_dict(
+        {
+            "rates": {
+                "decay": [
+                    [0.8, {"vary": False}],
+                    [0.04, {"vary": False}],
+                ]
+            },
+            "unused": [1.0],
+        }
+    )
+
+    global_axis = np.arange(10)
+    model_axis = np.arange(0, 150, 1)
+    clp = xr.DataArray(
+        [[1, 10]] * global_axis.size,
+        coords=(("global", global_axis), ("clp_label", ["c1", "c2"])),
+    )
+    data_model.data = simulate(
+        data_model, test_library, parameters, {"global": global_axis, "model": model_axis}, clp
+    )
+
+    optimized_parameters, optimization_results, optimization_info = Optimization(
+        models=[experiment],
+        parameters=parameters,
+        library=test_library,
+        raise_exception=True,
+    ).run()
+
+    assert optimization_info.success
+    assert optimization_info.termination_reason == "No free parameters to optimize."
+    assert optimization_info.free_parameter_labels == []
+    assert optimization_info.number_of_function_evaluations == 1
+    assert optimization_info.number_of_jacobian_evaluations == 0
+    assert optimization_info.number_of_parameters == 0
+    assert optimization_info.jacobian.shape == (optimization_info.number_of_data_points, 0)
+    assert optimization_info.covariance_matrix.shape == (0, 0)
+    assert parameters.get_label_value_and_bounds_arrays(exclude_non_vary=True)[0] == ["unused.1"]
+    assert [parameter.label for parameter in optimized_parameters.all()] == [
+        "rates.decay.1",
+        "rates.decay.2",
+    ]
+    assert "decay_independent" in optimization_results
+
+
 def test_multiple_experiments():
     data_model = DataModel(elements=["decay_independent"])
     experiments = [
