@@ -144,7 +144,26 @@ class MultiGaussianActivation(Activation):
     )
 
     def calculate_dispersion(self, axis: ArrayLike) -> ArrayLike:
-        return np.array([[p.center for p in ps] for ps in self.parameters(axis)]).T
+        centers = self.center if isinstance(self.center, list) else [self.center]
+        widths = self.width if isinstance(self.width, list) else [self.width]
+        nr_gaussians = max(len(centers), len(widths))
+        if len(centers) != nr_gaussians:
+            centers = centers * nr_gaussians
+        center = np.array([float(c) for c in centers], dtype=np.float64)
+        if self.dispersion_center is None:
+            return np.array([np.full(axis.size, c) for c in center])
+
+        axis_values = np.asarray(axis, dtype=np.float64)
+        dispersion_center = float(self.dispersion_center)  # type:ignore[arg-type]
+        distance = (
+            (1e3 / axis_values - 1e3 / dispersion_center)
+            if self.reciproke_global_axis
+            else (axis_values - dispersion_center) / 100
+        )
+        center_columns = center[:, np.newaxis] * np.ones((nr_gaussians, axis_values.size))
+        for i, coefficient in enumerate(self.center_dispersion_coefficients):
+            center_columns += float(coefficient) * np.power(distance, i + 1)
+        return center_columns
 
     def is_index_dependent(self) -> bool:
         return self.shift is not None or self.dispersion_center is not None

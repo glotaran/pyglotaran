@@ -102,32 +102,38 @@ class PFIDElement(Element):
         sin_labels = [f"{label}_sin" for label in labels]
         cos_labels = [f"{label}_cos" for label in labels]
 
-        sin_amplitudes = (
-            amplitudes.sel(amplitude_label=sin_labels)
-            .rename(amplitude_label="oscillation")
-            .assign_coords(coordinates)
-        )
-        cos_amplitudes = (
-            amplitudes.sel(amplitude_label=cos_labels)
-            .rename(amplitude_label="oscillation")
-            .assign_coords(coordinates)
-        )
+        def split_sin_cos(data: xr.DataArray) -> tuple[xr.DataArray, xr.DataArray]:
+            """Select sin/cos by integer position and build sin/cos arrays in one step.
+
+            Positional ``isel`` plus raw-array arithmetic avoids the per-array label
+            alignment (``sel``/``_binary_op`` index matching) that dominates result
+            construction for many-oscillation datasets. Values are identical to the
+            label-selected arithmetic.
+            """
+            amplitude_labels = list(data.coords["amplitude_label"].values)
+            sin_idx = [amplitude_labels.index(label) for label in sin_labels]
+            cos_idx = [amplitude_labels.index(label) for label in cos_labels]
+            axis = data.get_axis_num("amplitude_label")
+            sin_data = np.take(data.values, sin_idx, axis=axis)
+            cos_data = np.take(data.values, cos_idx, axis=axis)
+            result_coords = {d: c for d, c in data.coords.items() if d != "amplitude_label"}
+            dims = tuple("oscillation" if d == "amplitude_label" else d for d in data.dims)
+            sin = xr.DataArray(sin_data, dims=dims, coords=result_coords).assign_coords(
+                coordinates
+            )
+            cos = xr.DataArray(cos_data, dims=dims, coords=result_coords).assign_coords(
+                coordinates
+            )
+            return sin, cos
+
+        sin_amplitudes, cos_amplitudes = split_sin_cos(amplitudes)
         associated_spectra = np.sqrt(sin_amplitudes**2 + cos_amplitudes**2)
         phase = xr.DataArray(
             np.unwrap(np.arctan2(sin_amplitudes, cos_amplitudes), axis=0),
             coords=associated_spectra.coords,
         )
 
-        sin_concentrations = (
-            concentrations.sel(amplitude_label=sin_labels)
-            .rename(amplitude_label="oscillation")
-            .assign_coords(coordinates)
-        )
-        cos_concentrations = (
-            concentrations.sel(amplitude_label=cos_labels)
-            .rename(amplitude_label="oscillation")
-            .assign_coords(coordinates)
-        )
+        sin_concentrations, cos_concentrations = split_sin_cos(concentrations)
         associated_concentrations = np.sqrt(sin_concentrations**2 + cos_concentrations**2)
         phase_concentrations = xr.DataArray(
             np.unwrap(np.arctan2(sin_concentrations, cos_concentrations), axis=0),
