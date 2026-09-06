@@ -821,7 +821,9 @@ class OptimizationObjective:
             global_dim: global_axis,
             "amplitude_label": amplitude_axis,
         }
-        amplitude_axis = list(amplitude_axis)
+        # Iterating an xarray coordinate yields scalar DataArrays, whose equality
+        # invokes coordinate alignment during every list.index comparison.
+        amplitude_axis = np.asarray(amplitude_axis).tolist()
         # Vectorized equivalent of the previous per-(index, label) Python gather:
         # for each selected global index, collect the per-label positions once and
         # take all amplitudes in a single numpy fancy-indexing step. The gathered
