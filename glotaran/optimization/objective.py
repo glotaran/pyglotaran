@@ -821,17 +821,20 @@ class OptimizationObjective:
             global_dim: global_axis,
             "amplitude_label": amplitude_axis,
         }
-        return xr.DataArray(
+        amplitude_axis = list(amplitude_axis)
+        # Vectorized equivalent of the previous per-(index, label) Python gather:
+        # for each selected global index, collect the per-label positions once and
+        # take all amplitudes in a single numpy fancy-indexing step. The gathered
+        # values are identical to the element-wise lookups.
+        columns = np.stack(
             [
-                [
-                    estimated_amplitudes[i].clp[estimated_amplitude_axes[i].index(amplitude_label)]
-                    for amplitude_label in amplitude_axis
+                np.asarray(estimated_amplitudes[i].clp)[
+                    [estimated_amplitude_axes[i].index(label) for label in amplitude_axis]
                 ]
                 for i in global_indices
-            ],
-            dims=coords.keys(),
-            coords=coords,
+            ]
         )
+        return xr.DataArray(columns, dims=coords.keys(), coords=coords)
 
     def get_dataset_residual(
         self,
