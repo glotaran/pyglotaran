@@ -154,7 +154,7 @@ class MultiGaussianActivation(Activation):
             return np.array([np.full(axis.size, c) for c in center])
 
         axis_values = np.asarray(axis, dtype=np.float64)
-        dispersion_center = float(self.dispersion_center)  # type:ignore[arg-type]
+        dispersion_center = float(self.dispersion_center)
         distance = (
             (1e3 / axis_values - 1e3 / dispersion_center)
             if self.reciproke_global_axis
