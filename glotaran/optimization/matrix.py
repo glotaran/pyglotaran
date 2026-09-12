@@ -286,8 +286,7 @@ class OptimizationMatrix:
         OptimizationMatrix
             The scaled matrix.
         """
-        self.array *= scale
-        return self
+        return replace(self, array=self.array * scale)
 
     def at_index(self, index: int) -> OptimizationMatrix:
         """Get the matrix at a global index.

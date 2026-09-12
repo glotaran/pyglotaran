@@ -166,3 +166,16 @@ def test_from_linked_data():
         ],
         matrix_two.at_index(0).array[:, 0] * 4,
     )
+
+
+def test_scale_does_not_mutate_index_dependent_matrix():
+    matrix = OptimizationMatrix(
+        ["clp"],
+        np.array([[[1.0]], [[2.0]]]),
+    )
+    original = matrix.array.copy()
+
+    scaled = matrix.at_index(0).scale(4)
+
+    assert np.array_equal(scaled.array, np.array([[4.0]]))
+    assert np.array_equal(matrix.array, original)
