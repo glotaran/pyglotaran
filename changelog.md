@@ -12,6 +12,10 @@
 
 - 👌 Treat near-zero parameter standard errors as unavailable when rendering results
   (#1510)
+- 👌 Handle optimizations with no free parameters and report consistent optimization metadata
+- 👌 Avoid repeated coordinate alignment during optimization result construction and Gaussian
+  dispersion calculations
+- 👌 Preserve shared optimization matrices when applying index-dependent scaling
 
 ### 🩹 Bug fixes
 
@@ -21,6 +25,10 @@
 - 🩹 Save NumPy scalar coordinates as valid numbers in explicit ASCII files (#1591)
 - 🩹 Preserve CLP label ordering when combining element matrices with mixed dimensionality
   (#1512)
+- 🩹 Normalize kinetic activation concentrations across all activation compartments
+- 🩹 Preserve signed values and support xarray axes when calculating equal-area penalties, and
+  include expanded matrices in result metadata
+- 🩹 Skip coefficient relations whose endpoints are absent from the active axes
 
 ### 📚 Documentation
 
