@@ -85,6 +85,7 @@ source_suffix = [".rst", ".md"]
 
 linkcheck_ignore = [
     r"https://github\.com/.+?#.+",
+    r"https://stackoverflow\.com/a/65375904/3990615",
 ]
 
 # The master toctree document.
