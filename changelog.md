@@ -29,6 +29,8 @@
 - 🩹 Preserve signed values and support xarray axes when calculating equal-area penalties, and
   include expanded matrices in result metadata
 - 🩹 Skip coefficient relations whose endpoints are absent from the active axes
+- 🩹 Always persist `scale` and `weighted_root_mean_square_error` in optimization result
+  metadata, including a unit scale and an unweighted fit, matching v0.7 behaviour
 
 ### 📚 Documentation
 

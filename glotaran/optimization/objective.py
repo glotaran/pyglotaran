@@ -14,10 +14,12 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import SerializationInfo
+from pydantic import SerializerFunctionWrapHandler
 from pydantic import ValidationInfo
 from pydantic import computed_field
 from pydantic import field_serializer
 from pydantic import field_validator
+from pydantic import model_serializer
 from pydantic import model_validator
 
 from glotaran.io import load_dataset
@@ -140,6 +142,32 @@ class OptimizationResultMetaData(BaseModel):
     root_mean_square_error: float
     weighted_root_mean_square_error: float | None = None
     scale: float = 1
+
+    @model_serializer(mode="wrap")
+    def serialize_diagnostics_unconditionally(
+        self, handler: SerializerFunctionWrapHandler
+    ) -> dict[str, Any]:
+        """Keep the fit diagnostics in the output even when they hold default values.
+
+        ``Result`` is saved with ``exclude_defaults=True``, which would drop a unit
+        ``scale`` and an unweighted ``weighted_root_mean_square_error``. Both are
+        scalars that consumers cannot recover without re-running the fit.
+
+        Parameters
+        ----------
+        handler : SerializerFunctionWrapHandler
+            Default pydantic serializer for this model.
+
+        Returns
+        -------
+        dict[str, Any]
+            Serialized metadata including the diagnostics.
+        """
+        serialized = handler(self)
+        if self.weighted_root_mean_square_error is not None:
+            serialized["weighted_root_mean_square_error"] = self.weighted_root_mean_square_error
+        serialized["scale"] = self.scale
+        return serialized
 
 
 class OptimizationResult(BaseModel):
@@ -623,9 +651,9 @@ class OptimizationObjective:
             root_mean_square_error=calculate_root_mean_square_error(result_dataset.residual),
             weighted_root_mean_square_error=calculate_root_mean_square_error(
                 result_dataset.weighted_residual
-            )
-            if "weighted_residual" in result_dataset.data_vars
-            else None,
+                if "weighted_residual" in result_dataset.data_vars
+                else result_dataset.residual
+            ),
             scale=scale if scale is not None else 1,
         )
 
