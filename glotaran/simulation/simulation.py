@@ -97,6 +97,11 @@ def simulate(
 
     if noise and noise_seed is not None:
         rng = np.random.default_rng(noise_seed)
-        result = xr.DataArray(rng.normal(result.data, noise_std_dev), coords=result.coords)
+        original_dims = result.dims
+        canonical_result = result.transpose(*sorted(original_dims))
+        result = xr.DataArray(
+            rng.normal(canonical_result.data, noise_std_dev),
+            coords=canonical_result.coords,
+        ).transpose(*original_dims)
 
     return result.to_dataset(name="data")

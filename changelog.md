@@ -6,9 +6,31 @@
 
 ### ✨ Features
 
+- ✨ Add a native v0.8 PFID element for perturbed free-induction-decay fitting (#1510)
+
 ### 👌 Minor Improvements:
 
+- 👌 Treat near-zero parameter standard errors as unavailable when rendering results
+  (#1510)
+- 👌 Handle optimizations with no free parameters and report consistent optimization metadata
+- 👌 Avoid repeated coordinate alignment during optimization result construction and Gaussian
+  dispersion calculations
+- 👌 Preserve shared optimization matrices when applying index-dependent scaling
+
 ### 🩹 Bug fixes
+
+- 🩹 Make SVD preparation and seeded simulation noise independent of dimension order
+  (#1608)
+- 🩹 Add pandas 3 compatibility for parameter expressions and test dependencies (#1607)
+- 🩹 Save NumPy scalar coordinates as valid numbers in explicit ASCII files (#1591)
+- 🩹 Preserve CLP label ordering when combining element matrices with mixed dimensionality
+  (#1512)
+- 🩹 Normalize kinetic activation concentrations across all activation compartments
+- 🩹 Preserve signed values and support xarray axes when calculating equal-area penalties, and
+  include expanded matrices in result metadata
+- 🩹 Skip coefficient relations whose endpoints are absent from the active axes
+- 🩹 Always persist `scale` and `weighted_root_mean_square_error` in optimization result
+  metadata, including a unit scale and an unweighted fit, matching v0.7 behaviour
 
 ### 📚 Documentation
 

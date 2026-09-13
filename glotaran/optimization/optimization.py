@@ -6,6 +6,7 @@ from typing import Literal
 from warnings import warn
 
 import numpy as np
+from scipy.optimize import OptimizeResult
 from scipy.optimize import least_squares
 
 from glotaran.model.errors import GlotaranModelIssues
@@ -112,30 +113,46 @@ class Optimization:
         ) = self._parameters.get_label_value_and_bounds_arrays(exclude_non_vary=True)
         ls_result = None
         termination_reason = ""
+        no_free_parameters = initial_parameter.size == 0
         with self._tee:
-            try:
-                verbose = 2 if self._verbose else 0
-                ls_result = least_squares(
-                    self.objective_function,
-                    initial_parameter,
-                    bounds=(lower_bounds, upper_bounds),
-                    method=self._optimization_method,
-                    max_nfev=self._maximum_number_function_evaluations,
-                    verbose=verbose,
-                    ftol=self._ftol,
-                    gtol=self._gtol,
-                    xtol=self._xtol,
-                )
-                termination_reason = ls_result.message
-            # No matter the error we want to behave gracefully
-            except Exception as e:
-                if self._raise:
-                    raise
-                warn(f"Optimization failed:\n\n{e}", stacklevel=3)
-                termination_reason = str(e)
+            if no_free_parameters:
+                termination_reason = "No free parameters to optimize."
+            else:
+                try:
+                    verbose = 2 if self._verbose else 0
+                    ls_result = least_squares(
+                        self.objective_function,
+                        initial_parameter,
+                        bounds=(lower_bounds, upper_bounds),
+                        method=self._optimization_method,
+                        max_nfev=self._maximum_number_function_evaluations,
+                        verbose=verbose,
+                        ftol=self._ftol,
+                        gtol=self._gtol,
+                        xtol=self._xtol,
+                    )
+                    termination_reason = ls_result.message
+                # No matter the error we want to behave gracefully
+                except Exception as e:
+                    if self._raise:
+                        raise
+                    warn(f"Optimization failed:\n\n{e}", stacklevel=3)
+                    termination_reason = str(e)
 
         # TODO: check how this works for multiple experiments with possible the same dataset name
         penalty = np.concatenate([o.calculate() for o in self._objectives])
+        if no_free_parameters:
+            ls_result = OptimizeResult(
+                x=initial_parameter,
+                fun=penalty,
+                jac=np.empty((penalty.size, 0)),
+                optimality=0.0,
+                nfev=1,
+                njev=0,
+                status=1,
+                success=True,
+                message=termination_reason,
+            )
         results = [o.get_result() for o in self._objectives]
         optimization_results = dict(ChainMap(*[r.optimization_results for r in results]))
         number_of_clps = sum(r.clp_size for r in results)
