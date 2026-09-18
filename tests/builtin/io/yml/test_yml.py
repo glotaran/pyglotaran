@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-import yaml
+from ruamel.yaml import YAML
 
 from glotaran.builtin.elements.kinetic.element import KineticElement
 from glotaran.builtin.items.activation import ActivationDataModel
@@ -147,7 +147,8 @@ def test_result_round_tripping(tmp_path: Path, result_file_name: str):
     ]
     assert all(Path(path).exists() for path in result_file_paths)
     loaded_result = load_result(save_path)
-    saved_meta = yaml.safe_load((tmp_path / "result.yml").read_text())["optimization_results"]
+    yaml = YAML()
+    saved_meta = yaml.load((tmp_path / "result.yml").read_text())["optimization_results"]
     for label, dataset in loaded_result.optimization_results.items():
         # An unweighted fit has a unit scale and a weighted RMSE equal to the
         # unweighted one. Both are persisted rather than dropped as defaults.
