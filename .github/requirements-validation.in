@@ -1,0 +1,2 @@
+# Keep validator dependencies tied to the checked-out submodule.
+-r ../validation/requirements.txt
