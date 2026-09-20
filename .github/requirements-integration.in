@@ -1,0 +1,5 @@
+-r ../requirements_dev.txt
+
+# The pinned examples runner imports these when it runs notebooks.
+papermill
+yaargh

@@ -19,12 +19,34 @@ jobs:
     outputs:
       example-list: ${{ steps.create-example-list.outputs.example-list }}
     steps:
+      - uses: actions/checkout@v4
+      - name: Checkout pinned examples
+        uses: actions/checkout@v4
+        with:
+          repository: "glotaran/pyglotaran-examples"
+          ref: fcfe1519ac3a49e1826318646dfdda7892d0bbf1
+          path: pyglotaran-examples
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Install locked example-list dependencies
+        run: |
+          uv pip install --no-deps --only-binary :all: --require-hashes \
+            -r .github/requirements-build-py310.txt
+          # yaargh publishes no wheel; its sdist and build toolchain are hash-locked.
+          uv pip install --no-deps --only-binary :all: --no-binary yaargh \
+            --no-build-isolation --require-hashes \
+            -r .github/requirements-example-list-py310.txt
       - name: Set example list output
         id: create-example-list
-        uses: glotaran/pyglotaran-examples@main
-        with:
-          example_name: set example list
-          set_example_list: true
+        run: |
+          python pyglotaran-examples/scripts/run_examples_notebooks.py \
+            set-gha-example-list-output
 
   run-examples:
     name: "Run Example: "
@@ -35,6 +57,12 @@ jobs:
         example_name: ${{fromJson(needs.create-example-list.outputs.example-list)}}
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout pinned examples
+        uses: actions/checkout@v4
+        with:
+          repository: "glotaran/pyglotaran-examples"
+          ref: fcfe1519ac3a49e1826318646dfdda7892d0bbf1
+          path: pyglotaran-examples
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
@@ -44,14 +72,31 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-      - name: Install pyglotaran
+      - name: Install locked dependencies
         run: |
-          uv pip install . -r requirements_dev.txt
+          uv pip install --no-deps --only-binary :all: --require-hashes \
+            -r .github/requirements-build-py310.txt
+          # odfpy and yaargh publish no wheels; their sdists and build toolchain are hash-locked.
+          uv pip install --no-deps --only-binary :all: --no-binary odfpy \
+            --no-binary yaargh --no-build-isolation --require-hashes \
+            -r .github/requirements-integration-py310.txt
+      - name: Build and install pyglotaran
+        run: |
+          uv build --wheel --no-build-isolation
+          uv pip install --no-deps --no-index --only-binary :all: dist/*.whl
       - name: ${{ matrix.example_name }}
         id: example-run
-        uses: glotaran/pyglotaran-examples@main
-        with:
-          example_name: ${{ matrix.example_name }}
+        env:
+          EXAMPLE_NAME: ${{ matrix.example_name }}
+        run: python pyglotaran-examples/scripts/run_examples_notebooks.py "$EXAMPLE_NAME"
+      - name: Record pinned examples revision
+        run: |
+          examples_sha="$(git -C pyglotaran-examples rev-parse HEAD)"
+          test "$examples_sha" = "fcfe1519ac3a49e1826318646dfdda7892d0bbf1"
+          mkdir -p "$HOME/pyglotaran_examples_results" pyglotaran-examples/plot_results
+          printf '%s\n' "$examples_sha" | tee \
+            "$HOME/pyglotaran_examples_results/example_commit_sha.txt" \
+            pyglotaran-examples/plot_results/example_commit_sha.txt
       - name: Installed packages
         if: always()
         run: |
@@ -129,7 +174,7 @@ jobs:
           repository: "glotaran/pyglotaran-examples"
           # Pinned v0.7 gold standard. Refresh this only with a reviewed
           # comparison-results publication and update its provenance record.
-          ref: 5a55a79b9fd0379af673d664c52e83b064db52ce
+          ref: 88d10b162359a95b7e2baa80f9108797a59e2c66
           path: comparison-results
 
       - name: Download result artifact
