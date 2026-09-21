@@ -32,16 +32,14 @@ def test_optimization_history_init_no_data():
             ).set_index("iteration"),
         ),
         (
-            dedent(
-                """\
+            dedent("""\
                    Iteration     Total nfev        Cost      Cost reduction    Step norm     Optimality
                        0              1         7.5834e+00                                    3.84e+01
                        1              2         7.5833e+00      1.37e-04       4.55e-05       1.26e-01
                        2              3         7.5833e+00      6.02e-11       6.44e-09       1.64e-05
                 Both `ftol` and `xtol` termination conditions are satisfied.
                 Function evaluations 3, initial cost 7.5834e+00, final cost 7.5833e+00, first-order optimality 1.64e-05.
-                """  # noqa: E501
-            ),
+                """),  # noqa: E501
             pd.DataFrame(
                 {
                     "iteration": [0, 1, 2],

@@ -57,10 +57,10 @@ class MockProjectIo(ProjectIoInterface):
         """This docstring is just for help testing of 'load_model'."""
         mock_obj = MockFileLoadable()
         mock_obj.func_args = {"file_name": file_name, **kwargs}
-        return mock_obj  # type:ignore[return-value]
+        return mock_obj  # type: ignore[return-value]
 
     def save_model(self, model: Model, file_name: StrOrPath, **kwargs: Any):
-        model.func_args.update(  # type:ignore[attr-defined]
+        model.func_args.update(  # type: ignore[attr-defined]
             **{
                 "file_name": file_name,
                 "data_object": model,
@@ -71,10 +71,10 @@ class MockProjectIo(ProjectIoInterface):
     def load_parameters(self, file_name: StrOrPath, **kwargs: Any) -> Parameters:
         mock_obj = MockFileLoadable()
         mock_obj.func_args = {"file_name": file_name, **kwargs}
-        return mock_obj  # type:ignore[return-value]
+        return mock_obj  # type: ignore[return-value]
 
     def save_parameters(self, parameters: Parameters, file_name: StrOrPath, **kwargs: Any):
-        parameters.func_args.update(  # type:ignore[attr-defined]
+        parameters.func_args.update(  # type: ignore[attr-defined]
             **{
                 "file_name": file_name,
                 "data_object": parameters,
@@ -85,10 +85,10 @@ class MockProjectIo(ProjectIoInterface):
     def load_scheme(self, file_name: StrOrPath, **kwargs: Any) -> Scheme:
         mock_obj = MockFileLoadable()
         mock_obj.func_args = {"file_name": file_name, **kwargs}
-        return mock_obj  # type:ignore[return-value]
+        return mock_obj  # type: ignore[return-value]
 
     def save_scheme(self, scheme: Scheme, file_name: StrOrPath, **kwargs: Any):
-        scheme.func_args.update(  # type:ignore[attr-defined]
+        scheme.func_args.update(  # type: ignore[attr-defined]
             **{
                 "file_name": file_name,
                 "data_object": scheme,
@@ -99,7 +99,7 @@ class MockProjectIo(ProjectIoInterface):
     def load_result(self, result_path: StrOrPath, **kwargs: Any) -> Result:
         mock_obj = MockFileLoadable()
         mock_obj.func_args = {"file_name": result_path, **kwargs}
-        return mock_obj  # type:ignore[return-value]
+        return mock_obj  # type: ignore[return-value]
 
     def save_result(
         self,
@@ -109,7 +109,7 @@ class MockProjectIo(ProjectIoInterface):
         saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
         **kwargs: Any,
     ):
-        result.func_args.update(  # type:ignore[attr-defined]
+        result.func_args.update(  # type: ignore[attr-defined]
             **{
                 "file_name": result_path,
                 "data_object": result,
@@ -373,14 +373,12 @@ def test_show_project_io_method_help(capsys: CaptureFixture):
 @pytest.mark.usefixtures("mocked_registry")
 def test_project_io_plugin_table():
     """Plugin foo supports no function and mock supports all"""
-    expected = dedent(
-        """\
+    expected = dedent("""\
         |  __Format name__  |  __load_model__  |  __save_model__  |  __load_parameters__  |  __save_parameters__  |  __load_scheme__  |  __save_scheme__  |  __load_result__  |  __save_result__  |
         |-------------------|------------------|------------------|-----------------------|-----------------------|-------------------|-------------------|-------------------|-------------------|
         |       `foo`       |        /         |        /         |           /           |           /           |         /         |         /         |         /         |         /         |
         |      `mock`       |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         |
-        """  # noqa: E501
-    )
+        """)  # noqa: E501
 
     assert f"{project_io_plugin_table()}\n" == expected
 
@@ -388,15 +386,13 @@ def test_project_io_plugin_table():
 @pytest.mark.usefixtures("mocked_registry")
 def test_project_io_plugin_table_full():
     """Full Table with all extras"""
-    expected = dedent(
-        """\
+    expected = dedent("""\
         |                 __Format name__                  |  __load_model__  |  __save_model__  |  __load_parameters__  |  __save_parameters__  |  __load_scheme__  |  __save_scheme__  |  __load_result__  |  __save_result__  |                  __Plugin name__                  |
         |--------------------------------------------------|------------------|------------------|-----------------------|-----------------------|-------------------|-------------------|-------------------|-------------------|---------------------------------------------------|
         |                      `foo`                       |        /         |        /         |           /           |           /           |         /         |         /         |         /         |         /         |  `glotaran.io.interface.ProjectIoInterface_foo`   |
         |                      `mock`                      |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         | `test_project_io_registration.MockProjectIo_mock` |
         | `test_project_io_registration.MockProjectIo_bar` |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         | `test_project_io_registration.MockProjectIo_bar`  |
-        """  # noqa: E501
-    )
+        """)  # noqa: E501
 
     assert f"{project_io_plugin_table(plugin_names=True,full_names=True)}\n" == expected
 

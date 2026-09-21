@@ -35,8 +35,7 @@ def dummy_result(tmp_path: Path):
 @pytest.mark.parametrize("path_is_absolute", (True, False))
 def test_save_result_yml(tmp_path: Path, dummy_result: Result, path_is_absolute: bool):
     """Check all files exist."""
-    expected_result = dedent(
-        f"""\
+    expected_result = dedent(f"""\
         number_of_function_evaluations: 1
         success: true
         termination_reason: The maximum number of function evaluations is exceeded.
@@ -54,10 +53,8 @@ def test_save_result_yml(tmp_path: Path, dummy_result: Result, path_is_absolute:
         optimization_history: optimization_history.csv
         data:
           dataset_1: dataset_1.nc
-        """
-    )
-    expected_scheme = dedent(
-        """\
+        """)
+    expected_scheme = dedent("""\
         model: model.yml
         parameters: initial_parameters.csv
         data:
@@ -71,8 +68,7 @@ def test_save_result_yml(tmp_path: Path, dummy_result: Result, path_is_absolute:
         xtol: 1e-08
         optimization_method: TrustRegionReflection
         result_path: null
-        """
-    )
+        """)
     if path_is_absolute is True:
         result_dir = tmp_path / "testresult"
     else:

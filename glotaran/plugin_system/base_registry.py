@@ -130,8 +130,8 @@ def load_plugins():
                         entry_point.load()
         else:
             for entry_point in metadata.entry_points():
-                if entry_point.group.startswith("glotaran.plugins"):  # type:ignore[attr-defined]
-                    entry_point.load()  # type:ignore[attr-defined]
+                if entry_point.group.startswith("glotaran.plugins"):  # type: ignore[attr-defined]
+                    entry_point.load()  # type: ignore[attr-defined]
 
 
 def set_plugin(

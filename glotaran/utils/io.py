@@ -55,7 +55,7 @@ def _load_datasets(dataset_mappable: DatasetMappable, index: int = 1) -> dict[st
         dataset_mapping[Path(dataset_mappable).stem] = load_dataset(dataset_mappable)
     elif isinstance(dataset_mappable, (xr.Dataset, xr.DataArray)):
         if isinstance(dataset_mappable, xr.DataArray):
-            dataset_mappable: xr.Dataset = dataset_mappable.to_dataset(  # type:ignore[no-redef]
+            dataset_mappable: xr.Dataset = dataset_mappable.to_dataset(  # type: ignore[no-redef]
                 name="data"
             )
         if "source_path" not in dataset_mappable.attrs:

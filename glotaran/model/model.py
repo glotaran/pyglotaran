@@ -113,7 +113,7 @@ def _load_model_items_from_dict(
     dict[str, ModelItem]
     """
     return {
-        label: _load_item_from_dict(item_type, value, extra={"label": label})  # type:ignore[misc]
+        label: _load_item_from_dict(item_type, value, extra={"label": label})  # type: ignore[misc]
         for label, value in item_dict.items()
     }
 
@@ -153,10 +153,10 @@ def _load_dataset_groups(
     """
     dataset_group_items = _load_model_items_from_dict(DatasetGroupModel, dataset_groups)
     if DEFAULT_DATASET_GROUP not in dataset_group_items:
-        dataset_group_items[DEFAULT_DATASET_GROUP] = DatasetGroupModel(  # type:ignore[call-arg]
+        dataset_group_items[DEFAULT_DATASET_GROUP] = DatasetGroupModel(  # type: ignore[call-arg]
             label=DEFAULT_DATASET_GROUP
         )
-    return dataset_group_items  # type:ignore[return-value]
+    return dataset_group_items  # type: ignore[return-value]
 
 
 def _global_item_attribute(item_type: type[Item]) -> Attribute:
@@ -191,7 +191,7 @@ def _model_item_attribute(item_type: type[ModelItem]):
     Attribute
     """
     return ib(
-        type=dict[str, item_type],  # type:ignore[valid-type]
+        type=dict[str, item_type],  # type: ignore[valid-type]
         factory=dict,
         converter=lambda value: _load_model_items_from_dict(item_type, value),
         metadata=META,
@@ -334,7 +334,7 @@ class Model:
                     group_model = self.dataset_groups[group]
                 except KeyError:
                     raise ModelError(f"Unknown dataset group '{group}'")
-                groups[group] = DatasetGroup(  # type:ignore[call-arg]
+                groups[group] = DatasetGroup(  # type: ignore[call-arg]
                     residual_function=group_model.residual_function,
                     link_clp=group_model.link_clp,
                     model=self,
@@ -496,7 +496,7 @@ class Model:
             string += f"{base_heading}# {name.replace('_', ' ').title()}\n\n"
 
             if isinstance(items, dict):
-                items = items.values()  # type:ignore[assignment]
+                items = items.values()  # type: ignore[assignment]
             for item in items:
                 assert isinstance(item, Item)
                 item_str = item_to_markdown(

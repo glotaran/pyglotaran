@@ -327,11 +327,11 @@ def iterate_names_and_labels(
 
         if structure is dict:
             for v in value.values():
-                yield name, v if isinstance(v, str) else (name, v.label)  # type:ignore[misc]
+                yield name, v if isinstance(v, str) else (name, v.label)  # type: ignore[misc]
 
         elif structure is list:
             for v in value:
-                yield name, v if isinstance(v, str) else (name, v.label)  # type:ignore[misc]
+                yield name, v if isinstance(v, str) else (name, v.label)  # type: ignore[misc]
 
         else:
             yield name, (
@@ -339,7 +339,7 @@ def iterate_names_and_labels(
                 if isinstance(value, str)
                 else (
                     name,
-                    value.label,  # type:ignore[misc]
+                    value.label,  # type: ignore[misc]
                 )
             )
 

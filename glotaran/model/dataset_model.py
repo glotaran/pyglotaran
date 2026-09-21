@@ -185,13 +185,13 @@ class DatasetModel(ModelItem):
     group: str = "default"
     force_index_dependent: bool = False
     megacomplex: list[ModelItemType[Megacomplex]] = attribute(
-        validator=validate_megacomplexes  # type:ignore[arg-type]
+        validator=validate_megacomplexes  # type: ignore[arg-type]
     )
     megacomplex_scale: list[ParameterType] | None = None
     global_megacomplex: list[ModelItemType[Megacomplex]] | None = attribute(
         alias="megacomplex",
         default=None,
-        validator=validate_global_megacomplexes,  # type:ignore[arg-type]
+        validator=validate_global_megacomplexes,  # type: ignore[arg-type]
     )
     global_megacomplex_scale: list[ParameterType] | None = None
     scale: ParameterType | None = None
@@ -237,9 +237,9 @@ def get_dataset_model_model_dimension(dataset_model: DatasetModel) -> str:
         raise ValueError(f"Dataset model '{dataset_model.label}' was not filled.")
     model_dimension: str = dataset_model.megacomplex[
         0
-    ].dimension  # type:ignore[union-attr, assignment]
+    ].dimension  # type: ignore[union-attr, assignment]
     if any(
-        model_dimension != m.dimension  # type:ignore[union-attr]
+        model_dimension != m.dimension  # type: ignore[union-attr]
         for m in dataset_model.megacomplex
     ):
         raise ValueError(
@@ -310,11 +310,11 @@ def finalize_dataset_model(dataset_model: DatasetModel, dataset: xr.Dataset):
     """
     is_full_model = has_dataset_model_global_model(dataset_model)
     for megacomplex in dataset_model.megacomplex:
-        megacomplex.finalize_data(  # type:ignore[union-attr]
+        megacomplex.finalize_data(  # type: ignore[union-attr]
             dataset_model, dataset, is_full_model=is_full_model
         )
     if is_full_model and dataset_model.global_megacomplex is not None:
         for megacomplex in dataset_model.global_megacomplex:
-            megacomplex.finalize_data(  # type:ignore[union-attr]
+            megacomplex.finalize_data(  # type: ignore[union-attr]
                 dataset_model, dataset, is_full_model=is_full_model, as_global=True
             )
