@@ -125,9 +125,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: "glotaran/pyglotaran-examples"
-          # Pinned v0.7 gold standard. Refresh this only with a reviewed
+          # Pinned v0.7.4 gold standard. Refresh this only with a reviewed
           # comparison-results publication and update its provenance record.
-          ref: 5a55a79b9fd0379af673d664c52e83b064db52ce
+          ref: 5effc7525baaf8d658f773bb8410d6b7cd27fdfe
           path: comparison-results
 
       - name: Download result artifact
