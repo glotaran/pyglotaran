@@ -22,6 +22,38 @@ if TYPE_CHECKING:
     from glotaran.model.data_model import DataModel
 
 
+@pytest.mark.parametrize("reverse", [False, True])
+def test_combine_preserves_clp_order_for_mixed_dimensionality(reverse: bool):
+    independent = OptimizationMatrix(["independent", "shared"], np.array([[1.0, 2.0]]))
+    dependent = OptimizationMatrix(
+        ["dependent", "shared"],
+        np.array([[[3.0, 4.0]], [[5.0, 6.0]]]),
+    )
+    matrices = [dependent, independent] if reverse else [independent, dependent]
+
+    result = OptimizationMatrix.combine(matrices)
+
+    expected_axis = (
+        ["dependent", "shared", "independent"]
+        if reverse
+        else ["independent", "shared", "dependent"]
+    )
+    assert result.clp_axis == expected_axis
+    assert result.array.shape == (2, 1, 3)
+    assert np.array_equal(
+        result.array[..., result.clp_axis.index("independent")],
+        np.array([[1.0], [1.0]]),
+    )
+    assert np.array_equal(
+        result.array[..., result.clp_axis.index("dependent")],
+        np.array([[3.0], [5.0]]),
+    )
+    assert np.array_equal(
+        result.array[..., result.clp_axis.index("shared")],
+        np.array([[6.0], [8.0]]),
+    )
+
+
 @pytest.mark.parametrize("weight", [True, False])
 @pytest.mark.parametrize(
     "data_model", [TestDataModelConstantIndexIndependent, TestDataModelConstantIndexDependent]
@@ -134,3 +166,16 @@ def test_from_linked_data():
         ],
         matrix_two.at_index(0).array[:, 0] * 4,
     )
+
+
+def test_scale_does_not_mutate_index_dependent_matrix():
+    matrix = OptimizationMatrix(
+        ["clp"],
+        np.array([[[1.0]], [[2.0]]]),
+    )
+    original = matrix.array.copy()
+
+    scaled = matrix.at_index(0).scale(4)
+
+    assert np.array_equal(scaled.array, np.array([[4.0]]))
+    assert np.array_equal(matrix.array, original)

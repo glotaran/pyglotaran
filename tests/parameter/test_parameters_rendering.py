@@ -126,3 +126,14 @@ def test_parameters_ipython_rendering():
 
     assert "text/markdown" in rendered_markdown_return
     assert rendered_markdown_return["text/markdown"].startswith("  * __foo__")
+
+
+def test_parameters_markdown_treats_near_zero_standard_error_as_missing():
+    parameters = Parameters.from_dict(
+        {"rate": [["fixed", 1.0, {"vary": False, "standard-error": 0.0}]]}
+    )
+
+    rendered = str(parameters.markdown())
+
+    assert " nan " in rendered
+    assert parameters.get("rate.fixed").standard_error == 0
