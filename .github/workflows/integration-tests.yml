@@ -19,9 +19,20 @@ jobs:
     outputs:
       example-list: ${{ steps.create-example-list.outputs.example-list }}
     steps:
+      # Pre-checkout the notebooks: the shared action otherwise clones main.
+      - name: Checkout pinned examples
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: "glotaran/pyglotaran-examples"
+          ref: fcfe1519ac3a49e1826318646dfdda7892d0bbf1
+          path: pyglotaran-examples
+      - name: Set up Python 3.10
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.10"
       - name: Set example list output
         id: create-example-list
-        uses: glotaran/pyglotaran-examples@main
+        uses: glotaran/pyglotaran-examples@fcfe1519ac3a49e1826318646dfdda7892d0bbf1
         with:
           example_name: set example list
           set_example_list: true
@@ -34,36 +45,42 @@ jobs:
       matrix:
         example_name: ${{fromJson(needs.create-example-list.outputs.example-list)}}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Checkout pinned examples
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: "glotaran/pyglotaran-examples"
+          ref: fcfe1519ac3a49e1826318646dfdda7892d0bbf1
+          path: pyglotaran-examples
       - name: Set up Python 3.10
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.10"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           enable-cache: true
       - name: Install pyglotaran
-        run: |
-          uv pip install . -r requirements_dev.txt
+        run: uv pip install . -r requirements_dev.txt
       - name: ${{ matrix.example_name }}
         id: example-run
-        uses: glotaran/pyglotaran-examples@main
+        uses: glotaran/pyglotaran-examples@fcfe1519ac3a49e1826318646dfdda7892d0bbf1
         with:
           example_name: ${{ matrix.example_name }}
+          install_extras: false
       - name: Installed packages
         if: always()
         run: |
           uv pip list
       - name: Upload Example Plots Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: example-notebooks-${{ matrix.example_name }}
           path: ${{ steps.example-run.outputs.notebook-path }}
 
       - name: Upload Example Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: example-results-${{ matrix.example_name }}
           path: ~/pyglotaran_examples_results
@@ -75,40 +92,40 @@ jobs:
     needs: [run-examples]
     steps:
       - name: Download Notebooks Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           path: example-notebooks
           pattern: example-notebooks-*
           merge-multiple: true
 
       - name: Upload Example Notebooks Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: example-notebooks
           path: example-notebooks
           overwrite: true
 
       - name: Delete Intermediate Notebooks artifacts
-        uses: GeekyEggo/delete-artifact@v5
+        uses: GeekyEggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5
         with:
           name: example-notebooks-*
 
       - name: Download Result Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           path: example-results
           pattern: example-results-*
           merge-multiple: true
 
       - name: Upload Example Result Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: example-results
           path: example-results
           overwrite: true
 
       - name: Delete Intermediate Result artifacts
-        uses: GeekyEggo/delete-artifact@v5
+        uses: GeekyEggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5
         with:
           name: example-results-*
 
@@ -117,21 +134,29 @@ jobs:
     runs-on: ubuntu-latest
     needs: [collect-artifacts]
     steps:
+      - name: Checkout pyglotaran and pinned validator
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: pyglotaran
+          submodules: recursive
+
       - name: Checkout compare results
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: "glotaran/pyglotaran-examples"
-          ref: comparison-results
+          # Pinned v0.7 gold standard. Refresh this only with a reviewed
+          # comparison-results publication and update its provenance record.
+          ref: 5effc7525baaf8d658f773bb8410d6b7cd27fdfe
           path: comparison-results
 
       - name: Download result artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: example-results
           path: comparison-results-current
 
       - name: Delete Intermediate artifacts
-        uses: GeekyEggo/delete-artifact@v5
+        uses: GeekyEggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5
         with:
           name: example-results-*
 
@@ -146,11 +171,12 @@ jobs:
           echo "::endgroup::"
 
       - name: Set up Python 3.10
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.10"
 
+      # Use the action from the repository's pinned validation submodule.
       - name: Run result validator
-        uses: glotaran/pyglotaran-validation@main
+        uses: ./pyglotaran/validation
         with:
           validation_name: pyglotaran-examples

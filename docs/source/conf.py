@@ -21,7 +21,12 @@ DOC_FOLDER = Path(__file__).parent.parent
 
 # -- Project information -----------------------------------------------------
 
-authors = ("Joern Weissenborn", "Joris Snellenburg", "Sebastian Weigand", "Ivo van Stokkum")
+authors = (
+    "Joern Weissenborn",
+    "Joris Snellenburg",
+    "Sebastian Weigand",
+    "Ivo van Stokkum",
+)
 
 project = "pyglotaran"
 title = f"{project} Documentation"
@@ -83,6 +88,7 @@ source_suffix = {".rst": "restructuredtext", ".md": "restructuredtext"}
 
 linkcheck_ignore = [
     r"https://github\.com/.+?#.+",
+    r"https://stackoverflow\.com/a/(65375904|47663099)/3990615",
 ]
 
 # The master toctree document.
@@ -274,9 +280,18 @@ ipython_savefig_dir = "images/plot"
 
 # -- Options for extlinks extension ---------------------------------------
 extlinks = {
-    "numpydoc": ("https://docs.scipy.org/doc/numpy/reference/generated/numpy.%s.html", "numpy.%s"),
-    "scipydoc": ("https://docs.scipy.org/doc/scipy/reference/generated/scipy.%s.html", "scipy.%s"),
-    "xarraydoc": ("https://xarray.pydata.org/en/stable/generated/xarray.%s.html", "xarray.%s"),
+    "numpydoc": (
+        "https://docs.scipy.org/doc/numpy/reference/generated/numpy.%s.html",
+        "numpy.%s",
+    ),
+    "scipydoc": (
+        "https://docs.scipy.org/doc/scipy/reference/generated/scipy.%s.html",
+        "scipy.%s",
+    ),
+    "xarraydoc": (
+        "https://xarray.pydata.org/en/stable/generated/xarray.%s.html",
+        "xarray.%s",
+    ),
 }
 
 # cleanup notebook data
