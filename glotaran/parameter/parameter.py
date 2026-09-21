@@ -101,13 +101,28 @@ def validate_label(label: Any) -> str:  # noqa: ANN401
     return label
 
 
+def nan_repr_to_none(value: str | float | None) -> str | None:
+    """Convert missing-value representations used by pandas to ``None``."""
+    if isinstance(value, str) and value.lower() == "nan":
+        return None
+    if isinstance(value, (float, np.floating)) and np.isnan(value):
+        return None
+    if isinstance(value, (int, float, np.integer, np.floating)):
+        return str(value)
+    return value
+
+
 class Parameter(BaseModel):
     """A parameter for optimization."""
 
     label: Annotated[str, BeforeValidator(validate_label)]
     value: Annotated[float, Field(default=np.nan)]
     standard_error: Annotated[float, Field(default=np.nan)]
-    expression: Annotated[str | None, Field(default=None)]
+    expression: Annotated[
+        str | None,
+        BeforeValidator(nan_repr_to_none),
+        Field(default=None),
+    ]
     maximum: Annotated[float, Field(default=np.inf)]
     minimum: Annotated[float, Field(default=-np.inf)]
     non_negative: Annotated[bool, Field(default=False)]
