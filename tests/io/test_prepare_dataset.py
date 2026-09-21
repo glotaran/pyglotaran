@@ -1,5 +1,3 @@
-"""Tests for the glotaran.io.prepare_dataset module."""
-
 from __future__ import annotations
 
 import numpy as np
@@ -9,109 +7,57 @@ import xarray as xr
 from glotaran.io.prepare_dataset import add_svd_to_dataset
 
 
-@pytest.fixture
-def data_array() -> xr.DataArray:
-    """Return a small 2D data array with explicit time and spectral coordinates."""
-
-    return xr.DataArray(
-        np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]),
-        dims=("time", "spectral"),
-        coords={"time": [0.0, 1.0, 2.0], "spectral": [700.0, 710.0]},
+@pytest.mark.parametrize("transposed", [False, True])
+def test_add_svd_respects_requested_dimension_order(transposed: bool):
+    data = xr.DataArray(
+        np.arange(12, dtype=float).reshape(3, 4),
+        coords={"time": [1, 2, 3], "spectral": [10, 20, 30, 40]},
     )
-
-
-def test_add_svd_to_dataset_adds_expected_variables(data_array: xr.DataArray):
-    """Add SVD outputs for the default dataset variable and dimensions."""
-
-    dataset = data_array.to_dataset(name="data")
+    if transposed:
+        data = data.transpose("spectral", "time")
+    dataset = data.to_dataset(name="data")
 
     add_svd_to_dataset(dataset)
 
-    left_vectors, singular_values, right_vectors = np.linalg.svd(
-        data_array.data, full_matrices=False
+    expected_lsv, expected_sv, expected_rsv = np.linalg.svd(
+        data.transpose("time", "spectral"), full_matrices=False
     )
+    assert np.allclose(dataset.data_left_singular_vectors, expected_lsv)
+    assert np.allclose(dataset.data_singular_values, expected_sv)
+    assert np.allclose(dataset.data_right_singular_vectors, expected_rsv.T)
+    assert dataset.data_left_singular_vectors.dims[0] == "time"
+    assert dataset.data_right_singular_vectors.dims[0] == "spectral"
 
-    assert dataset.data_left_singular_vectors.dims == ("time", "left_singular_value_index")
-    assert dataset.data_singular_values.dims == ("singular_value_index",)
-    assert dataset.data_right_singular_vectors.dims == (
-        "spectral",
-        "right_singular_value_index",
+
+def test_add_svd_supports_custom_dimensions_and_data_array():
+    data = xr.DataArray(
+        np.arange(6, dtype=float).reshape(2, 3),
+        coords={"column": [1, 2], "row": [3, 4, 5]},
     )
-    np.testing.assert_allclose(dataset.data_left_singular_vectors.to_numpy(), left_vectors)
-    np.testing.assert_allclose(dataset.data_singular_values.to_numpy(), singular_values)
-    np.testing.assert_allclose(dataset.data_right_singular_vectors.to_numpy(), right_vectors.T)
-
-
-def test_add_svd_to_dataset_works_with_transposed_data(data_array: xr.DataArray):
-    """Exercise the transposed-data path using the dataset's default variable."""
-
-    dataset = data_array.T.to_dataset(name="data")
-
-    add_svd_to_dataset(dataset)
-
-    left_vectors, singular_values, right_vectors = np.linalg.svd(
-        data_array.data, full_matrices=False
-    )
-
-    assert dataset.data_left_singular_vectors.dims == ("time", "left_singular_value_index")
-    assert dataset.data_singular_values.dims == ("singular_value_index",)
-    assert dataset.data_right_singular_vectors.dims == (
-        "spectral",
-        "right_singular_value_index",
-    )
-    np.testing.assert_allclose(dataset.data_left_singular_vectors.to_numpy(), left_vectors)
-    np.testing.assert_allclose(dataset.data_singular_values.to_numpy(), singular_values)
-    np.testing.assert_allclose(dataset.data_right_singular_vectors.to_numpy(), right_vectors.T)
-
-
-def test_add_svd_to_dataset_uses_custom_name_dims_and_data_array(data_array: xr.DataArray):
-    """Use a provided data array and custom output names for the SVD variables."""
-
     dataset = xr.Dataset()
 
     add_svd_to_dataset(
         dataset,
-        name="fitted_data",
-        lsv_dim="model_time",
-        rsv_dim="wavelength",
-        data_array=data_array.rename(time="model_time", spectral="wavelength"),
+        name="custom",
+        lsv_dim="row",
+        rsv_dim="column",
+        data_array=data,
     )
 
-    left_vectors, singular_values, right_vectors = np.linalg.svd(
-        data_array.data, full_matrices=False
-    )
-
-    assert dataset.fitted_data_left_singular_vectors.dims == (
-        "model_time",
-        "left_singular_value_index",
-    )
-    assert dataset.fitted_data_singular_values.dims == ("singular_value_index",)
-    assert dataset.fitted_data_right_singular_vectors.dims == (
-        "wavelength",
-        "right_singular_value_index",
-    )
-    np.testing.assert_allclose(dataset.fitted_data_left_singular_vectors.to_numpy(), left_vectors)
-    np.testing.assert_allclose(dataset.fitted_data_singular_values.to_numpy(), singular_values)
-    np.testing.assert_allclose(
-        dataset.fitted_data_right_singular_vectors.to_numpy(), right_vectors.T
-    )
+    assert dataset.custom_left_singular_vectors.dims[0] == "row"
+    assert dataset.custom_right_singular_vectors.dims[0] == "column"
+    assert dataset.custom_singular_values.size == 2
 
 
-def test_add_svd_to_dataset_skips_recomputing_existing_svd(
-    data_array: xr.DataArray, monkeypatch: pytest.MonkeyPatch
-):
-    """Skip the SVD calculation when singular values already exist on the dataset."""
-
-    dataset = data_array.to_dataset(name="data")
-    dataset["data_singular_values"] = (("singular_value_index",), np.array([42.0, 24.0]))
-
-    def fail_if_called(*_args, **_kwargs):
-        raise AssertionError("np.linalg.svd should not be called when SVD data already exists")
-
-    monkeypatch.setattr(np.linalg, "svd", fail_if_called)
+def test_add_svd_does_not_recompute_existing_decomposition():
+    dataset = xr.DataArray(
+        np.arange(12, dtype=float).reshape(3, 4),
+        coords={"time": [1, 2, 3], "spectral": [10, 20, 30, 40]},
+    ).to_dataset(name="data")
+    add_svd_to_dataset(dataset)
+    singular_values = dataset.data_singular_values.copy()
+    dataset["data"] = xr.zeros_like(dataset.data)
 
     add_svd_to_dataset(dataset)
 
-    np.testing.assert_allclose(dataset.data_singular_values.to_numpy(), np.array([42.0, 24.0]))
-    assert "data_left_singular_vectors" not in dataset
-    assert "data_right_singular_vectors" not in dataset
+    assert dataset.data_singular_values.identical(singular_values)

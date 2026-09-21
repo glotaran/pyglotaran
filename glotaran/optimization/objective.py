@@ -14,10 +14,12 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import SerializationInfo
+from pydantic import SerializerFunctionWrapHandler
 from pydantic import ValidationInfo
 from pydantic import computed_field
 from pydantic import field_serializer
 from pydantic import field_validator
+from pydantic import model_serializer
 from pydantic import model_validator
 
 from glotaran.io import load_dataset
@@ -140,6 +142,32 @@ class OptimizationResultMetaData(BaseModel):
     root_mean_square_error: float
     weighted_root_mean_square_error: float | None = None
     scale: float = 1
+
+    @model_serializer(mode="wrap")
+    def serialize_diagnostics_unconditionally(
+        self, handler: SerializerFunctionWrapHandler
+    ) -> dict[str, Any]:
+        """Keep the fit diagnostics in the output even when they hold default values.
+
+        ``Result`` is saved with ``exclude_defaults=True``, which would drop a unit
+        ``scale`` and an unweighted ``weighted_root_mean_square_error``. Both are
+        scalars that consumers cannot recover without re-running the fit.
+
+        Parameters
+        ----------
+        handler : SerializerFunctionWrapHandler
+            Default pydantic serializer for this model.
+
+        Returns
+        -------
+        dict[str, Any]
+            Serialized metadata including the diagnostics.
+        """
+        serialized = handler(self)
+        if self.weighted_root_mean_square_error is not None:
+            serialized["weighted_root_mean_square_error"] = self.weighted_root_mean_square_error
+        serialized["scale"] = self.scale
+        return serialized
 
 
 class OptimizationResult(BaseModel):
@@ -623,9 +651,9 @@ class OptimizationObjective:
             root_mean_square_error=calculate_root_mean_square_error(result_dataset.residual),
             weighted_root_mean_square_error=calculate_root_mean_square_error(
                 result_dataset.weighted_residual
-            )
-            if "weighted_residual" in result_dataset.data_vars
-            else None,
+                if "weighted_residual" in result_dataset.data_vars
+                else result_dataset.residual
+            ),
             scale=scale if scale is not None else 1,
         )
 
@@ -732,7 +760,7 @@ class OptimizationObjective:
         ).T
         additional_penalty = sum(
             calculate_clp_penalties(
-                [concentrations],
+                concentrations.as_global_list(global_axis),
                 estimations,
                 global_axis,
                 self._model.clp_penalties,
@@ -821,17 +849,22 @@ class OptimizationObjective:
             global_dim: global_axis,
             "amplitude_label": amplitude_axis,
         }
-        return xr.DataArray(
+        # Iterating an xarray coordinate yields scalar DataArrays, whose equality
+        # invokes coordinate alignment during every list.index comparison.
+        amplitude_axis = np.asarray(amplitude_axis).tolist()
+        # Vectorized equivalent of the previous per-(index, label) Python gather:
+        # for each selected global index, collect the per-label positions once and
+        # take all amplitudes in a single numpy fancy-indexing step. The gathered
+        # values are identical to the element-wise lookups.
+        columns = np.stack(
             [
-                [
-                    estimated_amplitudes[i].clp[estimated_amplitude_axes[i].index(amplitude_label)]
-                    for amplitude_label in amplitude_axis
+                np.asarray(estimated_amplitudes[i].clp)[
+                    [estimated_amplitude_axes[i].index(label) for label in amplitude_axis]
                 ]
                 for i in global_indices
-            ],
-            dims=coords.keys(),
-            coords=coords,
+            ]
         )
+        return xr.DataArray(columns, dims=coords.keys(), coords=coords)
 
     def get_dataset_residual(
         self,

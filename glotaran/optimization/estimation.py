@@ -59,6 +59,8 @@ class OptimizationEstimation:
         self.clp = np.zeros(len(clp_axis))
         self.clp[[clp_axis.index(label) for label in reduced_clp_axis]] = clp
         for relation in [r for r in relations if r.applies(index)]:
+            if relation.source not in clp_axis or relation.target not in clp_axis:
+                continue
             source_idx = clp_axis.index(relation.source)
             target_idx = clp_axis.index(relation.target)
             self.clp[target_idx] = relation.parameter * self.clp[source_idx]

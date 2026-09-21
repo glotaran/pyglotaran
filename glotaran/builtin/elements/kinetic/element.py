@@ -79,9 +79,12 @@ class KineticElement(ExtendableElement, Kinetic):
             normalized_compartments = [
                 c not in activation.not_normalized_compartments for c in compartments
             ]
-            initial_concentrations[normalized_compartments] /= np.sum(
-                initial_concentrations[normalized_compartments]
+            normalization_sum = sum(
+                float(value)
+                for compartment, value in activation.compartments.items()
+                if compartment not in activation.not_normalized_compartments
             )
+            initial_concentrations[normalized_compartments] /= normalization_sum
             rates = self.calculate(initial_concentrations)
 
             matrix = (
