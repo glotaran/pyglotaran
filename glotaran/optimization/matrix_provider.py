@@ -181,7 +181,7 @@ class MatrixProvider:
             model_axis, global_axis = global_axis, model_axis
 
         for scale, megacomplex in megacomplex_iterator:
-            this_clp_labels, this_matrix = megacomplex.calculate_matrix(  # type:ignore[union-attr]
+            this_clp_labels, this_matrix = megacomplex.calculate_matrix(  # type: ignore[union-attr]
                 dataset_model, global_axis, model_axis
             )
 
@@ -394,7 +394,7 @@ class MatrixProvider:
                     if relation.source not in clp_labels:
                         continue
 
-                    relation = fill_item(relation, model, parameters)  # type:ignore[arg-type]
+                    relation = fill_item(relation, model, parameters)  # type: ignore[arg-type]
                     source_idx = clp_labels.index(relation.source)
                     target_idx = clp_labels.index(relation.target)
                     relation_matrix[target_idx, source_idx] = relation.parameter
@@ -650,10 +650,10 @@ class MatrixProviderLinked(MatrixProvider):
         super().__init__(group)
         self._data_provider: DataProviderLinked = data_provider
         self._aligned_full_clp_labels: list[list[str]] = [
-            None  # type:ignore[list-item]
+            None  # type: ignore[list-item]
         ] * self._data_provider.aligned_global_axis.size
         self._aligned_matrices: list[MatrixContainer] = [
-            None  # type:ignore[list-item]
+            None  # type: ignore[list-item]
         ] * self._data_provider.aligned_global_axis.size
 
     @property
@@ -719,7 +719,7 @@ class MatrixProviderLinked(MatrixProvider):
 
             group_matrix = self.align_matrices(
                 matrix_containers,
-                matrix_scales,  # type:ignore[arg-type]
+                matrix_scales,  # type: ignore[arg-type]
             )
 
             self._aligned_full_clp_labels[i] = full_clp_labels[group_label]

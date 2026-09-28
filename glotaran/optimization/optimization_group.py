@@ -57,12 +57,12 @@ class OptimizationGroup:
                 dataset_group, data_provider, matrix_provider
             )
         else:
-            data_provider = DataProvider(scheme, dataset_group)  # type:ignore[assignment]
-            matrix_provider = MatrixProviderUnlinked(  # type:ignore[assignment]
+            data_provider = DataProvider(scheme, dataset_group)  # type: ignore[assignment]
+            matrix_provider = MatrixProviderUnlinked(  # type: ignore[assignment]
                 self._dataset_group, data_provider
             )
-            estimation_provider = EstimationProviderUnlinked(  # type:ignore[assignment]
-                dataset_group, data_provider, matrix_provider  # type:ignore[arg-type]
+            estimation_provider = EstimationProviderUnlinked(  # type: ignore[assignment]
+                dataset_group, data_provider, matrix_provider  # type: ignore[arg-type]
             )
 
         self._data_provider: DataProvider = data_provider
@@ -185,7 +185,7 @@ class OptimizationGroup:
             result_dataset.attrs["dataset_scale"] = (
                 1
                 if dataset_model.scale is None
-                else dataset_model.scale.value  # type:ignore[union-attr]
+                else dataset_model.scale.value  # type: ignore[union-attr]
             )
 
             # reconstruct fitted data

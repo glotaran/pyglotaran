@@ -53,7 +53,7 @@ class Project:
     version: str = field(init=False)
 
     file: Path
-    folder: Path = field(default=None)  # type:ignore[assignment]
+    folder: Path = field(default=None)  # type: ignore[assignment]
 
     def __post_init__(self):
         """Overwrite of post init."""
@@ -359,7 +359,7 @@ class Project:
         self._model_registry.generate_model(
             model_name,
             generator_name,
-            generator_arguments,  # type:ignore[arg-type]
+            generator_arguments,  # type: ignore[arg-type]
             allow_overwrite=allow_overwrite,
             ignore_existing=ignore_existing,
         )
