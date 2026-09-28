@@ -437,7 +437,7 @@ def test_deprecate_dict_key_does_not_apply_swap_keys():
 )
 @pytest.mark.usefixtures("glotaran_0_3_0")
 def test_deprecate_dict_key_does_not_apply(
-    replace_rules: tuple[Mapping[Hashable, Any], Mapping[Hashable, Any]]
+    replace_rules: tuple[Mapping[Hashable, Any], Mapping[Hashable, Any]],
 ):
     """Don't warn if the dict doesn't change because old_key or old_value didn't match"""
     with pytest.warns(
