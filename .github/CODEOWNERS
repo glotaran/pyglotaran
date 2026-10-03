@@ -19,7 +19,6 @@
 /.*                                     @glotaran/admins @glotaran/maintainers
 /*.y*ml                                 @glotaran/admins @glotaran/maintainers
 /*.toml                                 @glotaran/admins @glotaran/maintainers
-/*.txt                                  @glotaran/admins @glotaran/maintainers
 LICENSE                                 @glotaran/pyglotaran_creators
 
 # docs
