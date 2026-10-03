@@ -111,6 +111,9 @@ only-include = [ "glotaran" ]
 [tool.hatch.envs.default]
 features = [ "dev" ]
 
+[tool.codespell]
+ignore-words-list = "projectio"
+
 [tool.pytest.ini_options]
 # env = [
 #   "DEACTIVATE_GTA_PLUGINS=1",
@@ -182,9 +185,6 @@ ignore_errors = true
 [[tool.mypy.overrides]]
 module = "benchmark.*"
 ignore_errors = true
-
-[tool.codespell]
-ignore-words-list = "projectio"
 
 [tool.interrogate]
 exclude = [ "setup.py", "docs", "tests", "benchmark/*" ]
