@@ -92,16 +92,17 @@ docs = [
   "jupyterlab>=3",
   "matplotlib>=3",
   "myst-parser>=0.12",
-  "nbsphinx>=0.8.1",                 # notebook docs
+  "nbsphinx>=0.8.1",   # notebook docs
   "nbval>=0.9.6",
   "numpydoc>=0.8",
-  "pyglotaran-extras>=0.7",          # used by the getting started notebook
+  # Used by the getting started notebook; released versions only support the 0.7 result format
+  "pyglotaran-extras @ git+https://github.com/glotaran/pyglotaran-extras@staging_support",
   "sphinx>=3.2",
   "sphinx-click>=3.0.1",
   "sphinx-copybutton>=0.3",
   "sphinx-last-updated-by-git>=0.3",
   "sphinx-rtd-theme>=1.2",
-  "sphinxcontrib-jquery>=4.1",       # Needed for the search to work Ref.: https://github.com/readthedocs/sphinx_rtd_theme/issues/1434
+  "sphinxcontrib-jquery>=4.1",                                                             # Needed for the search to work Ref.: https://github.com/readthedocs/sphinx_rtd_theme/issues/1434
 ]
 
 [tool.hatch.version]
