@@ -28,8 +28,11 @@
 - 🩹 Skip coefficient relations whose endpoints are absent from the active axes
 - 🩹 Always persist `scale` and `weighted_root_mean_square_error` in optimization result
   metadata, including a unit scale and an unweighted fit, matching v0.7 behaviour
+- 🩹 Resolve parameters of discriminated-union item fields (e.g. activations) on Python 3.14
 
 ### 📚 Documentation
+
+- 📚 Recommend uv in the installation and contributing guides and update the authors list
 
 ### 🗑️ Deprecations (due in 0.9.0)
 
@@ -37,10 +40,14 @@
 
 ### 🚧 Maintenance
 
+- 🚇 Manage development dependencies with uv: dependency groups and a `uv.lock` file replace the
+  `dev`, `docs` and `test` extras and `requirements_pinned.txt`; `just` recipes replace the docs
+  Makefile; Read the Docs builds with uv
+- 🚇 Support Python 3.13 and 3.14 and allow numpy up to 2.3; add the `notebook` extra
+
 (changes-0_7_5)=
 
 ## 🚀 0.7.5 (2026-10-10)
-
 
 ### 🩹 Bug fixes
 

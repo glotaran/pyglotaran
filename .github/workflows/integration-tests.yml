@@ -50,7 +50,9 @@ jobs:
         with:
           enable-cache: true
       - name: Install pyglotaran
-        run: uv pip install . -r requirements_pinned.txt
+        run: |
+          export UV_PROJECT_ENVIRONMENT="${pythonLocation}"
+          uv sync --frozen --no-default-groups --no-editable
       - name: ${{ matrix.example_name }}
         id: example-run
         uses: glotaran/pyglotaran-examples@staging_rewrite
