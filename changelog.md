@@ -32,6 +32,8 @@
 - 🩹 Always persist `scale` and `weighted_root_mean_square_error` in optimization result
   metadata, including a unit scale and an unweighted fit, matching v0.7 behaviour
 - 🩹 Resolve parameters of discriminated-union item fields (e.g. activations) on Python 3.14
+- 🩹 Add noise in `simulate(noise=True)` without a `noise_seed`; the seed defaults to 42,
+  and `noise_seed=None` draws fresh noise
 
 ### 📚 Documentation
 

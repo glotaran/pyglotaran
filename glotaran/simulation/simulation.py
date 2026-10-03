@@ -28,7 +28,7 @@ def simulate(
     *,
     noise: bool = False,
     noise_std_dev: float = 1.0,
-    noise_seed: int | None = None,
+    noise_seed: int | None = 42,
 ) -> xr.Dataset:
     """Simulate a dataset using a model.
 
@@ -50,7 +50,8 @@ def simulate(
     noise_std_dev : float
         The standard deviation for noise simulation.
     noise_seed : int | None
-        The seed for the noise simulation.
+        The seed for the noise simulation. Defaults to 42, so the noise is reproducible.
+        Pass None to draw fresh noise on every call.
 
     Returns
     -------
@@ -95,7 +96,7 @@ def simulate(
             clp.isel({global_dimension: i}).sel({"clp_label": matrix.clp_axis}).to_numpy(),
         )
 
-    if noise and noise_seed is not None:
+    if noise:
         rng = np.random.default_rng(noise_seed)
         original_dims = result.dims
         canonical_result = result.transpose(*sorted(original_dims))
