@@ -63,14 +63,17 @@ Ready to contribute? Here's how to set up `pyglotaran` for local development.
    $ git clone https://github.com/<your_name_here>/pyglotaran.git
    ```
 
-3. Install your local copy into a virtualenv.:
+3. Install [uv](https://docs.astral.sh/uv/) and use it to install your local copy
+   with all development dependencies into a virtual environment (`.venv`):
 
    ```
-   $ hatch shell
+   $ cd pyglotaran
+   $ uv sync --frozen
    ```
 
 4. Install the `pre-commit` hooks, to automatically format and check your code
-   (if you don't already have `pre-commit` install it using `pipx install pre-commit`):
+   (if you don't already have `pre-commit` install it using
+   `uv tool install pre-commit --with pre-commit-uv`):
 
    ```
    $ pre-commit install
@@ -88,8 +91,12 @@ Ready to contribute? Here's how to set up `pyglotaran` for local development.
 
    ```
    $ pre-commit run -a
-   $ pytest
+   $ uv run pytest tests
    ```
+
+   If you have [just](https://just.systems/) installed (`uv tool install rust-just`),
+   `just lint`, `just test` and `just docs` run these checks and build the documentation.
+   Run `just` to list all recipes.
 
 7. Commit your changes and push your branch to GitHub:
 
@@ -125,7 +132,7 @@ Before you submit a pull request, check that it meets these guidelines:
 1. The pull request should include tests.
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a [docstring].
-3. The pull request should work for Python 3.10 and 3.11
+3. The pull request should work for Python 3.10 to 3.14
    Check your Github Actions `https://github.com/<your_name_here>/pyglotaran/actions`
    and make sure that the tests pass for all supported Python versions.
 
@@ -160,7 +167,7 @@ and [darglint](https://github.com/terrencepreilly/darglint).
 To run a subset of tests:
 
 ```
-$ py.test tests.test_pyglotaran
+$ uv run pytest tests/optimization
 ```
 
 ## Deprecations

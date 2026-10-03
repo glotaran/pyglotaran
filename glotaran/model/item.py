@@ -265,10 +265,7 @@ def iterate_fields_of_type(
             # and Parameter as attr_type
             if (
                 hasattr(item_type, "__origin__")
-                and issubclass(
-                    typing.get_origin(item_type),  # type:ignore[arg-type]
-                    typing.Annotated,  # type:ignore[arg-type]
-                )
+                and typing.get_origin(item_type) is typing.Annotated
                 and typing.get_origin(typing.get_args(item_type)[0]) is typing.Union
             ):
                 item_type = typing.get_args(typing.get_args(item_type)[0])[0]

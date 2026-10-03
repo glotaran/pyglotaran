@@ -10,9 +10,6 @@ on:
       - "pre-commit-ci-update-config"
   pull_request:
 
-env:
-  UV_SYSTEM_PYTHON: 1
-
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
@@ -45,15 +42,19 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Install just
+        run: uv tool install rust-just
+
       - name: Install dependencies
         run: |
           conda install -y pandoc
-          uv pip install ".[docs]" -p $(which python)
+          uv sync --frozen --group docs
       - name: Show installed packages
         run: uv pip list
       - name: Build docs
         run: |
-          make --directory=docs clean html
+          just docs/clean
+          just docs/html
 
   docs-links:
     runs-on: ubuntu-latest
@@ -73,15 +74,19 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Install just
+        run: uv tool install rust-just
+
       - name: Install dependencies
         run: |
           conda install -y pandoc
-          uv pip install ".[docs]" -p $(which python)
+          uv sync --frozen --group docs
       - name: Show installed packages
         run: uv pip list
       - name: Check doc links
         run: |
-          make --directory=docs clean linkcheck "$@" | tee linkcheck-output.txt
+          just docs/clean
+          just docs/linkcheck | tee linkcheck-output.txt
           exit "${PIPESTATUS[0]}"
       - name: Linkcheck summary
         if: ${{ always() }}
@@ -103,11 +108,12 @@ jobs:
       - name: Install dependencies
         run: |
           conda install -y pandoc
-          uv pip install -r requirements_pinned.txt ".[docs]"
+          uv sync --frozen --group docs
       - name: Show installed packages
         run: uv pip list
-      - name: Build docs
+      - name: Run notebooks
         run: |
+          uv run python docs/remove_notebook_written_data.py
           uv run pytest -vv --nbval docs/source/notebooks
 
   test:
@@ -116,7 +122,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@v4
@@ -131,7 +137,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install -e ".[test]" -r requirements_pinned.txt
+          uv sync --frozen --group test
       - name: Show installed packages
         run: uv pip list
       - name: Run tests

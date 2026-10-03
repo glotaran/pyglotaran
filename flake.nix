@@ -28,6 +28,7 @@
         buildInputs = with pkgs; [
           python
           pre-commit
+          uv
           (python3.withPackages (ps: with ps; [
             pip
             pytz
@@ -44,8 +45,7 @@
             virtualenv $VENV
             source ./$VENV/bin/activate
             # Install Python dependencies
-            pip install -r requirements_pinned.txt
-            pip install -e .[dev]
+            uv sync --frozen --active
           fi
           source ./$VENV/bin/activate
 
