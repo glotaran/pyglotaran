@@ -79,6 +79,17 @@ def test_simulate_from_global_model():
     assert data.data.shape == (3, 4)
 
 
+def test_noise_without_seed_is_added_and_reproducible():
+    coordinates = {"global_dim": np.asarray([1, 2, 3, 4]), "model_dim": np.asarray([1, 2, 3])}
+
+    noise_free = simulate(TestDataModelGlobal, {}, None, coordinates)
+    first = simulate(TestDataModelGlobal, {}, None, coordinates, noise=True, noise_std_dev=0.1)
+    second = simulate(TestDataModelGlobal, {}, None, coordinates, noise=True, noise_std_dev=0.1)
+
+    assert not np.allclose(first.data, noise_free.data)
+    assert first.data.identical(second.data)
+
+
 def test_seeded_noise_is_independent_of_full_model_dimension_order():
     original = deepcopy(TestDataModelGlobal)
     swapped = deepcopy(TestDataModelGlobal)
