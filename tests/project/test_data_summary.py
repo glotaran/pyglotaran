@@ -56,13 +56,13 @@ def test_changes_are_reported(dataset: xr.Dataset):
     differences = compare_data_summaries(
         "ta", summary, summarize_data(dataset.isel(time=slice(0, 40)))
     )
-    assert differences[0] == "ta: shape {'time': 50, 'spectral': 4} → {'time': 40, 'spectral': 4}"
-    assert any(difference.startswith("ta: time max 10 → ") for difference in differences)
+    assert differences[0] == "ta: shape {'time': 50, 'spectral': 4} -> {'time': 40, 'spectral': 4}"
+    assert any(difference.startswith("ta: time max 10 -> ") for difference in differences)
 
     scaled = dataset.copy(deep=True)
     scaled["data"] = scaled.data * 1.004
     assert compare_data_summaries("ta", summary, summarize_data(scaled)) == [
-        f"ta: data {statistic} {summary['data'][statistic]:.6g} → "
+        f"ta: data {statistic} {summary['data'][statistic]:.6g} -> "
         f"{summary['data'][statistic] * 1.004:.6g} (+0.40%)"
         for statistic in ("min", "max", "mean", "rms")
     ]

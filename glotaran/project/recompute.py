@@ -89,7 +89,7 @@ def recompute(folder: Path, datasets: DatasetMappable, *, allow_data_mismatch: b
     summary = content.get("summary") or {}
     drift = compare_fit_summaries(summary, result)
     exceeding = [
-        f"  {name}: {values['recorded']!r} → {values['recomputed']!r} "
+        f"  {name}: {values['recorded']!r} -> {values['recomputed']!r} "
         + (
             "(not comparable)"
             if values["relative_difference"] is None

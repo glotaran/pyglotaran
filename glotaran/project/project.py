@@ -6,14 +6,21 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 
+from glotaran.project.compare import FitComparison
+from glotaran.project.compare import compare_fits
+from glotaran.project.compare import fit_from_record
+from glotaran.project.compare import fit_from_result
+from glotaran.project.compare import list_records
 from glotaran.project.recompute import recompute
 from glotaran.project.record import RECORD_FILE_NAME
 from glotaran.project.record import FitRecord
 from glotaran.project.record import RecordReference
+from glotaran.project.result import Result
 
 if TYPE_CHECKING:
+    import pandas as pd
+
     from glotaran.parameter import Parameters
-    from glotaran.project.result import Result
     from glotaran.project.scheme import Scheme
     from glotaran.typing.types import DatasetMappable
     from glotaran.typing.types import StrOrPath
@@ -192,6 +199,73 @@ class Project:
         return recompute(
             self._fit_folder(record), datasets, allow_data_mismatch=allow_data_mismatch
         )
+
+    def list_results(
+        self,
+        *,
+        source: str | None = None,
+        scheme_source: str | None = None,
+        name: str | None = None,
+        status: str | None = None,
+    ) -> pd.DataFrame:
+        """List the records in :attr:`results_folder`, sorted by the start time of the fits.
+
+        A change in the shape or RMS columns of a dataset shows where its data was replaced.
+        Folders without ``record.yml``, such as v0.7 results, are not listed. A record left at
+        status ``running`` is incomplete: its fit is still running or never returned to Python.
+
+        Parameters
+        ----------
+        source : str | None
+            Only records whose notebook or script path contains this text.
+        scheme_source : str | None
+            Only records whose scheme file path contains this text.
+        name : str | None
+            Only records whose name contains this text.
+        status : str | None
+            Only records with this status: ``running``, ``success``, ``failed`` or
+            ``interrupted``.
+
+        Returns
+        -------
+        pd.DataFrame
+            One row per record, indexed by the record id.
+        """
+        return list_records(
+            self.results_folder,
+            source=source,
+            scheme_source=scheme_source,
+            name=name,
+            status=status,
+        )
+
+    def compare_results(
+        self, a: str | Path | RecordReference | Result, b: str | Path | RecordReference | Result
+    ) -> FitComparison:
+        """Compare two fits, each given as a record id, a record path or a result.
+
+        Parameters
+        ----------
+        a : str | Path | RecordReference | Result
+            First fit.
+        b : str | Path | RecordReference | Result
+            Second fit.
+
+        Returns
+        -------
+        FitComparison
+            Parameter fields that differ, the summary statistics of both fits including the
+            RMSE per dataset, the diff of the schemes and the differences of the data summaries.
+            Changes to weights, penalties, scales and constraints show in the scheme diff or the
+            data differences.
+        """
+        fits = [
+            fit_from_result(fit, label)
+            if isinstance(fit, Result)
+            else fit_from_record(self._fit_folder(fit))
+            for fit, label in ((a, "a"), (b, "b"))
+        ]
+        return compare_fits(*fits)
 
     def _fit_folder(self, record: str | Path | RecordReference) -> Path:
         """Return the folder of a record given by id, path or reference.

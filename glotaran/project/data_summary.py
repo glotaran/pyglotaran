@@ -113,12 +113,12 @@ def compare_data_summaries(
     Returns
     -------
     list[str]
-        One message per difference, for example ``"ta: time max 10 → 8 (-20 %)"``; empty if the
+        One message per difference, for example ``"ta: time max 10 -> 8 (-20 %)"``; empty if the
         summaries are equal.
     """
     differences = []
     if recorded.get("shape") != current.get("shape"):
-        differences.append(f"{label}: shape {recorded.get('shape')} → {current.get('shape')}")
+        differences.append(f"{label}: shape {recorded.get('shape')} -> {current.get('shape')}")
     names = [name for name in recorded if isinstance(recorded[name], dict) and name != "shape"]
     names += [name for name in current if isinstance(current[name], dict) and name != "shape"]
     for name in dict.fromkeys(names):
@@ -136,7 +136,7 @@ def compare_data_summaries(
             if old is None or new is None or _equal(old, new, tolerance):
                 continue
             change = f" ({(new - old) / abs(old):+.2%})" if old != 0 else ""
-            differences.append(f"{label}: {name} {statistic} {old:.6g} → {new:.6g}{change}")
+            differences.append(f"{label}: {name} {statistic} {old:.6g} -> {new:.6g}{change}")
     return differences
 
 

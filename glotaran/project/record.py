@@ -181,6 +181,45 @@ def _float(value: float | None) -> float | None:
     return None if value is None else float(value)
 
 
+def summarize_fit(result: Result, *, converged: bool | None = None) -> dict[str, Any]:
+    """Summarize the statistics of a fit for its record.
+
+    Parameters
+    ----------
+    result : Result
+        Result of the fit.
+    converged : bool | None
+        SciPy's success flag, which the result does not hold.
+
+    Returns
+    -------
+    dict[str, Any]
+    """
+    info = result.optimization_info
+    return {
+        "cost": _float(info.cost),
+        "chi_square": _float(info.chi_square),
+        "reduced_chi_square": _float(info.reduced_chi_square),
+        "root_mean_square_error": _float(info.root_mean_square_error),
+        "degrees_of_freedom": None
+        if info.degrees_of_freedom is None
+        else int(info.degrees_of_freedom),
+        "number_of_function_evaluations": int(info.number_of_function_evaluations),
+        "termination_reason": info.termination_reason,
+        "converged": converged,
+        "free_parameter_labels": list(info.free_parameter_labels),
+        "datasets": {
+            label: {
+                "root_mean_square_error": _float(optimization_result.meta.root_mean_square_error),
+                "weighted_root_mean_square_error": _float(
+                    optimization_result.meta.weighted_root_mean_square_error
+                ),
+            }
+            for label, optimization_result in result.optimization_results.items()
+        },
+    }
+
+
 class FitRecord:
     """The record of one fit, written when the fit starts and completed when it ends.
 
@@ -322,7 +361,7 @@ class FitRecord:
             cost_history = optimization.cost_history
             if status == "success" and result is not None:
                 optimized_parameters: Parameters | None = result.optimized_parameters
-                summary = self._summary(optimization, result)
+                summary = summarize_fit(result, converged=optimization.converged)
             else:
                 # The last evaluated parameters; after a crash in the objective, the ones that
                 # raised. Without an evaluation they equal the initial parameters.
@@ -358,31 +397,3 @@ class FitRecord:
                 f"{write_error!r}",
                 stacklevel=3,
             )
-
-    @staticmethod
-    def _summary(optimization: Optimization, result: Result) -> dict[str, Any]:
-        info = result.optimization_info
-        return {
-            "cost": _float(info.cost),
-            "chi_square": _float(info.chi_square),
-            "reduced_chi_square": _float(info.reduced_chi_square),
-            "root_mean_square_error": _float(info.root_mean_square_error),
-            "degrees_of_freedom": None
-            if info.degrees_of_freedom is None
-            else int(info.degrees_of_freedom),
-            "number_of_function_evaluations": int(info.number_of_function_evaluations),
-            "termination_reason": info.termination_reason,
-            "converged": optimization.converged,
-            "free_parameter_labels": list(info.free_parameter_labels),
-            "datasets": {
-                label: {
-                    "root_mean_square_error": _float(
-                        optimization_result.meta.root_mean_square_error
-                    ),
-                    "weighted_root_mean_square_error": _float(
-                        optimization_result.meta.weighted_root_mean_square_error
-                    ),
-                }
-                for label, optimization_result in result.optimization_results.items()
-            },
-        }
