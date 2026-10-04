@@ -19,6 +19,7 @@ from glotaran.io.interface import SAVING_OPTIONS_DEFAULT
 from glotaran.io.interface import SavingOptions
 from glotaran.model.experiment_model import ExperimentModel  # noqa: TC001
 from glotaran.optimization import OptimizationInfo  # noqa: TC001
+from glotaran.optimization.info import OptimizerSettings  # noqa: TC001
 from glotaran.optimization.objective import OptimizationResult
 from glotaran.parameter import Parameters  # noqa: TC001
 from glotaran.project.scheme import Scheme
@@ -61,6 +62,8 @@ class Result(BaseModel):
     optimization_info: OptimizationInfo
     initial_parameters: Parameters
     optimized_parameters: Parameters
+    optimizer_settings: OptimizerSettings | None = None
+    """Settings passed to the optimizer; ``None`` for results saved without them."""
     source_path: Path | None = None
 
     @property

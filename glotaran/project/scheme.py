@@ -118,4 +118,5 @@ class Scheme(BaseModel):
             optimization_info=optimization_info,
             initial_parameters=parameters.copy(),
             optimized_parameters=optimized_parameters,
+            optimizer_settings=optimization.settings,
         )

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Literal
 
 import numpy as np
 from pydantic import BaseModel
@@ -26,6 +27,21 @@ if TYPE_CHECKING:
 
     from glotaran.parameter import Parameters
     from glotaran.typing.types import ArrayLike
+
+
+class OptimizerSettings(BaseModel):
+    """Settings passed to the optimizer.
+
+    The fields have no defaults, so that saving a result with ``exclude_defaults`` keeps them.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    optimization_method: Literal["TrustRegionReflection", "Dogbox", "Levenberg-Marquardt"]
+    ftol: float
+    gtol: float
+    xtol: float
+    maximum_number_function_evaluations: int | None
 
 
 class OptimizationInfo(BaseModel):

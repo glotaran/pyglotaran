@@ -10,9 +10,11 @@ import xarray as xr
 from glotaran import __version__
 from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import SAVING_OPTIONS_MINIMAL
+from glotaran.io import load_result
 from glotaran.io import save_dataset
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization.info import OptimizationInfo
+from glotaran.optimization.info import OptimizerSettings
 from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.parameter.parameter_history import ParameterHistory
 from glotaran.parameter.parameters import Parameters
@@ -23,6 +25,8 @@ from glotaran.project.scheme import Scheme
 from glotaran.testing.plugin_system import monkeypatch_plugin_registry_data_io
 from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET
 from glotaran.testing.simulated_data.sequential_spectral_decay import RESULT
+from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME_DICT
+from glotaran.testing.simulated_data.shared_decay import PARAMETERS
 from glotaran.utils.io import chdir_context
 
 if TYPE_CHECKING:
@@ -301,6 +305,30 @@ def test_result_save(tmp_path: Path):
     assert result_file_paths[0] == (tmp_path / "minimal/result.yml").as_posix()
     assert (tmp_path / "minimal/result.yml").is_file()
     assert all(Path(path).exists() for path in result_file_paths)
+
+
+def test_result_optimizer_settings_round_trip(tmp_path: Path):
+    """Optimizer settings are stored on the result and in result.yml, defaults included."""
+    scheme = Scheme.from_dict(SCHEME_DICT)
+    result = scheme.optimize(
+        PARAMETERS,
+        {"sequential-decay": DATASET},
+        optimization_method="Dogbox",
+        xtol=1e-6,
+        maximum_number_function_evaluations=2,
+        verbose=False,
+    )
+    expected = OptimizerSettings(
+        optimization_method="Dogbox",
+        ftol=1e-8,
+        gtol=1e-8,
+        xtol=1e-6,
+        maximum_number_function_evaluations=2,
+    )
+    assert result.optimizer_settings == expected
+
+    result.save(tmp_path)
+    assert load_result(tmp_path).optimizer_settings == expected
 
 
 if __name__ == "__main__":

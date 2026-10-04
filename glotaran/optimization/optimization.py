@@ -12,6 +12,7 @@ from scipy.optimize import least_squares
 from glotaran.model.errors import GlotaranModelIssues
 from glotaran.model.errors import GlotaranUserError
 from glotaran.optimization.info import OptimizationInfo
+from glotaran.optimization.info import OptimizerSettings
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.objective import OptimizationResult
 from glotaran.optimization.optimization_history import OptimizationHistory
@@ -82,14 +83,16 @@ class Optimization:
         self._verbose = verbose
         self._raise = raise_exception
 
-        self._maximum_number_function_evaluations = maximum_number_function_evaluations
         self._add_svd = add_svd
-        self._ftol = ftol
-        self._gtol = gtol
-        self._xtol = xtol
         if optimization_method not in SUPPORTED_OPTIMIZATION_METHODS:
             raise UnsupportedMethodError(optimization_method)
-        self._optimization_method = SUPPORTED_OPTIMIZATION_METHODS[optimization_method]
+        self.settings = OptimizerSettings(
+            optimization_method=optimization_method,
+            ftol=ftol,
+            gtol=gtol,
+            xtol=xtol,
+            maximum_number_function_evaluations=maximum_number_function_evaluations,
+        )
 
         self._parameter_history = ParameterHistory()
         self._parameter_history.append(self._parameters)
@@ -124,12 +127,12 @@ class Optimization:
                         self.objective_function,
                         initial_parameter,
                         bounds=(lower_bounds, upper_bounds),
-                        method=self._optimization_method,
-                        max_nfev=self._maximum_number_function_evaluations,
+                        method=SUPPORTED_OPTIMIZATION_METHODS[self.settings.optimization_method],
+                        max_nfev=self.settings.maximum_number_function_evaluations,
                         verbose=verbose,
-                        ftol=self._ftol,
-                        gtol=self._gtol,
-                        xtol=self._xtol,
+                        ftol=self.settings.ftol,
+                        gtol=self.settings.gtol,
+                        xtol=self.settings.xtol,
                     )
                     termination_reason = ls_result.message
                 # No matter the error we want to behave gracefully
