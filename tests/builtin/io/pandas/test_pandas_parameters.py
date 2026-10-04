@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -10,9 +9,7 @@ from pandas.testing import assert_frame_equal
 
 from glotaran.io import load_parameters
 from glotaran.io import save_parameters
-
-if TYPE_CHECKING:
-    from glotaran.parameter import Parameters
+from glotaran.parameter import Parameters
 
 PANDAS_TEST_DATA = Path(__file__).parent / "data"
 PATH_XLSX = PANDAS_TEST_DATA / "reference_parameters.xlsx"
@@ -104,3 +101,19 @@ def test_replace_infinity(yaml_reference: Parameters, tmp_path: Path, format_nam
     assert f"{sep}inf" in first_data_line
 
     assert load_parameters(parameter_path) == yaml_reference
+
+
+@pytest.mark.parametrize("format_name", ["csv", "tsv"])
+def test_round_trip_float_precision(tmp_path: Path, format_name: str):
+    """Values and standard errors are read back bit for bit."""
+    values = np.random.default_rng(0).uniform(0, 1, 50)
+    parameters = Parameters.from_list([[f"p{i}", value] for i, value in enumerate(values)])
+    for parameter, value in zip(parameters.all(), values[::-1], strict=True):
+        parameter.standard_error = value / 3
+
+    save_parameters(parameters, tmp_path / f"parameters.{format_name}")
+    loaded = load_parameters(tmp_path / f"parameters.{format_name}")
+
+    for parameter in parameters.all():
+        assert loaded.get(parameter.label).value == parameter.value
+        assert loaded.get(parameter.label).standard_error == parameter.standard_error
