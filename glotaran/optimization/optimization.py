@@ -108,7 +108,11 @@ class Optimization:
 
     @property
     def parameters(self) -> Parameters:
-        """Parameters of the optimization; during and after a fit the last evaluated ones."""
+        """Parameters of the optimization.
+
+        During a fit the last evaluated ones; after a successful fit the solution, after a failed
+        one the last evaluated ones.
+        """
         return self._parameters
 
     def run(self) -> tuple[Parameters, dict[str, OptimizationResult], OptimizationInfo]:
@@ -147,6 +151,11 @@ class Optimization:
                     )
                     termination_reason = ls_result.message
                     self.converged = bool(ls_result.success)
+                    # The solution, instead of the last evaluated point (often a
+                    # finite-difference Jacobian step), so that the result describes one point
+                    self._parameters.set_from_label_and_value_arrays(
+                        self._free_parameter_labels, ls_result.x
+                    )
                 # No matter the error we want to behave gracefully
                 except Exception as e:
                     if self._raise:

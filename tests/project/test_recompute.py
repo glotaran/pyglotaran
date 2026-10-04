@@ -73,12 +73,8 @@ def test_recompute_reproduces_the_fit(
     info, original_info = recomputed.optimization_info, original.optimization_info
     assert info.cost == original_info.cost
     assert info.degrees_of_freedom == original_info.degrees_of_freedom
-    # The fit takes chi-square from SciPy's residual at its solution, but cost, parameters and
-    # arrays from the last evaluated point (often a finite-difference Jacobian step).
-    assert info.chi_square == pytest.approx(2 * original_info.cost, rel=1e-12)
-    assert info.root_mean_square_error == pytest.approx(
-        original_info.root_mean_square_error, rel=1e-9
-    )
+    assert info.chi_square == original_info.chi_square
+    assert info.root_mean_square_error == original_info.root_mean_square_error
     assert recomputed.optimizer_settings == original.optimizer_settings
     assert recomputed.initial_parameters == parameters
     for parameter in original.optimized_parameters.all():

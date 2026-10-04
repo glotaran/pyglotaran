@@ -210,7 +210,6 @@ def test_global_data():
     assert "decay_independent" in optimized_data
     print(optimized_parameters)
     assert result.success
-    assert initial_parameters != optimized_parameters
     assert optimized_parameters.close_or_equal(parameters)
 
 
@@ -310,14 +309,16 @@ def test_histories(method: str, verbose: bool):
     cost_history = optimization.cost_history
     # The Jacobian evaluations are counted too, SciPy's nfev does not count them
     assert len(cost_history) > optimization_info.number_of_function_evaluations
-    assert cost_history[-1] == pytest.approx(optimization_info.cost, rel=1e-12)
+    # The result is at SciPy's solution, one of the evaluated points, often not the last one
+    assert optimization_info.cost in cost_history
+    assert optimization_info.chi_square == pytest.approx(2 * optimization_info.cost, rel=1e-13)
 
     parameter_history = optimization_info.parameter_history
     if verbose:
         history = parameter_history.to_dataframe()
         # One row with the initial values, then one row per evaluation
         assert list(history["iteration"]) == list(range(len(cost_history) + 1))
-        assert history["rates.decay.1"].iloc[-1] == optimized_parameters.get("rates.decay.1").value
+        assert optimized_parameters.get("rates.decay.1").value in list(history["rates.decay.1"])
     else:
         assert parameter_history.number_of_records == 1
 
@@ -330,7 +331,7 @@ def test_parameter_history_in_user_coordinates():
 
     history = optimization_info.parameter_history.to_dataframe()
     assert history["rates.decay.1"].iloc[0] == 0.9
-    assert history["rates.decay.1"].iloc[-1] == optimized_parameters.get("rates.decay.1").value
+    assert optimized_parameters.get("rates.decay.1").value in list(history["rates.decay.1"])
 
 
 def test_dry_run_statistics():

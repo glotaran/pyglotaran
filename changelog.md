@@ -54,6 +54,9 @@
   relations or constraints can be loaded after saving
 - 🩹 Read YAML files as UTF-8, the encoding they are written in, also on Windows
 - 🩹 Report the number of completed function evaluations of a failed optimization
+- 🩹 Compute the optimized parameters, cost and result arrays at the solution of the optimizer,
+  as chi-square and the standard errors, instead of at the last evaluated point (often a
+  finite-difference step)
 
 ### 📚 Documentation
 
