@@ -16,10 +16,12 @@ from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization import Optimization
 from glotaran.optimization.info import calculate_parameter_errors
 from glotaran.project.library import ModelLibrary
-from glotaran.utils.io import DatasetMapping
 from glotaran.utils.io import load_datasets
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    import xarray as xr
     from typing_extensions import Self
 
     from glotaran.parameter import Parameters
@@ -50,7 +52,7 @@ class Scheme(BaseModel):
                     d.data = load_dataset(d.data)
         return cls(experiments=experiments, library=library, source_path=source_path)
 
-    def _load_data(self, datasets: DatasetMapping) -> None:
+    def _load_data(self, datasets: Mapping[str, xr.Dataset]) -> None:
         try:
             for experiment in self.experiments.values():
                 for label, data_model in experiment.datasets.items():

@@ -168,9 +168,10 @@ def compare_fit_summaries(summary: dict[str, Any], result: Result) -> dict[str, 
                 pairs[f"{label}.{key}"] = (recorded.get(key), getattr(meta, key))
     drift = {}
     for name, values in pairs.items():
-        if None in values:
+        recorded_value, recomputed_value = values
+        if recorded_value is None or recomputed_value is None:
             continue
-        old, new = float(values[0]), float(values[1])
+        old, new = float(recorded_value), float(recomputed_value)
         if not (math.isfinite(old) and math.isfinite(new)):
             relative_difference = None
         elif old == new:
