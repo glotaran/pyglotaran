@@ -1,0 +1,19 @@
+# Description of this project and its data for research data management.
+# Every field is optional. pyglotaran reads none of them and copies this file into every export.
+title: Getting started with pyglotaran
+description: >
+  Global analysis of a simulated sequential decay of three compartments, used in the getting
+  started guide of pyglotaran.
+data_description: >
+  Simulated data from glotaran.testing.simulated_data.sequential_spectral_decay: 2100 time
+  points from -1 to 19.99, 72 spectral points from 600 to 699.4, a Gaussian instrument
+  response function and noise with a standard deviation of 0.01.
+creators:
+  - name: The pyglotaran developers
+    orcid:
+    affiliation:
+keywords: [global analysis, simulated data]
+license:
+related_identifiers:
+  - doi:
+funding:
