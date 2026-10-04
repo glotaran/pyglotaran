@@ -244,7 +244,14 @@ def save_dataset(
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_data_io(format_name or infer_file_format(file_name, needs_to_exist=False))
-    io.save_dataset(file_name=Path(file_name).as_posix(), dataset=dataset, **kwargs)
+    # Without ``source_path`` and ``io_plugin_name``: ``load_dataset`` sets them, and in a file
+    # they would only hold local paths
+    to_save = dataset.copy(deep=False)
+    variables = to_save.data_vars.values() if isinstance(to_save, xr.Dataset) else []
+    for item in [to_save, *variables]:
+        item.attrs.pop("source_path", None)
+        item.attrs.pop("io_plugin_name", None)
+    io.save_dataset(file_name=Path(file_name).as_posix(), dataset=to_save, **kwargs)
     if update_source_path is True or "source_path" not in dataset.attrs:
         dataset.attrs["source_path"] = Path(file_name).as_posix()
         dataset.attrs["io_plugin_name"] = full_plugin_name(io)

@@ -246,6 +246,28 @@ def test_save_dataset(tmp_path: Path, sub_dir: str):
 
 
 @pytest.mark.usefixtures("mocked_registry")
+def test_save_dataset_without_path_attributes(tmp_path: Path):
+    """The saved data hold no ``source_path`` or ``io_plugin_name``; the input keeps them."""
+
+    def attributes() -> dict[str, Any]:
+        return {"source_path": "C:/data/raw.nc", "io_plugin_name": "plugin", "keep": 1}
+
+    data_array = xr.DataArray([1, 2], attrs=attributes())
+    dataset = xr.Dataset({"data": xr.DataArray([1, 2], attrs=attributes())}, attrs=attributes())
+
+    for data in (data_array, dataset):
+        result: dict[str, Any] = {}
+        save_dataset(
+            data, tmp_path / "dummy.mock", result_container=result, update_source_path=False
+        )
+
+        assert result["dataset"].attrs == {"keep": 1}
+        assert data.attrs == attributes()
+    assert result["dataset"].data.attrs == {"keep": 1}
+    assert dataset.data.attrs == attributes()
+
+
+@pytest.mark.usefixtures("mocked_registry")
 def test_save_dataset_source_update(tmp_path: Path):
     """Update source path if not set or explicitly using ``update_source_path=False``."""
     file_path = tmp_path / "dummy.mock"

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Literal
 
 import numpy as np
 from pydantic import BaseModel
@@ -26,6 +27,22 @@ if TYPE_CHECKING:
 
     from glotaran.parameter import Parameters
     from glotaran.typing.types import ArrayLike
+
+
+class OptimizerSettings(BaseModel):
+    """Settings passed to the optimizer.
+
+    The fields have no defaults, so that saving a result with ``exclude_defaults`` keeps them.
+    A tolerance of ``None`` disables that termination condition in SciPy.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    optimization_method: Literal["TrustRegionReflection", "Dogbox", "Levenberg-Marquardt"]
+    ftol: float | None
+    gtol: float | None
+    xtol: float | None
+    maximum_number_function_evaluations: int | None
 
 
 class OptimizationInfo(BaseModel):
@@ -145,8 +162,13 @@ class OptimizationInfo(BaseModel):
         free_parameter_labels: list[str],
         termination_reason: str,
         number_of_clps: int,
+        *,
+        number_of_function_evaluations: int,
+        dry_run: bool = False,
     ) -> Self:
         success = result is not None
+        # A dry run gets the statistics of its one evaluation, from the penalty
+        residual = result.fun if success else penalty  # type:ignore[union-attr]
 
         result_args = {
             "success": success,
@@ -154,31 +176,35 @@ class OptimizationInfo(BaseModel):
             "parameter_history": parameter_history,
             "termination_reason": termination_reason,
             "optimization_history": optimization_history,
+            # Without a SciPy result, the evaluations counted by the caller
             "number_of_function_evaluations": result.nfev  # type:ignore[union-attr]
             if success
-            else parameter_history.number_of_records,
+            else number_of_function_evaluations,
             "cost": 0.5 * np.dot(penalty, penalty),
         }
 
-        if success:
+        if success or dry_run:
             result_args["number_of_clps"] = number_of_clps
             result_args["additional_penalty"] = additional_penalty
-            result_args["number_of_jacobian_evaluations"] = result.njev  # type:ignore[union-attr]
-            result_args["optimality"] = float(result.optimality)  # type:ignore[union-attr]
-            result_args["number_of_data_points"] = result.fun.size  # type:ignore[union-attr]
-            result_args["number_of_parameters"] = result.x.size  # type:ignore[union-attr]
+            result_args["number_of_data_points"] = residual.size
+            result_args["number_of_parameters"] = len(free_parameter_labels)
             result_args["degrees_of_freedom"] = (
                 result_args["number_of_data_points"]
                 - result_args["number_of_parameters"]
                 - result_args["number_of_clps"]
             )
-            result_args["chi_square"] = float(np.sum(result.fun**2))  # type:ignore[union-attr]
-            result_args["reduced_chi_square"] = (
-                result_args["chi_square"] / result_args["degrees_of_freedom"]
-            )
-            result_args["root_mean_square_error"] = float(
-                np.sqrt(result_args["reduced_chi_square"])
-            )
+            result_args["chi_square"] = float(np.sum(residual**2))
+            if success or result_args["degrees_of_freedom"] > 0:
+                result_args["reduced_chi_square"] = (
+                    result_args["chi_square"] / result_args["degrees_of_freedom"]
+                )
+                result_args["root_mean_square_error"] = float(
+                    np.sqrt(result_args["reduced_chi_square"])
+                )
+
+        if success:
+            result_args["number_of_jacobian_evaluations"] = result.njev  # type:ignore[union-attr]
+            result_args["optimality"] = float(result.optimality)  # type:ignore[union-attr]
             result_args["jacobian"] = result.jac  # type:ignore[union-attr]
             result_args["covariance_matrix"] = calculate_covariance_matrix_and_standard_errors(
                 result_args["jacobian"], result_args["root_mean_square_error"]
@@ -194,7 +220,8 @@ def calculate_parameter_errors(
 
     This function calculates the standard errors for the free parameters
     based on the provided optimization information and assigns these errors
-    directly to the corresponding parameters.
+    directly to the corresponding parameters. The other parameters get a standard error of
+    NaN.
 
     Parameters
     ----------
@@ -210,6 +237,10 @@ def calculate_parameter_errors(
     None
     """
     if optimization_info.covariance_matrix is not None:
+        # Fixed and expression parameters are not estimated; they may carry a standard error
+        # from the parameters the fit started with
+        for parameter in parameters.all():
+            parameter.standard_error = np.nan
         standard_errors = optimization_info.root_mean_square_error * np.sqrt(
             np.diag(optimization_info.covariance_matrix)
         )

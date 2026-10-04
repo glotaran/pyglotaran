@@ -33,7 +33,14 @@ class CsvProjectIo(ProjectIoInterface):
             :class:`Parameters
         """
         parameter_df = (
-            pd.read_csv(file_name, skipinitialspace=True, na_values=["None", "none"], sep=sep)
+            pd.read_csv(
+                file_name,
+                skipinitialspace=True,
+                na_values=["None", "none"],
+                sep=sep,
+                # Read back exactly the values that were written
+                float_precision="round_trip",
+            )
             .pipe(normalize_dataframe_columns, rename_dict=OPTION_NAMES_DESERIALIZED)
             .pipe(safe_dataframe_fillna, column_name="minimum", fill_value=-np.inf)
             .pipe(safe_dataframe_fillna, column_name="maximum", fill_value=np.inf)

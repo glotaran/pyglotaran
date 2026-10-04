@@ -76,6 +76,7 @@ class YmlProjectIo(ProjectIoInterface):
         if (
             scheme.source_path is not None
             and scheme.source_path.suffix in (".yml", ".yaml")
+            and scheme.source_path.is_file()
             and self.load_scheme(str(scheme.source_path)).model_dump(exclude_unset=True)
             == scheme.model_dump(exclude_unset=True)
         ):

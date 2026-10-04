@@ -26,6 +26,7 @@ user_documentation/plotting
 user_documentation/modelling
 user_documentation/parameter
 user_documentation/optimizing
+user_documentation/project
 user_documentation/using_plugins
 ```
 
