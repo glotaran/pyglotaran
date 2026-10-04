@@ -7,6 +7,8 @@ import pytest
 from ruamel.yaml import YAML
 
 from glotaran.builtin.elements.kinetic.element import KineticElement
+from glotaran.builtin.io.yml.utils import load_dict
+from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.io import load_parameters
 from glotaran.io import load_result
@@ -147,6 +149,13 @@ def test_save_scheme_after_source_file_was_removed(tmp_path: Path):
     save_scheme(scheme, tmp_path / "test_scheme.yml")
 
     assert load_scheme(tmp_path / "test_scheme.yml").model_dump() == scheme.model_dump()
+
+
+def test_non_ascii_round_trip(tmp_path: Path):
+    """YAML is read as UTF-8, as it is written, whatever the locale encoding."""
+    write_dict({"name": "ΔA café β₂ Ё"}, file_name=tmp_path / "test.yml")
+
+    assert load_dict(tmp_path / "test.yml", is_file=True) == {"name": "ΔA café β₂ Ё"}
 
 
 @pytest.mark.parametrize("result_file_name", ["result.yml", ""])

@@ -70,7 +70,7 @@ def load_dict(source: str | Path, *, is_file: bool) -> dict[str, Any]:
     yaml = YAML()
     yaml.representer.add_representer(type(None), _yaml_none_representer)
     if is_file:
-        with Path(source).open() as f:
+        with Path(source).open(encoding="utf8") as f:
             return yaml.load(f)
     return yaml.load(source)
 
