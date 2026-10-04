@@ -96,11 +96,20 @@ class Optimization:
 
         self.cost_history: list[float] = []
         """Cost of every function evaluation in call order, including Jacobian evaluations."""
-        self._parameter_history = ParameterHistory()
-        self._parameter_history.append(self._parameters)
+        self.error: Exception | None = None
+        """Exception of the optimizer, turned into a warning with ``raise_exception=False``."""
+        self.converged: bool | None = None
+        """SciPy's success flag: whether the optimizer met its tolerances."""
+        self.parameter_history = ParameterHistory()
+        self.parameter_history.append(self._parameters)
         self._free_parameter_labels, _, _, _ = self._parameters.get_label_value_and_bounds_arrays(
             exclude_non_vary=True
         )
+
+    @property
+    def parameters(self) -> Parameters:
+        """Parameters of the optimization; during and after a fit the last evaluated ones."""
+        return self._parameters
 
     def run(self) -> tuple[Parameters, dict[str, OptimizationResult], OptimizationInfo]:
         """Perform the optimization.
@@ -118,7 +127,6 @@ class Optimization:
         ) = self._parameters.get_label_value_and_bounds_arrays(exclude_non_vary=True)
         ls_result = None
         termination_reason = ""
-        optimization_error = None
         no_free_parameters = initial_parameter.size == 0
         with self._tee:
             if no_free_parameters:
@@ -138,13 +146,14 @@ class Optimization:
                         xtol=self.settings.xtol,
                     )
                     termination_reason = ls_result.message
+                    self.converged = bool(ls_result.success)
                 # No matter the error we want to behave gracefully
                 except Exception as e:
                     if self._raise:
                         raise
                     warn(f"Optimization failed:\n\n{e}", stacklevel=3)
                     termination_reason = str(e)
-                    optimization_error = e
+                    self.error = e
 
         # TODO: check how this works for multiple experiments with possible the same dataset name
         try:
@@ -152,10 +161,11 @@ class Optimization:
         except Exception as e:
             # After an exception in the objective, the evaluation at the same parameters fails
             # again; the error of the optimization is the one to report.
-            if optimization_error is None:
+            if self.error is None:
                 raise
-            raise optimization_error from e
+            raise self.error from e
         if no_free_parameters:
+            self.converged = True
             ls_result = OptimizeResult(
                 x=initial_parameter,
                 fun=penalty,
@@ -173,7 +183,7 @@ class Optimization:
         additional_penalty = sum(r.additional_penalty for r in results)
         optimization_info = OptimizationInfo.from_least_squares_result(
             ls_result,
-            self._parameter_history,
+            self.parameter_history,
             OptimizationHistory.from_stdout_str(self._tee.read()),
             penalty,
             additional_penalty,
@@ -193,7 +203,7 @@ class Optimization:
         additional_penalty = sum(r.additional_penalty for r in results)
         result = OptimizationInfo.from_least_squares_result(
             None,
-            self._parameter_history,
+            self.parameter_history,
             OptimizationHistory.from_stdout_str(self._tee.read()),
             penalty,
             additional_penalty,
@@ -223,5 +233,5 @@ class Optimization:
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         self.cost_history.append(0.5 * float(np.dot(penalty, penalty)))
         if self._verbose:
-            self._parameter_history.append(self._parameters, len(self.cost_history))
+            self.parameter_history.append(self._parameters, len(self.cost_history))
         return penalty

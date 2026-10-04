@@ -4,8 +4,15 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Any
+
+from glotaran.project.record import FitRecord
 
 if TYPE_CHECKING:
+    from glotaran.parameter import Parameters
+    from glotaran.project.result import Result
+    from glotaran.project.scheme import Scheme
+    from glotaran.typing.types import DatasetMappable
     from glotaran.typing.types import StrOrPath
 
 PROJECT_FILE_NAME = "project.gta"
@@ -78,6 +85,68 @@ class Project:
         except FileExistsError:
             pass
         return cls(project_folder, (project_folder / results).resolve())
+
+    def optimize(
+        self,
+        scheme: Scheme,
+        parameters: Parameters,
+        datasets: DatasetMappable,
+        *,
+        name: str | None = None,
+        **kwargs: Any,  # noqa: ANN401
+    ) -> Result:
+        """Run ``scheme.optimize`` with the same arguments and record the fit.
+
+        The record is a folder in :attr:`results_folder` named by the start time of the fit. It
+        holds the scheme, the initial and optimized parameters, the cost of every function
+        evaluation, a summary of the input data and of the fit, and with ``verbose=True`` the
+        parameter values of every function evaluation; it holds no data and no result arrays.
+        Failed and interrupted fits are recorded too. ``dry_run=True`` records nothing.
+
+        Parameters
+        ----------
+        scheme : Scheme
+            The scheme to optimize.
+        parameters : Parameters
+            The initial parameters.
+        datasets : DatasetMappable
+            The input data, as for :meth:`Scheme.optimize`.
+        name : str | None
+            Optional label of the record.
+        **kwargs : Any
+            Keyword arguments of :meth:`Scheme.optimize`.
+
+        Returns
+        -------
+        Result
+            The result, with :attr:`Result.record` referring to the record.
+        """
+        if kwargs.pop("dry_run", False):
+            return scheme.optimize(parameters, datasets, dry_run=True, **kwargs)
+        verbose = kwargs.get("verbose", True)
+        fit_scheme, optimization = scheme._prepare_optimization(  # noqa: SLF001
+            parameters, datasets, **kwargs
+        )
+        record = FitRecord.start(
+            self.results_folder,
+            fit_scheme,
+            parameters,
+            optimization,
+            name=name,
+            write_parameter_history=verbose,
+        )
+        if verbose and record is not None:
+            print(f"Recording the fit in {record.folder}")  # noqa: T201
+        try:
+            result = fit_scheme._run_optimization(optimization, parameters)  # noqa: SLF001
+        except (Exception, KeyboardInterrupt) as error:
+            if record is not None:
+                record.finish(optimization, error=error)
+            raise
+        if record is not None:
+            record.finish(optimization, result=result)
+            result.record = record.reference
+        return result
 
     def __repr__(self) -> str:
         """Return the project folder and the results folder."""
