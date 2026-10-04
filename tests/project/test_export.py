@@ -265,6 +265,14 @@ def test_export_of_a_recomputed_result(project: Project, scheme: Scheme, data: x
     loaded = load_result(folder)
     assert loaded.recomputation["original_fit"]["id"] == result.record.id
     assert loaded.recomputation["reconstruction"]["data_differences"] == []
-    # A recompute of the export keeps the original fit's summary
+    # Recomputes of the export, and of the export of that recompute (which has no record), keep
+    # the id, summary and cost history of the original fit
+    cost_history = recomputed.recomputation["original_fit"]["cost_history"]
+    assert len(cost_history) > 0
     again = project.recompute(folder, {LABEL: data})
-    assert again.recomputation["original_fit"]["summary"] == record_summary
+    third = project.recompute(project.export(again, "again"), {LABEL: data})
+    for chained in (again, third):
+        original_fit = chained.recomputation["original_fit"]
+        assert original_fit["id"] == result.record.id
+        assert original_fit["summary"] == record_summary
+        assert original_fit["cost_history"] == cost_history

@@ -56,6 +56,9 @@ def recompute(folder: Path, datasets: DatasetMappable, *, allow_data_mismatch: b
         If the record has no optimized parameters, or if the data differ from the recorded data
         and ``allow_data_mismatch`` is ``False``.
     """
+    # Of an exported recomputed result: kept so that a chain of recomputes and exports keeps the
+    # id and cost history of the original fit
+    original_fit: dict[str, Any] = {}
     if (folder / RECORD_FILE_NAME).is_file():
         content = read_record_file(folder)
         record_id = content.get("id")
@@ -65,8 +68,8 @@ def recompute(folder: Path, datasets: DatasetMappable, *, allow_data_mismatch: b
             "optimized_parameters": "optimized_parameters.csv",
         }
     else:
-        content, files = read_export_files(folder)
-        record_id = content.get("record_id")
+        content, files, original_fit = read_export_files(folder)
+        record_id = content.get("record_id") or original_fit.get("id")
     parameters_file = folder / files["optimized_parameters"]
     if not parameters_file.is_file():
         msg = f"The record '{folder}' has no optimized parameters, the fit evaluated no point."
@@ -131,7 +134,7 @@ def recompute(folder: Path, datasets: DatasetMappable, *, allow_data_mismatch: b
             },
             "cost_history": pd.read_csv(cost_history_file)["cost"].tolist()
             if cost_history_file.is_file()
-            else [],
+            else original_fit.get("cost_history", []),
         },
         "reconstruction": {
             "created": datetime.now().astimezone().isoformat(timespec="seconds"),

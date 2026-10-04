@@ -221,8 +221,10 @@ def copy_source_files(result: Result, folder: Path) -> dict[str, str | None]:
     return copied
 
 
-def read_export_files(folder: Path) -> tuple[dict[str, Any], dict[str, str]]:
-    """Read ``export.yml`` and the file names of scheme and parameters from ``result.yml``.
+def read_export_files(
+    folder: Path,
+) -> tuple[dict[str, Any], dict[str, str], dict[str, Any]]:
+    """Read ``export.yml``, and from ``result.yml`` the files and the original-fit information.
 
     Parameters
     ----------
@@ -231,13 +233,15 @@ def read_export_files(folder: Path) -> tuple[dict[str, Any], dict[str, str]]:
 
     Returns
     -------
-    tuple[dict[str, Any], dict[str, str]]
-        The export metadata, and the files of ``scheme``, ``initial_parameters`` and
-        ``optimized_parameters`` relative to ``folder``.
+    tuple[dict[str, Any], dict[str, str], dict[str, Any]]
+        The export metadata; the files of ``scheme``, ``initial_parameters`` and
+        ``optimized_parameters`` relative to ``folder``; and for an exported recomputed result
+        its ``recomputation["original_fit"]``, else an empty dict.
     """
     metadata = dict(load_dict(folder / EXPORT_FILE_NAME, is_file=True))
     result_spec = load_dict(folder / "result.yml", is_file=True)
     files = {
         key: result_spec[key] for key in ("scheme", "initial_parameters", "optimized_parameters")
     }
-    return metadata, files
+    original_fit = dict((result_spec.get("recomputation") or {}).get("original_fit") or {})
+    return metadata, files, original_fit
