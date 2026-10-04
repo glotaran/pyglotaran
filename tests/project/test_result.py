@@ -115,7 +115,9 @@ def test_result_serde_default(tmp_path: Path):
     assert isinstance(deserialized_sequential_results.activations["irf"], xr.Dataset)
     assert isinstance(deserialized_sequential_results.input_data, xr.Dataset)
     assert isinstance(deserialized_sequential_results.residuals, xr.Dataset)
-    assert isinstance(deserialized_sequential_results.fitted_data, xr.Dataset)
+    assert deserialized_sequential_results.fitted_data.equals(
+        RESULT.optimization_results["sequential-decay"].fitted_data
+    )
 
 
 # We expect warnings about missing data when using minimal saving options
@@ -329,6 +331,24 @@ def test_result_optimizer_settings_round_trip(tmp_path: Path):
 
     result.save(tmp_path)
     assert load_result(tmp_path).optimizer_settings == expected
+
+
+def test_result_weighted_input_data_round_trip(tmp_path: Path):
+    """A dataset weight is kept in the input data and round-trips through save and load."""
+    data = DATASET.copy()
+    data["weight"] = xr.full_like(data.data, 0.5).transpose()
+    result = Scheme.from_dict(SCHEME_DICT).optimize(
+        PARAMETERS, {"sequential-decay": data}, verbose=False
+    )
+    input_data = result.input_data["sequential-decay"]
+    assert isinstance(input_data, xr.Dataset)
+    assert input_data.weight.dims == input_data.data.dims
+    assert np.all(input_data.weight == 0.5)
+
+    result.save(tmp_path)
+    loaded = load_result(tmp_path).optimization_results["sequential-decay"]
+    assert loaded.input_data.weight.equals(input_data.weight)
+    assert loaded.fitted_data.equals(result.optimization_results["sequential-decay"].fitted_data)
 
 
 if __name__ == "__main__":

@@ -72,7 +72,10 @@ class Result(BaseModel):
 
     @property
     def input_data(self) -> dict[str, xr.Dataset | xr.DataArray]:
-        """Input data used to create the result."""
+        """Input data used to create the result.
+
+        A dataset with ``data`` and ``weight`` if the input dataset had a ``weight``.
+        """
         return {
             dataset_name: optimization_result.input_data
             for dataset_name, optimization_result in self.optimization_results.items()
