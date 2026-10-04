@@ -156,11 +156,9 @@ That way the next person will improve the docstring coverage as well and
 everyone can enjoy a better documentation.
 :::
 
-:::{warning}
-As soon as all our docstrings are in proper shape we will enforce that it stays that way.
-If you want to check if your docstrings are fine you can use [pydocstyle](https://github.com/PyCQA/pydocstyle)
-and [darglint](https://github.com/terrencepreilly/darglint).
-:::
+We check docstring style with [Ruff](https://docs.astral.sh/ruff/), using the NumPy convention
+and the rules configured in `.ruff.toml`. Run `pre-commit run --all-files` to run
+the configured formatting and linting checks, including docstring style checks.
 
 ## Tips
 
