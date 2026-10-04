@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from typing import TYPE_CHECKING
 
 import pytest
@@ -15,6 +16,13 @@ if TYPE_CHECKING:
     import xarray as xr
 
 LABEL = "sequential-decay"
+
+
+def scheme_dict_with_data(data_path: str) -> dict:
+    """``SCHEME_DICT`` with a ``data:`` path for its dataset, as a scheme file can have."""
+    scheme_dict = copy.deepcopy(SCHEME_DICT)
+    scheme_dict["experiments"][LABEL]["datasets"][LABEL]["data"] = data_path
+    return scheme_dict
 
 
 @pytest.fixture

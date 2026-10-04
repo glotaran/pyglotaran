@@ -14,6 +14,7 @@ import pandas as pd
 import pytest
 
 from glotaran.builtin.io.yml.utils import load_dict
+from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.io import load_dataset
 from glotaran.io import load_parameters
 from glotaran.io import load_scheme
@@ -24,8 +25,10 @@ from glotaran.project import Project
 from glotaran.project import record as record_module
 from glotaran.project.record import claim_record_folder
 from glotaran.project.record import detect_source
+from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME_DICT
 from glotaran.testing.simulated_data.shared_decay import PARAMETERS
 from tests.project.conftest import LABEL
+from tests.project.conftest import scheme_dict_with_data
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -131,6 +134,26 @@ def test_scheme_and_data_source_paths(project: Project, scheme: Scheme, data: xr
     record = read_record(only_record(project))
     assert record["scheme_source"] == "../../models/scheme.yml"
     assert record["data"][LABEL]["source_path"] == "../../data/data.nc"
+
+
+def test_scheme_file_copied_unless_it_names_data_files(
+    project: Project, data: xr.Dataset, monkeypatch: pytest.MonkeyPatch
+):
+    """A scheme file is recorded verbatim, with its comments, unless it names data files."""
+    monkeypatch.chdir(project.folder)
+    save_dataset(data, "data.nc")
+    text = f"# First model\n{write_dict(SCHEME_DICT)}"
+    (project.folder / "scheme.yml").write_text(text, encoding="utf8")
+    write_dict(scheme_dict_with_data("data.nc"), file_name=project.folder / "with_data.yml")
+
+    for name in ("scheme.yml", "with_data.yml"):
+        scheme = load_scheme(project.folder / name)
+        project.optimize(scheme, PARAMETERS, {LABEL: data}, verbose=False)
+
+    plain, with_data = sorted(project.results_folder.iterdir())
+    assert (plain / "scheme.yml").read_text(encoding="utf8") == text
+    recorded = load_dict(with_data / "scheme.yml", is_file=True)
+    assert "data" not in recorded["experiments"][LABEL]["datasets"][LABEL]
 
 
 def test_plain_optimize_and_dry_run_write_nothing(

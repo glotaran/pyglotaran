@@ -19,6 +19,7 @@ from glotaran.project.record import RECORD_SCHEMA_VERSION
 from glotaran.project.record import collect_environment
 from glotaran.project.record import detect_source
 from glotaran.project.record import read_record_file
+from glotaran.project.record import scheme_to_save
 from glotaran.project.record import summarize_fit
 
 if TYPE_CHECKING:
@@ -101,7 +102,9 @@ def export_result(
     try:
         # A copy without the source path: saving sets it to the temporary folder, and
         # result.yml would hold it as a local path
-        result.model_copy(update={"source_path": None}).save(
+        result.model_copy(
+            update={"source_path": None, "scheme": scheme_to_save(result.scheme)}
+        ).save(
             temporary_folder,
             format_name="yml",
             saving_options=saving_options | {"data_filter": data_filter},

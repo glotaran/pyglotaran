@@ -8,14 +8,17 @@ from typing import TYPE_CHECKING
 import pytest
 
 from glotaran.builtin.io.yml.utils import load_dict
+from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.io import SAVING_OPTIONS_MINIMAL
 from glotaran.io import load_dataset
 from glotaran.io import load_result
+from glotaran.io import load_scheme
 from glotaran.io import save_dataset
 from glotaran.project import Project
 from glotaran.project import Scheme
 from glotaran.testing.simulated_data.shared_decay import PARAMETERS
 from tests.project.conftest import LABEL
+from tests.project.conftest import scheme_dict_with_data
 from tests.project.test_record import fake_ipython
 
 if TYPE_CHECKING:
@@ -158,6 +161,24 @@ def test_folder_created_during_export_is_kept(
         project.export(result, "paper_fig3")
     assert [path.name for path in folder.iterdir()] == ["keep.txt"]
     assert [path.name for path in folder.parent.iterdir()] == ["paper_fig3"]
+
+
+def test_scheme_file_with_data_paths(
+    project: Project, data: xr.Dataset, monkeypatch: pytest.MonkeyPatch
+):
+    """Record and export of a scheme file that names data files work without those files."""
+    monkeypatch.chdir(project.folder)
+    save_dataset(data, "data.nc")
+    write_dict(scheme_dict_with_data("data.nc"), file_name=project.folder / "scheme.yml")
+    scheme = load_scheme(project.folder / "scheme.yml")
+    result = project.optimize(scheme, PARAMETERS, {LABEL: data}, verbose=False)
+    folder = project.export(result)
+
+    (project.folder / "data.nc").unlink()
+
+    assert load_result(folder).scheme.model_dump() == result.scheme.model_dump()
+    project.recompute(result.record, {LABEL: data})
+    project.recompute(folder, {LABEL: data})
 
 
 def test_export_parameters_changed_in_place(project: Project, scheme: Scheme, data: xr.Dataset):

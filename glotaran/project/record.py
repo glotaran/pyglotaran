@@ -177,6 +177,37 @@ def read_record_file(folder: Path) -> dict[str, Any]:
     return content
 
 
+def scheme_to_save(scheme: Scheme) -> Scheme:
+    """Return the scheme to save in a record or an export.
+
+    A scheme loaded from a YAML file is saved as a verbatim copy of that file, which keeps its
+    comments and layout. If the file names data files (``data:`` of a dataset), the copy would
+    keep those paths, and loading it would load them relative to the working directory. Such a
+    scheme is written from memory instead, without the data paths.
+
+    Parameters
+    ----------
+    scheme : Scheme
+        Scheme of the fit.
+
+    Returns
+    -------
+    Scheme
+        ``scheme``, or a copy of it without ``source_path``.
+    """
+    source = scheme.source_path
+    if source is not None and source.suffix in (".yml", ".yaml") and source.is_file():
+        spec = load_dict(source, is_file=True) or {}
+        datasets = [
+            dataset
+            for experiment in (spec.get("experiments") or {}).values()
+            for dataset in (experiment.get("datasets") or {}).values()
+        ]
+        if any("data" in dataset for dataset in datasets):
+            return scheme.model_copy(update={"source_path": None})
+    return scheme
+
+
 def _float(value: float | None) -> float | None:
     return None if value is None else float(value)
 
@@ -322,7 +353,7 @@ class FitRecord:
                 },
                 "summary": None,
             }
-            save_scheme(scheme, folder / "scheme.yml", update_source_path=False)
+            save_scheme(scheme_to_save(scheme), folder / "scheme.yml", update_source_path=False)
             save_parameters(
                 initial_parameters, folder / "initial_parameters.csv", update_source_path=False
             )
