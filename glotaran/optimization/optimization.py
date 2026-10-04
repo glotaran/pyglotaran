@@ -195,6 +195,7 @@ class Optimization:
             self._free_parameter_labels,
             termination_reason,
             number_of_clps,
+            number_of_function_evaluations=len(self.cost_history),
         )
         return self._parameters, optimization_results, optimization_info
 
@@ -215,6 +216,7 @@ class Optimization:
             self._free_parameter_labels,
             termination_reason,
             number_of_clps,
+            number_of_function_evaluations=1,
             dry_run=True,
         )
         return self._parameters, data, result

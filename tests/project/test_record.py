@@ -225,6 +225,7 @@ def test_failed_fit_with_result_is_recorded(
     assert record["status"] == "failed"
     assert record["error"] == {"type": "RuntimeError", "message": "optimizer failed"}
     assert record["summary"]["number_of_function_evaluations"] == 2
+    assert result.optimization_info.number_of_function_evaluations == 2
     optimized_parameters = load_parameters(result.record.path / "optimized_parameters.csv")
     assert optimized_parameters.close_or_equal(result.optimized_parameters, rtol=1e-15)
 

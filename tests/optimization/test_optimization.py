@@ -362,6 +362,7 @@ def test_dry_run_without_degrees_of_freedom():
         ["a", "b"],
         "Dry run.",
         1,
+        number_of_function_evaluations=1,
         dry_run=True,
     )
 

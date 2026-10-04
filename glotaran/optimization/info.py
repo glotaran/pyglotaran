@@ -162,6 +162,7 @@ class OptimizationInfo(BaseModel):
         termination_reason: str,
         number_of_clps: int,
         *,
+        number_of_function_evaluations: int,
         dry_run: bool = False,
     ) -> Self:
         success = result is not None
@@ -174,9 +175,10 @@ class OptimizationInfo(BaseModel):
             "parameter_history": parameter_history,
             "termination_reason": termination_reason,
             "optimization_history": optimization_history,
+            # Without a SciPy result, the evaluations counted by the caller
             "number_of_function_evaluations": result.nfev  # type:ignore[union-attr]
             if success
-            else parameter_history.number_of_records,
+            else number_of_function_evaluations,
             "cost": 0.5 * np.dot(penalty, penalty),
         }
 

@@ -53,6 +53,7 @@
 - 🩹 Write lists of mappings as valid YAML, so that schemes built in code with penalties,
   relations or constraints can be loaded after saving
 - 🩹 Read YAML files as UTF-8, the encoding they are written in, also on Windows
+- 🩹 Report the number of completed function evaluations of a failed optimization
 
 ### 📚 Documentation
 
