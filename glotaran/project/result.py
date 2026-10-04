@@ -7,6 +7,8 @@ from typing import Any
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
+from pydantic import Field
+from pydantic import PrivateAttr
 from pydantic import SerializationInfo
 from pydantic import ValidationInfo
 from pydantic import field_serializer
@@ -19,8 +21,10 @@ from glotaran.io.interface import SAVING_OPTIONS_DEFAULT
 from glotaran.io.interface import SavingOptions
 from glotaran.model.experiment_model import ExperimentModel  # noqa: TC001
 from glotaran.optimization import OptimizationInfo  # noqa: TC001
+from glotaran.optimization.info import OptimizerSettings  # noqa: TC001
 from glotaran.optimization.objective import OptimizationResult
 from glotaran.parameter import Parameters  # noqa: TC001
+from glotaran.project.record import RecordReference  # noqa: TC001
 from glotaran.project.scheme import Scheme
 from glotaran.utils.io import relative_posix_path
 from glotaran.utils.pydantic_serde import ValidationInfoWithContext
@@ -61,7 +65,21 @@ class Result(BaseModel):
     optimization_info: OptimizationInfo
     initial_parameters: Parameters
     optimized_parameters: Parameters
+    optimizer_settings: OptimizerSettings | None = None
+    """Settings passed to the optimizer; ``None`` for results saved without them."""
     source_path: Path | None = None
+    record: RecordReference | None = Field(default=None, exclude=True)
+    """Record of the fit run with ``Project.optimize``, or recomputed with ``Project.recompute``;
+    not saved."""
+    recomputation: dict[str, Any] | None = None
+    """For a result of ``Project.recompute``: the original fit (record id, summary, standard
+    errors, cost history) and the reconstruction (time, environment, data differences, drift)."""
+    _fitted_parameters: Parameters = PrivateAttr()
+    """Copy of the optimized parameters at creation, to detect later changes in place."""
+
+    def model_post_init(self, context: Any, /) -> None:  # noqa: ANN401
+        """Keep a copy of the optimized parameters."""
+        self._fitted_parameters = self.optimized_parameters.copy()
 
     @property
     def experiments(self) -> dict[str, ExperimentModel]:
@@ -69,7 +87,10 @@ class Result(BaseModel):
 
     @property
     def input_data(self) -> dict[str, xr.Dataset | xr.DataArray]:
-        """Input data used to create the result."""
+        """Input data used to create the result.
+
+        A dataset with ``data`` and ``weight`` if the input dataset had a ``weight``.
+        """
         return {
             dataset_name: optimization_result.input_data
             for dataset_name, optimization_result in self.optimization_results.items()
@@ -179,7 +200,7 @@ class Result(BaseModel):
         if (save_folder := save_folder_from_info(info)) is not None:
             scheme_format = info.context.get("saving_options", {}).get("scheme_format", "yml")
             save_path = save_folder / f"scheme.{scheme_format}"
-            save_scheme(value, save_path, allow_overwrite=True)
+            save_scheme(value, save_path, allow_overwrite=True, update_source_path=False)
             return save_path.name
         msg = (
             "SerializationInfo context is missing 'save_folder' for "

@@ -33,6 +33,6 @@ def remove_files(path: Path, glob_pattern: str) -> None:
 
 if __name__ == "__main__":
     remove_files(NOTEBOOK_PATH / "getting_started", "*.nc")
-    remove_files(NOTEBOOK_PATH / "getting_started/my_project", "*.gta")
     shutil.rmtree(NOTEBOOK_PATH / "getting_started/my_project/data", ignore_errors=True)
     shutil.rmtree(NOTEBOOK_PATH / "getting_started/my_project/results", ignore_errors=True)
+    shutil.rmtree(NOTEBOOK_PATH / "getting_started/my_project/exports", ignore_errors=True)

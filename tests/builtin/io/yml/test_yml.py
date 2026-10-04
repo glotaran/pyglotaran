@@ -7,12 +7,15 @@ import pytest
 from ruamel.yaml import YAML
 
 from glotaran.builtin.elements.kinetic.element import KineticElement
+from glotaran.builtin.io.yml.utils import load_dict
+from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.io import load_parameters
 from glotaran.io import load_result
 from glotaran.io import load_scheme
 from glotaran.io import save_result
 from glotaran.io import save_scheme
+from glotaran.project import Scheme
 from glotaran.testing.simulated_data.sequential_spectral_decay import RESULT
 
 TEST_SCHEME_YML = """
@@ -121,6 +124,38 @@ def test_save_scheme_from_file_edited(tmp_path: Path):
 
     assert save_path.read_text() != TEST_SCHEME_YML
     assert load_scheme(save_path).experiments == {}
+
+
+def test_save_scheme_with_list_of_mappings(tmp_path: Path):
+    """A scheme built in code with a list of mappings (here penalties) is written as valid YAML."""
+    scheme_dict = YAML().load(TEST_SCHEME_YML)
+    scheme_dict["experiments"]["myexp"]["clp_penalties"] = [
+        {"type": "equal_area", "source": "s1", "target": "s2", "parameter": "area.1", "weight": 1}
+    ]
+    scheme = Scheme.from_dict(scheme_dict)
+
+    save_scheme(scheme, tmp_path / "scheme.yml")
+
+    assert load_scheme(tmp_path / "scheme.yml").model_dump() == scheme.model_dump()
+
+
+def test_save_scheme_after_source_file_was_removed(tmp_path: Path):
+    """A scheme whose source file no longer exists is written from memory."""
+    input_path = tmp_path / "input_scheme.yml"
+    input_path.write_text(TEST_SCHEME_YML)
+    scheme = load_scheme(input_path)
+    input_path.unlink()
+
+    save_scheme(scheme, tmp_path / "test_scheme.yml")
+
+    assert load_scheme(tmp_path / "test_scheme.yml").model_dump() == scheme.model_dump()
+
+
+def test_non_ascii_round_trip(tmp_path: Path):
+    """YAML is read as UTF-8, as it is written, whatever the locale encoding."""
+    write_dict({"name": "ΔA café β₂ Ё"}, file_name=tmp_path / "test.yml")
+
+    assert load_dict(tmp_path / "test.yml", is_file=True) == {"name": "ΔA café β₂ Ё"}
 
 
 @pytest.mark.parametrize("result_file_name", ["result.yml", ""])

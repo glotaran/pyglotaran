@@ -39,3 +39,13 @@ def test_parameter_history():
 
     assert group2.get("1") == 1
     assert group2.get("2") == 4
+
+
+def test_parameter_history_refreshes_expressions():
+    """Expression values follow a dependency changed in place."""
+    parameters = Parameters.from_dict({"a": [["x", 2.0], ["y", {"expr": "$a.x * 3"}]]})
+    parameters.get("a.x").value = 5.0
+    history = ParameterHistory()
+    history.append(parameters)
+
+    assert history.to_dataframe()["a.y"].iloc[0] == 15.0

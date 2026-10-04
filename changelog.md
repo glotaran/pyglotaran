@@ -7,6 +7,12 @@
 ### ✨ Features
 
 - ✨ Add a native v0.8 PFID element for perturbed free-induction-decay fitting (#1510)
+- ✨ Add an opt-in project (`Project.start`) that records every fit run through
+  `project.optimize`, lists, compares and recomputes recorded fits, and exports results as
+  self-contained folders that carry the `project.gta` description of the project
+- ✨ Store the optimizer settings on `Result.optimizer_settings` and in `result.yml`
+- ✨ Collect the cost of every function evaluation and, with `verbose=True`, the parameter
+  values in the parameter history
 
 ### 👌 Minor Improvements:
 
@@ -16,6 +22,7 @@
 - 👌 Avoid repeated coordinate alignment during optimization result construction and Gaussian
   dispersion calculations
 - 👌 Preserve shared optimization matrices when applying index-dependent scaling
+- 👌 Report chi-square, reduced chi-square, RMSE and degrees of freedom for dry runs
 
 ### 🩹 Bug fixes
 
@@ -31,9 +38,31 @@
 - 🩹 Resolve parameters of discriminated-union item fields (e.g. activations) on Python 3.14
 - 🩹 Add noise in `simulate(noise=True)` without a `noise_seed`; the seed defaults to 42,
   and `noise_seed=None` draws fresh noise
+- 🩹 Stop `Scheme.optimize` from sharing the scheme, the initial parameters and the input data
+  with its result
+- 🩹 Keep a dataset `weight` in `Result.input_data`, and compute `fitted_data` of loaded results
+- 🩹 Report the optimizer error when the evaluation after a failed optimization fails again
+- 🩹 Store the parameter history in user coordinates instead of the logarithm of
+  non-negative parameters
+- 🩹 Read parameter csv and tsv files with round-trip float precision
+- 🩹 Keep the scheme source path when saving a result, and save a scheme whose source file was
+  removed
+- 🩹 Write lists of mappings as valid YAML, so that schemes built in code with penalties,
+  relations or constraints can be loaded after saving
+- 🩹 Read YAML files as UTF-8, the encoding they are written in, also on Windows
+- 🩹 Report the number of completed function evaluations of a failed optimization
+- 🩹 Compute the optimized parameters, cost and result arrays at the solution of the optimizer,
+  as chi-square and the standard errors, instead of at the last evaluated point (often a
+  finite-difference step)
+- 🩹 Give fixed and expression parameters no standard error after a fit, instead of the one of
+  the initial parameters
+- 🩹 Stop writing the `source_path` and `io_plugin_name` attributes, which hold local paths,
+  into saved data files; `load_dataset` sets them
 
 ### 📚 Documentation
 
+- 📚 Document projects for recording, recomputing and exporting fits, and use one in the
+  getting started guide
 - 📚 Recommend uv in the installation and contributing guides and update the authors list
 - 📚 Port the getting started notebook from the removed `Project` API to `load_scheme`,
   `load_parameters` and `Scheme.optimize`

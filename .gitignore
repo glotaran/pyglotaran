@@ -189,4 +189,4 @@ comparison-results-current
 # getting_started docs output files
 docs/source/notebooks/getting_started/my_project/data
 docs/source/notebooks/getting_started/my_project/results
-docs/source/notebooks/getting_started/my_project/project.gta
+docs/source/notebooks/getting_started/my_project/exports

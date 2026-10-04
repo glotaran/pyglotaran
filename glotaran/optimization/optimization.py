@@ -12,6 +12,7 @@ from scipy.optimize import least_squares
 from glotaran.model.errors import GlotaranModelIssues
 from glotaran.model.errors import GlotaranUserError
 from glotaran.optimization.info import OptimizationInfo
+from glotaran.optimization.info import OptimizerSettings
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.objective import OptimizationResult
 from glotaran.optimization.optimization_history import OptimizationHistory
@@ -60,9 +61,9 @@ class Optimization:
         raise_exception: bool = False,
         maximum_number_function_evaluations: int | None = None,
         add_svd: bool = True,
-        ftol: float = 1e-8,
-        gtol: float = 1e-8,
-        xtol: float = 1e-8,
+        ftol: float | None = 1e-8,
+        gtol: float | None = 1e-8,
+        xtol: float | None = 1e-8,
         optimization_method: Literal[
             "TrustRegionReflection",
             "Dogbox",
@@ -82,20 +83,37 @@ class Optimization:
         self._verbose = verbose
         self._raise = raise_exception
 
-        self._maximum_number_function_evaluations = maximum_number_function_evaluations
         self._add_svd = add_svd
-        self._ftol = ftol
-        self._gtol = gtol
-        self._xtol = xtol
         if optimization_method not in SUPPORTED_OPTIMIZATION_METHODS:
             raise UnsupportedMethodError(optimization_method)
-        self._optimization_method = SUPPORTED_OPTIMIZATION_METHODS[optimization_method]
+        self.settings = OptimizerSettings(
+            optimization_method=optimization_method,
+            ftol=ftol,
+            gtol=gtol,
+            xtol=xtol,
+            maximum_number_function_evaluations=maximum_number_function_evaluations,
+        )
 
-        self._parameter_history = ParameterHistory()
-        self._parameter_history.append(self._parameters)
+        self.cost_history: list[float] = []
+        """Cost of every function evaluation in call order, including Jacobian evaluations."""
+        self.error: Exception | None = None
+        """Exception of the optimizer, turned into a warning with ``raise_exception=False``."""
+        self.converged: bool | None = None
+        """SciPy's success flag: whether the optimizer met its tolerances."""
+        self.parameter_history = ParameterHistory()
+        self.parameter_history.append(self._parameters)
         self._free_parameter_labels, _, _, _ = self._parameters.get_label_value_and_bounds_arrays(
             exclude_non_vary=True
         )
+
+    @property
+    def parameters(self) -> Parameters:
+        """Parameters of the optimization.
+
+        During a fit the last evaluated ones; after a successful fit the solution, after a failed
+        one the last evaluated ones.
+        """
+        return self._parameters
 
     def run(self) -> tuple[Parameters, dict[str, OptimizationResult], OptimizationInfo]:
         """Perform the optimization.
@@ -124,24 +142,44 @@ class Optimization:
                         self.objective_function,
                         initial_parameter,
                         bounds=(lower_bounds, upper_bounds),
-                        method=self._optimization_method,
-                        max_nfev=self._maximum_number_function_evaluations,
+                        method=SUPPORTED_OPTIMIZATION_METHODS[self.settings.optimization_method],
+                        max_nfev=self.settings.maximum_number_function_evaluations,
                         verbose=verbose,
-                        ftol=self._ftol,
-                        gtol=self._gtol,
-                        xtol=self._xtol,
+                        ftol=self.settings.ftol,
+                        gtol=self.settings.gtol,
+                        xtol=self.settings.xtol,
                     )
                     termination_reason = ls_result.message
+                    self.converged = bool(ls_result.success)
+                    # The solution, instead of the last evaluated point (often a
+                    # finite-difference Jacobian step), so that the result describes one point
+                    self._parameters.set_from_label_and_value_arrays(
+                        self._free_parameter_labels, ls_result.x
+                    )
                 # No matter the error we want to behave gracefully
                 except Exception as e:
                     if self._raise:
                         raise
                     warn(f"Optimization failed:\n\n{e}", stacklevel=3)
                     termination_reason = str(e)
+                    self.error = e
 
         # TODO: check how this works for multiple experiments with possible the same dataset name
-        penalty = np.concatenate([o.calculate() for o in self._objectives])
+        try:
+            # Without free parameters, this is the only evaluation and is recorded as such.
+            penalty = (
+                self.objective_function(initial_parameter)
+                if no_free_parameters
+                else np.concatenate([o.calculate() for o in self._objectives])
+            )
+        except Exception as e:
+            # After an exception in the objective, the evaluation at the same parameters fails
+            # again; the error of the optimization is the one to report.
+            if self.error is None:
+                raise
+            raise self.error from e
         if no_free_parameters:
+            self.converged = True
             ls_result = OptimizeResult(
                 x=initial_parameter,
                 fun=penalty,
@@ -159,13 +197,14 @@ class Optimization:
         additional_penalty = sum(r.additional_penalty for r in results)
         optimization_info = OptimizationInfo.from_least_squares_result(
             ls_result,
-            self._parameter_history,
+            self.parameter_history,
             OptimizationHistory.from_stdout_str(self._tee.read()),
             penalty,
             additional_penalty,
             self._free_parameter_labels,
             termination_reason,
             number_of_clps,
+            number_of_function_evaluations=len(self.cost_history),
         )
         return self._parameters, optimization_results, optimization_info
 
@@ -179,18 +218,23 @@ class Optimization:
         additional_penalty = sum(r.additional_penalty for r in results)
         result = OptimizationInfo.from_least_squares_result(
             None,
-            self._parameter_history,
+            self.parameter_history,
             OptimizationHistory.from_stdout_str(self._tee.read()),
             penalty,
             additional_penalty,
             self._free_parameter_labels,
             termination_reason,
             number_of_clps,
+            number_of_function_evaluations=1,
+            dry_run=True,
         )
         return self._parameters, data, result
 
     def objective_function(self, parameters: ArrayLike) -> ArrayLike:
         """Calculate the objective for the optimization.
+
+        Appends the cost to ``cost_history`` and, with ``verbose``, the parameter values to the
+        parameter history.
 
         Parameters
         ----------
@@ -203,4 +247,8 @@ class Optimization:
             The objective for the optimizer.
         """
         self._parameters.set_from_label_and_value_arrays(self._free_parameter_labels, parameters)
-        return np.concatenate([o.calculate() for o in self._objectives])
+        penalty = np.concatenate([o.calculate() for o in self._objectives])
+        self.cost_history.append(0.5 * float(np.dot(penalty, penalty)))
+        if self._verbose:
+            self.parameter_history.append(self._parameters, len(self.cost_history))
+        return penalty
