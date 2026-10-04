@@ -74,9 +74,9 @@ class Scheme(BaseModel):
         datasets: DatasetMappable,
         *,
         maximum_number_function_evaluations: int | None = None,
-        ftol: float = 1e-8,
-        gtol: float = 1e-8,
-        xtol: float = 1e-8,
+        ftol: float | None = 1e-8,
+        gtol: float | None = 1e-8,
+        xtol: float | None = 1e-8,
         optimization_method: Literal[
             "TrustRegionReflection",
             "Dogbox",

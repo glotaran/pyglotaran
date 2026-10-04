@@ -33,14 +33,15 @@ class OptimizerSettings(BaseModel):
     """Settings passed to the optimizer.
 
     The fields have no defaults, so that saving a result with ``exclude_defaults`` keeps them.
+    A tolerance of ``None`` disables that termination condition in SciPy.
     """
 
     model_config = ConfigDict(extra="forbid")
 
     optimization_method: Literal["TrustRegionReflection", "Dogbox", "Levenberg-Marquardt"]
-    ftol: float
-    gtol: float
-    xtol: float
+    ftol: float | None
+    gtol: float | None
+    xtol: float | None
     maximum_number_function_evaluations: int | None
 
 

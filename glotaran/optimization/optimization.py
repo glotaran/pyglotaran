@@ -61,9 +61,9 @@ class Optimization:
         raise_exception: bool = False,
         maximum_number_function_evaluations: int | None = None,
         add_svd: bool = True,
-        ftol: float = 1e-8,
-        gtol: float = 1e-8,
-        xtol: float = 1e-8,
+        ftol: float | None = 1e-8,
+        gtol: float | None = 1e-8,
+        xtol: float | None = 1e-8,
         optimization_method: Literal[
             "TrustRegionReflection",
             "Dogbox",

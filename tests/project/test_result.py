@@ -310,12 +310,16 @@ def test_result_save(tmp_path: Path):
 
 
 def test_result_optimizer_settings_round_trip(tmp_path: Path):
-    """Optimizer settings are stored on the result and in result.yml, defaults included."""
+    """Optimizer settings are stored on the result and in result.yml, defaults included.
+
+    A tolerance of ``None`` (disabled in SciPy) is kept.
+    """
     scheme = Scheme.from_dict(SCHEME_DICT)
     result = scheme.optimize(
         PARAMETERS,
         {"sequential-decay": DATASET},
         optimization_method="Dogbox",
+        gtol=None,
         xtol=1e-6,
         maximum_number_function_evaluations=2,
         verbose=False,
@@ -323,7 +327,7 @@ def test_result_optimizer_settings_round_trip(tmp_path: Path):
     expected = OptimizerSettings(
         optimization_method="Dogbox",
         ftol=1e-8,
-        gtol=1e-8,
+        gtol=None,
         xtol=1e-6,
         maximum_number_function_evaluations=2,
     )
