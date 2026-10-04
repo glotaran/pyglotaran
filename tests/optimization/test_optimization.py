@@ -265,3 +265,36 @@ def test_failed_objective_reports_the_optimization_error(monkeypatch: pytest.Mon
     ):
         optimization.run()
     assert str(error.value.__cause__) == "evaluation 3"
+
+
+@pytest.mark.parametrize("method", ["TrustRegionReflection", "Dogbox", "Levenberg-Marquardt"])
+@pytest.mark.parametrize("verbose", [True, False])
+def test_histories(method: str, verbose: bool):
+    """The cost of every evaluation is collected; parameter values only with ``verbose``."""
+    optimization = create_single_data_optimization(optimization_method=method, verbose=verbose)
+    optimized_parameters, _, optimization_info = optimization.run()
+
+    cost_history = optimization.cost_history
+    # The Jacobian evaluations are counted too, SciPy's nfev does not count them
+    assert len(cost_history) > optimization_info.number_of_function_evaluations
+    assert cost_history[-1] == pytest.approx(optimization_info.cost, rel=1e-12)
+
+    parameter_history = optimization_info.parameter_history
+    if verbose:
+        history = parameter_history.to_dataframe()
+        # One row with the initial values, then one row per evaluation
+        assert list(history["iteration"]) == list(range(len(cost_history) + 1))
+        assert history["rates.decay.1"].iloc[-1] == optimized_parameters.get("rates.decay.1").value
+    else:
+        assert parameter_history.number_of_records == 1
+
+
+def test_parameter_history_in_user_coordinates():
+    """Non-negative parameters are stored with their value, not its logarithm."""
+    optimization = create_single_data_optimization(verbose=True)
+    optimization._parameters.get("rates.decay.1").non_negative = True
+    optimized_parameters, _, optimization_info = optimization.run()
+
+    history = optimization_info.parameter_history.to_dataframe()
+    assert history["rates.decay.1"].iloc[0] == 0.9
+    assert history["rates.decay.1"].iloc[-1] == optimized_parameters.get("rates.decay.1").value

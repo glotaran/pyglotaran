@@ -124,27 +124,23 @@ class ParameterHistory:
         self.to_dataframe().to_csv(path, sep=delimiter, index=False)
 
     def append(self, parameters: Parameters, current_iteration: int = 0) -> None:
-        """Append :class:`Parameters` to the history.
+        """Append the values of :class:`Parameters` to the history.
 
         Parameters
         ----------
         parameters : Parameters
             The group to append.
         current_iteration: int
-            Current iteration of the optimizer.
+            Number stored in the ``iteration`` column; during an optimization the number of the
+            function evaluation, with ``0`` for the initial values.
 
         Raises
         ------
         ValueError
             Raised if the parameter labels differs from previous.
         """
-        (
-            parameter_labels,
-            parameter_values,
-            _,
-            _,
-        ) = parameters.get_label_value_and_bounds_arrays()
-        parameter_labels = ["iteration", *parameter_labels]
+        parameter_labels = ["iteration", *(parameter.label for parameter in parameters.all())]
+        parameter_values = [parameter.value for parameter in parameters.all()]
         if len(self._parameter_labels) == 0:
             self._parameter_labels = parameter_labels
         if parameter_labels != self.parameter_labels:

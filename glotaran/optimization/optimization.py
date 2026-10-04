@@ -94,6 +94,8 @@ class Optimization:
             maximum_number_function_evaluations=maximum_number_function_evaluations,
         )
 
+        self.cost_history: list[float] = []
+        """Cost of every function evaluation in call order, including Jacobian evaluations."""
         self._parameter_history = ParameterHistory()
         self._parameter_history.append(self._parameters)
         self._free_parameter_labels, _, _, _ = self._parameters.get_label_value_and_bounds_arrays(
@@ -204,6 +206,9 @@ class Optimization:
     def objective_function(self, parameters: ArrayLike) -> ArrayLike:
         """Calculate the objective for the optimization.
 
+        Appends the cost to ``cost_history`` and, with ``verbose``, the parameter values to the
+        parameter history.
+
         Parameters
         ----------
         parameters : ArrayLike
@@ -215,4 +220,8 @@ class Optimization:
             The objective for the optimizer.
         """
         self._parameters.set_from_label_and_value_arrays(self._free_parameter_labels, parameters)
-        return np.concatenate([o.calculate() for o in self._objectives])
+        penalty = np.concatenate([o.calculate() for o in self._objectives])
+        self.cost_history.append(0.5 * float(np.dot(penalty, penalty)))
+        if self._verbose:
+            self._parameter_history.append(self._parameters, len(self.cost_history))
+        return penalty

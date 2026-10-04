@@ -249,11 +249,12 @@ class Parameters:
         index : int
             The history index.
         """
-        self.set_from_label_and_value_arrays(
-            # Omit 0th element with `iteration` label
-            history.parameter_labels[1:],
-            history.get_parameters(index)[1:],
-        )
+        # Omit 0th element with `iteration` label
+        for label, value in zip(
+            history.parameter_labels[1:], history.get_parameters(index)[1:], strict=True
+        ):
+            self.get(label).value = value
+        self.update_parameter_expression()
 
     def copy(self) -> Parameters:
         """Create a copy of the :class:`Parameters`.
