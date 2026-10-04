@@ -97,10 +97,11 @@ def export_result(
     # Input data are always written as data: with ``input_data`` in the data filter,
     # ``Result.save`` would write a reference to the file the data was loaded from instead.
     data_filter = set(saving_options.get("data_filter", set())) - {"input_data"}
-    # Before saving, which sets the source path of the scheme to the saved file
     metadata = export_metadata(result, changed_parameters)
     try:
-        result.save(
+        # A copy without the source path: saving sets it to the temporary folder, and
+        # result.yml would hold it as a local path
+        result.model_copy(update={"source_path": None}).save(
             temporary_folder,
             format_name="yml",
             saving_options=saving_options | {"data_filter": data_filter},

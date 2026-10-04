@@ -126,6 +126,20 @@ def test_existing_export(project: Project, scheme: Scheme, data: xr.Dataset, tmp
     assert (tmp_path / "other" / "keep.txt").is_file()
 
 
+def test_export_keeps_the_result_source_path(project: Project, scheme: Scheme, data: xr.Dataset):
+    """Export does not set ``Result.source_path`` and writes no local path to result.yml."""
+    result = project.optimize(scheme, PARAMETERS, {LABEL: data}, verbose=False)
+    folder = project.export(result)
+
+    assert result.source_path is None
+
+    loaded = load_result(folder)
+    second = project.export(loaded, "second")
+
+    assert loaded.source_path == folder
+    assert "source_path" not in load_dict(second / "result.yml", is_file=True)
+
+
 def test_folder_created_during_export_is_kept(
     project: Project, scheme: Scheme, data: xr.Dataset, monkeypatch: pytest.MonkeyPatch
 ):
