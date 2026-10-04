@@ -130,7 +130,8 @@ def export_metadata(result: Result, changed_parameters: list[str]) -> dict[str, 
 
     The metadata of the record of the result are used where available, else they are
     detected now. Paths are reduced to file names, so that a published export contains no
-    local paths.
+    local paths. For a recomputed result the summary is that of the original fit, and
+    ``recomputed_from`` holds its record id; the recompute itself is in ``result.yml``.
 
     Parameters
     ----------
@@ -151,10 +152,12 @@ def export_metadata(result: Result, changed_parameters: list[str]) -> dict[str, 
         record = {}
         source = detect_source() or "unknown"
         scheme_source = result.scheme.source_path
+    original_fit = None if result.recomputation is None else result.recomputation["original_fit"]
     return {
         "schema_version": RECORD_SCHEMA_VERSION,
         "exported": datetime.now().astimezone().isoformat(timespec="seconds"),
         "record_id": None if result.record is None else result.record.id,
+        "recomputed_from": None if original_fit is None else original_fit["id"],
         "source": Path(source).name,
         "scheme_source": None if scheme_source is None else Path(scheme_source).name,
         "name": record.get("name"),
@@ -170,7 +173,9 @@ def export_metadata(result: Result, changed_parameters: list[str]) -> dict[str, 
             )
             for label, input_data in result.input_data.items()
         },
-        "summary": summarize_fit(result, converged=(record.get("summary") or {}).get("converged")),
+        "summary": summarize_fit(result, converged=(record.get("summary") or {}).get("converged"))
+        if original_fit is None
+        else original_fit["summary"],
         "changed_parameters": changed_parameters,
         "source_files": {},
     }

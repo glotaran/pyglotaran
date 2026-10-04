@@ -212,7 +212,15 @@ def test_export_of_a_recomputed_result(project: Project, scheme: Scheme, data: x
     folder = project.export(recomputed, os.fspath(project.folder / "elsewhere"))
 
     assert folder == project.folder / "elsewhere"
-    assert load_dict(folder / "export.yml", is_file=True)["record_id"] == result.record.id
+    metadata = load_dict(folder / "export.yml", is_file=True)
+    assert metadata["record_id"] == result.record.id
+    assert metadata["recomputed_from"] == result.record.id
+    # The summary of the original fit, not that of the recompute (a dry run)
+    record_summary = load_dict(result.record.path / "record.yml", is_file=True)["summary"]
+    assert metadata["summary"] == record_summary
     loaded = load_result(folder)
     assert loaded.recomputation["original_fit"]["id"] == result.record.id
     assert loaded.recomputation["reconstruction"]["data_differences"] == []
+    # A recompute of the export keeps the original fit's summary
+    again = project.recompute(folder, {LABEL: data})
+    assert again.recomputation["original_fit"]["summary"] == record_summary

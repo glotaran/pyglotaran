@@ -127,4 +127,4 @@ If an export with the same name exists, for example when you re-run the notebook
 
 `saving_options` takes the `SavingOptions` of `Result.save` to leave out result arrays or to choose file formats. The input data are always written. With `include_source_files=True`, the files the datasets were loaded from are copied to `source_files/<dataset label>/` as a reference; a file that cannot be found gives a warning and the export still succeeds. If you changed `result.optimized_parameters` after the fit, the export contains the changed values and lists them in `export.yml`.
 
-To export an older attempt, recompute it first and export the recomputed result.
+To export an older attempt, recompute it first and export the recomputed result. Its `export.yml` holds the fit summary of the original fit and its record id as `recomputed_from`.
