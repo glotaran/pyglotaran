@@ -111,7 +111,7 @@ def test_recompute_by_id_and_path_writes_no_record(
     assert_results_equal(by_id, original)
     assert_results_equal(by_path, original)
     assert len(list(project.results_folder.iterdir())) == 1
-    with pytest.raises(FileNotFoundError, match="No record found"):
+    with pytest.raises(FileNotFoundError, match="No record or export found"):
         project.recompute("1999-01-01_00-00-00", {LABEL: data})
 
 

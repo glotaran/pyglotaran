@@ -30,4 +30,4 @@ def scheme() -> Scheme:
 @pytest.fixture
 def data() -> xr.Dataset:
     """Every 10th time point of the simulated sequential decay, to keep fits fast."""
-    return DATASET.isel(time=slice(None, None, 10))
+    return DATASET.isel(time=slice(None, None, 10)).copy(deep=True)

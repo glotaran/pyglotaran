@@ -123,6 +123,18 @@ def test_save_scheme_from_file_edited(tmp_path: Path):
     assert load_scheme(save_path).experiments == {}
 
 
+def test_save_scheme_after_source_file_was_removed(tmp_path: Path):
+    """A scheme whose source file no longer exists is written from memory."""
+    input_path = tmp_path / "input_scheme.yml"
+    input_path.write_text(TEST_SCHEME_YML)
+    scheme = load_scheme(input_path)
+    input_path.unlink()
+
+    save_scheme(scheme, tmp_path / "test_scheme.yml")
+
+    assert load_scheme(tmp_path / "test_scheme.yml").model_dump() == scheme.model_dump()
+
+
 @pytest.mark.parametrize("result_file_name", ["result.yml", ""])
 def test_result_round_tripping(tmp_path: Path, result_file_name: str):
     """Saving and loading Result via YAML preserves data."""

@@ -6,11 +6,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 
+from glotaran.io import load_result
+from glotaran.io.interface import SAVING_OPTIONS_DEFAULT
 from glotaran.project.compare import FitComparison
 from glotaran.project.compare import compare_fits
 from glotaran.project.compare import fit_from_record
 from glotaran.project.compare import fit_from_result
 from glotaran.project.compare import list_records
+from glotaran.project.export import EXPORT_FILE_NAME
+from glotaran.project.export import export_result
 from glotaran.project.recompute import recompute
 from glotaran.project.record import RECORD_FILE_NAME
 from glotaran.project.record import FitRecord
@@ -20,6 +24,7 @@ from glotaran.project.result import Result
 if TYPE_CHECKING:
     import pandas as pd
 
+    from glotaran.io.interface import SavingOptions
     from glotaran.parameter import Parameters
     from glotaran.project.scheme import Scheme
     from glotaran.typing.types import DatasetMappable
@@ -176,7 +181,7 @@ class Project:
         Parameters
         ----------
         record : str | Path | RecordReference
-            Record id in :attr:`results_folder`, path of a record folder, or
+            Record id in :attr:`results_folder`, path of a record or export folder, or
             :attr:`Result.record`.
         datasets : DatasetMappable
             The input data of the fit.
@@ -259,21 +264,79 @@ class Project:
             Changes to weights, penalties, scales and constraints show in the scheme diff or the
             data differences.
         """
-        fits = [
-            fit_from_result(fit, label)
-            if isinstance(fit, Result)
-            else fit_from_record(self._fit_folder(fit))
-            for fit, label in ((a, "a"), (b, "b"))
-        ]
+        fits = []
+        for fit, label in ((a, "a"), (b, "b")):
+            if isinstance(fit, Result):
+                fits.append(fit_from_result(fit, label))
+                continue
+            folder = self._fit_folder(fit)
+            if (folder / RECORD_FILE_NAME).is_file():
+                fits.append(fit_from_record(folder))
+            else:
+                fits.append(fit_from_result(load_result(folder), folder.name))
         return compare_fits(*fits)
 
+    def export(
+        self,
+        result: Result,
+        name: StrOrPath = "last_result",
+        *,
+        overwrite: bool = False,
+        saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
+        include_source_files: bool = False,
+    ) -> Path:
+        """Export a result as a self-contained folder that loads with ``load_result``.
+
+        The export contains the input data as passed to ``optimize`` (including ``weight``),
+        the scheme, the initial and optimized parameters, the result arrays selected by
+        ``saving_options``, a verbatim copy of ``project.gta`` and ``export.yml``. The latter
+        holds the metadata of the record of the result (notebook and scheme file names only,
+        name, environment, record id), the data summary and the fit summary.
+
+        Parameters
+        ----------
+        result : Result
+            The result to export, as it is in memory.
+        name : StrOrPath
+            Export folder, relative to :attr:`exports_folder` or absolute. Defaults to
+            ``"last_result"``.
+        overwrite : bool
+            Replace an existing export of this name. Defaults to ``False``: an existing export
+            gives a warning and nothing is written, so a re-run notebook continues.
+        saving_options : SavingOptions
+            Result arrays and file formats, as for :meth:`Result.save`. ``input_data`` in the
+            ``data_filter`` has no effect: the input data are always written as data.
+        include_source_files : bool
+            Copy the files the datasets were loaded from to ``source_files/<dataset label>/``,
+            best effort: a missing file gives a warning and is listed in ``export.yml``. The
+            files can differ from the input data, which may have been preprocessed.
+
+        Returns
+        -------
+        Path
+            The export folder.
+
+        Raises
+        ------
+        FileExistsError
+            If ``overwrite`` is ``True`` and the folder exists but contains no export.
+        """
+        return export_result(
+            result,
+            self.exports_folder / name,
+            project_file=self.project_file,
+            overwrite=overwrite,
+            saving_options=saving_options,
+            include_source_files=include_source_files,
+        )
+
     def _fit_folder(self, record: str | Path | RecordReference) -> Path:
-        """Return the folder of a record given by id, path or reference.
+        """Return the folder of a record given by id, path or reference, or of an export.
 
         Raises
         ------
         FileNotFoundError
-            If the folder contains no record.
+            If the folder contains no record or export.
         """
         if isinstance(record, RecordReference):
             folder = record.path
@@ -281,8 +344,8 @@ class Project:
             folder = self.results_folder / record
         else:
             folder = Path(record).resolve()
-        if not (folder / RECORD_FILE_NAME).is_file():
-            msg = f"No record found for {record!r}."
+        if not any((folder / file).is_file() for file in (RECORD_FILE_NAME, EXPORT_FILE_NAME)):
+            msg = f"No record or export found for {record!r}."
             raise FileNotFoundError(msg)
         return folder
 

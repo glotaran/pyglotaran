@@ -351,5 +351,19 @@ def test_result_weighted_input_data_round_trip(tmp_path: Path):
     assert loaded.fitted_data.equals(result.optimization_results["sequential-decay"].fitted_data)
 
 
+def test_result_save_keeps_the_scheme_source_path(tmp_path: Path):
+    """Saving a result does not repoint its scheme to the saved file."""
+    result = Scheme.from_dict(SCHEME_DICT).optimize(
+        PARAMETERS, {"sequential-decay": DATASET}, verbose=False
+    )
+
+    result.save(tmp_path / "first")
+    (tmp_path / "first").rename(tmp_path / "moved")
+    result.save(tmp_path / "second")
+
+    assert result.scheme.source_path is None
+    assert (tmp_path / "second" / "scheme.yml").is_file()
+
+
 if __name__ == "__main__":
     pytest.main([__file__])
