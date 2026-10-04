@@ -13,6 +13,7 @@ from glotaran.io import load_result
 from glotaran.io import load_scheme
 from glotaran.io import save_result
 from glotaran.io import save_scheme
+from glotaran.project import Scheme
 from glotaran.testing.simulated_data.sequential_spectral_decay import RESULT
 
 TEST_SCHEME_YML = """
@@ -121,6 +122,19 @@ def test_save_scheme_from_file_edited(tmp_path: Path):
 
     assert save_path.read_text() != TEST_SCHEME_YML
     assert load_scheme(save_path).experiments == {}
+
+
+def test_save_scheme_with_list_of_mappings(tmp_path: Path):
+    """A scheme built in code with a list of mappings (here penalties) is written as valid YAML."""
+    scheme_dict = YAML().load(TEST_SCHEME_YML)
+    scheme_dict["experiments"]["myexp"]["clp_penalties"] = [
+        {"type": "equal_area", "source": "s1", "target": "s2", "parameter": "area.1", "weight": 1}
+    ]
+    scheme = Scheme.from_dict(scheme_dict)
+
+    save_scheme(scheme, tmp_path / "scheme.yml")
+
+    assert load_scheme(tmp_path / "scheme.yml").model_dump() == scheme.model_dump()
 
 
 def test_save_scheme_after_source_file_was_removed(tmp_path: Path):

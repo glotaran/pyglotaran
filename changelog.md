@@ -50,6 +50,8 @@
 - 🩹 Read parameter csv and tsv files with round-trip float precision
 - 🩹 Keep the scheme source path when saving a result, and save a scheme whose source file was
   removed
+- 🩹 Write lists of mappings as valid YAML, so that schemes built in code with penalties,
+  relations or constraints can be loaded after saving
 
 ### 📚 Documentation
 
