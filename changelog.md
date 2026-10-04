@@ -57,6 +57,8 @@
 - 🩹 Compute the optimized parameters, cost and result arrays at the solution of the optimizer,
   as chi-square and the standard errors, instead of at the last evaluated point (often a
   finite-difference step)
+- 🩹 Give fixed and expression parameters no standard error after a fit, instead of the one of
+  the initial parameters
 - 🩹 Stop writing the `source_path` and `io_plugin_name` attributes, which hold local paths,
   into saved data files; `load_dataset` sets them
 

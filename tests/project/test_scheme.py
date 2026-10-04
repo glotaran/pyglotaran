@@ -115,3 +115,20 @@ def test_optimize_result_does_not_share_inputs():
         .any()
     )
     assert result.initial_parameters == initial_parameters
+
+
+def test_optimize_parameters_not_estimated_have_no_standard_error():
+    """A fixed parameter gets no standard error, also when the initial parameters carry one."""
+    parameters = PARAMETERS.copy()
+    for parameter in parameters.all():
+        parameter.standard_error = 0.1
+    parameters.get("irf.width").vary = False
+
+    result = Scheme.from_dict(SCHEME_DICT).optimize(
+        parameters, {"sequential-decay": DATASET}, verbose=False
+    )
+
+    assert np.isnan(result.optimized_parameters.get("irf.width").standard_error)
+    standard_error = result.optimized_parameters.get("irf.center").standard_error
+    assert np.isfinite(standard_error)
+    assert standard_error != 0.1

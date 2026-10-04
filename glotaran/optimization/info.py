@@ -220,7 +220,8 @@ def calculate_parameter_errors(
 
     This function calculates the standard errors for the free parameters
     based on the provided optimization information and assigns these errors
-    directly to the corresponding parameters.
+    directly to the corresponding parameters. The other parameters get a standard error of
+    NaN.
 
     Parameters
     ----------
@@ -236,6 +237,10 @@ def calculate_parameter_errors(
     None
     """
     if optimization_info.covariance_matrix is not None:
+        # Fixed and expression parameters are not estimated; they may carry a standard error
+        # from the parameters the fit started with
+        for parameter in parameters.all():
+            parameter.standard_error = np.nan
         standard_errors = optimization_info.root_mean_square_error * np.sqrt(
             np.diag(optimization_info.covariance_matrix)
         )
