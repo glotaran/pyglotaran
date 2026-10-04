@@ -116,6 +116,7 @@ class Optimization:
         ) = self._parameters.get_label_value_and_bounds_arrays(exclude_non_vary=True)
         ls_result = None
         termination_reason = ""
+        optimization_error = None
         no_free_parameters = initial_parameter.size == 0
         with self._tee:
             if no_free_parameters:
@@ -141,9 +142,17 @@ class Optimization:
                         raise
                     warn(f"Optimization failed:\n\n{e}", stacklevel=3)
                     termination_reason = str(e)
+                    optimization_error = e
 
         # TODO: check how this works for multiple experiments with possible the same dataset name
-        penalty = np.concatenate([o.calculate() for o in self._objectives])
+        try:
+            penalty = np.concatenate([o.calculate() for o in self._objectives])
+        except Exception as e:
+            # After an exception in the objective, the evaluation at the same parameters fails
+            # again; the error of the optimization is the one to report.
+            if optimization_error is None:
+                raise
+            raise optimization_error from e
         if no_free_parameters:
             ls_result = OptimizeResult(
                 x=initial_parameter,

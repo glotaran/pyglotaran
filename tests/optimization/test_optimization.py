@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+import pytest
 import xarray as xr
 
 from glotaran.model.data_model import DataModel
 from glotaran.model.experiment_model import ExperimentModel
+from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.optimization import Optimization
 from glotaran.parameter import Parameters
 from glotaran.simulation import simulate
@@ -214,3 +218,50 @@ def test_multiple_data():
     assert result.success
     assert initial_parameters != optimized_parameters
     assert optimized_parameters.close_or_equal(parameters)
+
+
+def create_single_data_optimization(**kwargs: Any) -> Optimization:
+    """Create the optimization of ``test_single_data`` with ``kwargs`` for ``Optimization``."""
+    data_model = DataModel(elements=["decay_independent"])
+    experiment = ExperimentModel(datasets={"decay_independent": data_model})
+    parameters = Parameters.from_dict({"rates": {"decay": [0.8, 0.04]}})
+    global_axis = np.arange(10)
+    clp = xr.DataArray(
+        [[1, 10]] * global_axis.size,
+        coords=(("global", global_axis), ("clp_label", ["c1", "c2"])),
+    )
+    data_model.data = simulate(
+        data_model,
+        test_library,
+        parameters,
+        {"global": global_axis, "model": np.arange(0, 150, 1)},
+        clp,
+    )
+    return Optimization(
+        models=[experiment],
+        parameters=Parameters.from_dict({"rates": {"decay": [0.9, 0.02]}}),
+        library=test_library,
+        **kwargs,
+    )
+
+
+def test_failed_objective_reports_the_optimization_error(monkeypatch: pytest.MonkeyPatch):
+    """The evaluation after an exception in the objective raises the original error."""
+    calls = []
+
+    def calculate(self: OptimizationObjective) -> np.ndarray:
+        calls.append(None)
+        if len(calls) > 1:
+            msg = f"evaluation {len(calls)}"
+            raise ValueError(msg)
+        return np.zeros(10)
+
+    monkeypatch.setattr(OptimizationObjective, "calculate", calculate)
+    optimization = create_single_data_optimization()
+
+    with (
+        pytest.warns(UserWarning, match="Optimization failed"),
+        pytest.raises(ValueError, match="evaluation 2") as error,
+    ):
+        optimization.run()
+    assert str(error.value.__cause__) == "evaluation 3"
