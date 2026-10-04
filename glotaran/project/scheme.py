@@ -87,11 +87,16 @@ class Scheme(BaseModel):
         # Prevent circular import error
         from glotaran.project.result import Result  # noqa: PLC0415
 
-        self._load_data(load_datasets(datasets))
+        # The result holds copies, so that a later change of this scheme, the parameters or the
+        # caller's data does not change it.
+        scheme = self.model_copy(deep=True)
+        scheme._load_data(  # noqa: SLF001
+            {label: data.copy(deep=True) for label, data in load_datasets(datasets).items()}
+        )
         optimization = Optimization(
-            models=list(self.experiments.values()),
+            models=list(scheme.experiments.values()),
             parameters=parameters,
-            library=self.library,
+            library=scheme.library,
             verbose=verbose,
             raise_exception=raise_exception,
             maximum_number_function_evaluations=maximum_number_function_evaluations,
@@ -109,8 +114,8 @@ class Scheme(BaseModel):
         )
         return Result(
             optimization_results=optimized_data,
-            scheme=self,
+            scheme=scheme,
             optimization_info=optimization_info,
-            initial_parameters=parameters,
+            initial_parameters=parameters.copy(),
             optimized_parameters=optimized_parameters,
         )

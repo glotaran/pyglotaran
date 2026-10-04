@@ -8,6 +8,9 @@ from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.parameter import Parameters
 from glotaran.project.scheme import Scheme
 from glotaran.simulation import simulate
+from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET
+from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME_DICT
+from glotaran.testing.simulated_data.shared_decay import PARAMETERS
 
 test_scheme_dict = {
     "library": {
@@ -81,3 +84,34 @@ def test_scheme():
 def test_scheme_round_trip_serialization():
     """Dumping a scheme returns the original dict."""
     assert Scheme.from_dict(test_scheme_dict).model_dump(exclude_unset=True) == test_scheme_dict
+
+
+def test_optimize_result_does_not_share_inputs():
+    """A later fit, a scheme edit or an in-place data change leave an earlier result unchanged."""
+    scheme = Scheme.from_dict(SCHEME_DICT)
+    parameters = PARAMETERS.copy()
+    data = DATASET.copy(deep=True)
+    result = scheme.optimize(parameters, {"sequential-decay": data}, verbose=False)
+
+    assert result.scheme is not scheme
+    assert result.initial_parameters is not parameters
+    input_data = result.input_data["sequential-decay"].copy(deep=True)
+    fitted_data = result.optimization_results["sequential-decay"].fitted_data.copy(deep=True)
+    scheme_dump = result.scheme.model_dump()
+    initial_parameters = result.initial_parameters.copy()
+
+    scheme.optimize(parameters, {"sequential-decay": data * 2}, verbose=False)
+    scheme.library["sequential"].rates[("s2", "s1")] = "rates.species_2"
+    parameters.get("rates.species_1").value = 10
+    data["data"].data[:] = 0
+
+    assert result.input_data["sequential-decay"].equals(input_data)
+    assert result.optimization_results["sequential-decay"].fitted_data.equals(fitted_data)
+    assert result.scheme.model_dump() == scheme_dump
+    assert (
+        result.scheme.experiments["sequential-decay"]
+        .datasets["sequential-decay"]
+        .data["data"]
+        .any()
+    )
+    assert result.initial_parameters == initial_parameters
