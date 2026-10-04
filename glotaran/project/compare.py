@@ -89,13 +89,15 @@ def list_records(
             continue
         try:
             record = read_record_file(folder)
-            records.append((datetime.fromisoformat(str(record["created"])), record))
+            records.append(
+                (datetime.fromisoformat(str(record["created"])), record, _list_row(record))
+            )
         except Exception as error:  # noqa: BLE001
             warn(f"Skipped the damaged record '{folder}': {error!r}", stacklevel=3)
     filters = {"source": source, "scheme_source": scheme_source, "name": name}
     rows = [
-        _list_row(record)
-        for _, record in sorted(records, key=lambda created_and_record: created_and_record[0])
+        row
+        for _, record, row in sorted(records, key=lambda entry: entry[0])
         if all(text is None or text in str(record.get(key) or "") for key, text in filters.items())
         and (status is None or record.get("status") == status)
     ]

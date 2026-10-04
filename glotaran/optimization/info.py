@@ -191,12 +191,13 @@ class OptimizationInfo(BaseModel):
                 - result_args["number_of_clps"]
             )
             result_args["chi_square"] = float(np.sum(residual**2))
-            result_args["reduced_chi_square"] = (
-                result_args["chi_square"] / result_args["degrees_of_freedom"]
-            )
-            result_args["root_mean_square_error"] = float(
-                np.sqrt(result_args["reduced_chi_square"])
-            )
+            if success or result_args["degrees_of_freedom"] > 0:
+                result_args["reduced_chi_square"] = (
+                    result_args["chi_square"] / result_args["degrees_of_freedom"]
+                )
+                result_args["root_mean_square_error"] = float(
+                    np.sqrt(result_args["reduced_chi_square"])
+                )
 
         if success:
             result_args["number_of_jacobian_evaluations"] = result.njev  # type:ignore[union-attr]

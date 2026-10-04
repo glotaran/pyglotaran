@@ -8,8 +8,11 @@ import xarray as xr
 
 from glotaran.model.data_model import DataModel
 from glotaran.model.experiment_model import ExperimentModel
+from glotaran.optimization.info import OptimizationInfo
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.optimization import Optimization
+from glotaran.optimization.optimization_history import OptimizationHistory
+from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
 from glotaran.simulation import simulate
 from tests.optimization.library import test_library
@@ -49,6 +52,36 @@ def test_single_data():
     print(optimization_result)
     assert optimization_result.residuals is not None
     assert optimization_result.fitted_data is not None
+
+
+@pytest.mark.parametrize("verbose", [True, False])
+def test_no_free_parameters_records_the_evaluation(verbose: bool):
+    """Without free parameters the one evaluation is in the cost and parameter histories."""
+    data_model = DataModel(elements=["decay_independent"])
+    parameters = Parameters.from_dict(
+        {"rates": {"decay": [[0.8, {"vary": False}], [0.04, {"vary": False}]]}}
+    )
+    clp = xr.DataArray(
+        [[1, 10]] * 10, coords=(("global", np.arange(10)), ("clp_label", ["c1", "c2"]))
+    )
+    data_model.data = simulate(
+        data_model,
+        test_library,
+        parameters,
+        {"global": np.arange(10), "model": np.arange(0, 150, 1)},
+        clp,
+    )
+    optimization = Optimization(
+        models=[ExperimentModel(datasets={"decay_independent": data_model})],
+        parameters=parameters,
+        library=test_library,
+        verbose=verbose,
+    )
+    _, _, optimization_info = optimization.run()
+
+    assert optimization_info.number_of_function_evaluations == 1
+    assert optimization.cost_history == [pytest.approx(optimization_info.cost, rel=1e-12)]
+    assert optimization_info.parameter_history.number_of_records == (2 if verbose else 1)
 
 
 def test_only_unused_free_parameter_evaluates_model_successfully():
@@ -316,3 +349,23 @@ def test_dry_run_statistics():
         np.sqrt(info.chi_square / info.degrees_of_freedom)
     )
     assert info.covariance_matrix is None
+
+
+def test_dry_run_without_degrees_of_freedom():
+    """A dry run with as many parameters and clps as data points has no reduced chi-square."""
+    info = OptimizationInfo.from_least_squares_result(
+        None,
+        ParameterHistory(),
+        OptimizationHistory.from_stdout_str(""),
+        np.ones(3),
+        0.0,
+        ["a", "b"],
+        "Dry run.",
+        1,
+        dry_run=True,
+    )
+
+    assert info.degrees_of_freedom == 0
+    assert info.chi_square == 3.0
+    assert info.reduced_chi_square is None
+    assert info.root_mean_square_error is None

@@ -113,7 +113,12 @@ def export_result(
     except BaseException:
         shutil.rmtree(temporary_folder, ignore_errors=True)
         raise
+    # Checked again: the folder may have been created while this export was written.
     if folder.exists():
+        if not overwrite or not (folder / EXPORT_FILE_NAME).is_file():
+            shutil.rmtree(temporary_folder, ignore_errors=True)
+            msg = f"'{folder}' was created during the export; it is not overwritten."
+            raise FileExistsError(msg)
         shutil.rmtree(folder)
     temporary_folder.rename(folder)
     return folder

@@ -90,6 +90,29 @@ def test_list_results_of_empty_and_running(project: Project):
     assert table["cost"].isna().all()
 
 
+def test_list_results_skips_records_with_malformed_fields(project: Project):
+    """A record whose fields have the wrong type is skipped with a warning."""
+    for name, summary in (
+        ("2026-10-04_14-28-05", {"cost": 1.0}),
+        ("2026-10-04_14-28-06", "broken"),
+    ):
+        folder = project.results_folder / name
+        folder.mkdir(parents=True)
+        record_module.write_record_file(
+            folder,
+            {
+                "id": name,
+                "created": f"2026-10-04T{name[-8:].replace('-', ':')}+02:00",
+                "status": "success",
+                "summary": summary,
+            },
+        )
+
+    with pytest.warns(UserWarning, match="Skipped the damaged record .*14-28-06"):
+        table = project.list_results()
+    assert list(table.index) == ["2026-10-04_14-28-05"]
+
+
 def test_compare_results(project: Project, scheme: Scheme, data: xr.Dataset):
     """Parameters, summary, scheme and data differences of two fits."""
     first = project.optimize(scheme, PARAMETERS, {LABEL: data}, verbose=False)

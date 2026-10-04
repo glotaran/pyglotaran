@@ -126,6 +126,26 @@ def test_existing_export(project: Project, scheme: Scheme, data: xr.Dataset, tmp
     assert (tmp_path / "other" / "keep.txt").is_file()
 
 
+def test_folder_created_during_export_is_kept(
+    project: Project, scheme: Scheme, data: xr.Dataset, monkeypatch: pytest.MonkeyPatch
+):
+    """A folder created by someone else while the export is written is not replaced."""
+    result = project.optimize(scheme, PARAMETERS, {LABEL: data}, verbose=False)
+    folder = project.exports_folder / "paper_fig3"
+    save = type(result).save
+
+    def save_and_create_folder(self, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        save(self, *args, **kwargs)
+        folder.mkdir(parents=True)
+        (folder / "keep.txt").write_text("keep")
+
+    monkeypatch.setattr(type(result), "save", save_and_create_folder)
+    with pytest.raises(FileExistsError, match="was created during the export"):
+        project.export(result, "paper_fig3")
+    assert [path.name for path in folder.iterdir()] == ["keep.txt"]
+    assert [path.name for path in folder.parent.iterdir()] == ["paper_fig3"]
+
+
 def test_export_parameters_changed_in_place(project: Project, scheme: Scheme, data: xr.Dataset):
     result = project.optimize(scheme, PARAMETERS, {LABEL: data}, verbose=False)
     result.optimized_parameters.get("rates.species_1").value = 0.4

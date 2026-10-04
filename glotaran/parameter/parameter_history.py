@@ -139,6 +139,7 @@ class ParameterHistory:
         ValueError
             Raised if the parameter labels differs from previous.
         """
+        parameters.update_parameter_expression()
         parameter_labels = ["iteration", *(parameter.label for parameter in parameters.all())]
         parameter_values = [parameter.value for parameter in parameters.all()]
         if len(self._parameter_labels) == 0:

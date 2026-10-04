@@ -157,7 +157,12 @@ class Optimization:
 
         # TODO: check how this works for multiple experiments with possible the same dataset name
         try:
-            penalty = np.concatenate([o.calculate() for o in self._objectives])
+            # Without free parameters, this is the only evaluation and is recorded as such.
+            penalty = (
+                self.objective_function(initial_parameter)
+                if no_free_parameters
+                else np.concatenate([o.calculate() for o in self._objectives])
+            )
         except Exception as e:
             # After an exception in the objective, the evaluation at the same parameters fails
             # again; the error of the optimization is the one to report.
