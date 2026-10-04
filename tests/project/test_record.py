@@ -9,6 +9,7 @@ from types import ModuleType
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -29,7 +30,6 @@ from tests.project.conftest import LABEL
 if TYPE_CHECKING:
     from pathlib import Path
 
-    import numpy as np
     import xarray as xr
 
     from glotaran.project import Scheme
@@ -181,11 +181,17 @@ def test_unwritable_results_folder_warns(tmp_path: Path, scheme: Scheme, data: x
 def test_failed_fit_is_recorded(
     project: Project, scheme: Scheme, data: xr.Dataset, monkeypatch: pytest.MonkeyPatch
 ):
-    """A fit whose objective raises is recorded with the parameters that raised."""
+    """A fit whose objective raises is recorded with the parameters that raised.
+
+    They hold no standard errors, also when the initial parameters have some.
+    """
+    parameters = PARAMETERS.copy()
+    for parameter in parameters.all():
+        parameter.standard_error = 0.1
     raise_from_evaluation(monkeypatch, 4, ValueError("objective failed"))
 
     with pytest.warns(UserWarning, match="Optimization failed"), pytest.raises(ValueError):
-        project.optimize(scheme, PARAMETERS, {LABEL: data}, verbose=False)
+        project.optimize(scheme, parameters, {LABEL: data}, verbose=False)
 
     folder = only_record(project)
     record = read_record(folder)
@@ -196,7 +202,8 @@ def test_failed_fit_is_recorded(
         "number_of_function_evaluations": 3,
         "cost": cost_history["cost"].iloc[-1],
     }
-    assert (folder / "optimized_parameters.csv").is_file()
+    optimized_parameters = load_parameters(folder / "optimized_parameters.csv")
+    assert all(np.isnan(parameter.standard_error) for parameter in optimized_parameters.all())
 
 
 def test_failed_fit_with_result_is_recorded(

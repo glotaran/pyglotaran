@@ -365,7 +365,12 @@ class FitRecord:
             else:
                 # The last evaluated parameters; after a crash in the objective, the ones that
                 # raised. Without an evaluation they equal the initial parameters.
-                optimized_parameters = optimization.parameters if cost_history else None
+                optimized_parameters = None
+                if cost_history:
+                    # Without the standard errors they carry over from the initial parameters
+                    optimized_parameters = optimization.parameters.copy()
+                    for parameter in optimized_parameters.all():
+                        parameter.standard_error = np.nan
                 summary = {
                     "number_of_function_evaluations": len(cost_history),
                     "cost": cost_history[-1] if cost_history else None,
