@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import os
 import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
+from uuid import uuid4
 from warnings import warn
 
 import xarray as xr
@@ -94,7 +94,8 @@ def export_result(
         )
 
     folder.parent.mkdir(parents=True, exist_ok=True)
-    temporary_folder = folder.with_name(f".{folder.name}.{os.getpid()}.tmp")
+    # Unique per call, so that overlapping exports to the same name do not share it
+    temporary_folder = folder.with_name(f".{folder.name}.{uuid4().hex}.tmp")
     # Input data are always written as data: with ``input_data`` in the data filter,
     # ``Result.save`` would write a reference to the file the data was loaded from instead.
     data_filter = set(saving_options.get("data_filter", set())) - {"input_data"}

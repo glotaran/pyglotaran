@@ -163,6 +163,29 @@ def test_folder_created_during_export_is_kept(
     assert [path.name for path in folder.parent.iterdir()] == ["paper_fig3"]
 
 
+def test_overlapping_exports_to_one_name(
+    project: Project, scheme: Scheme, data: xr.Dataset, monkeypatch: pytest.MonkeyPatch
+):
+    """An export started while another one to the same name is written keeps its own files."""
+    result = project.optimize(scheme, PARAMETERS, {LABEL: data}, verbose=False)
+    save = type(result).save
+    calls = []
+
+    def save_and_export_again(self, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        save(self, *args, **kwargs)
+        calls.append(None)
+        if len(calls) == 1:
+            project.export(result, "paper_fig3")
+
+    monkeypatch.setattr(type(result), "save", save_and_export_again)
+    with pytest.raises(FileExistsError, match="was created during the export"):
+        project.export(result, "paper_fig3")
+
+    assert [path.name for path in project.exports_folder.iterdir()] == ["paper_fig3"]
+    loaded = load_result(project.exports_folder / "paper_fig3")
+    assert loaded.scheme.model_dump() == result.scheme.model_dump()
+
+
 def test_scheme_file_with_data_paths(
     project: Project, data: xr.Dataset, monkeypatch: pytest.MonkeyPatch
 ):
