@@ -6,7 +6,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 
+from glotaran.project.recompute import recompute
+from glotaran.project.record import RECORD_FILE_NAME
 from glotaran.project.record import FitRecord
+from glotaran.project.record import RecordReference
 
 if TYPE_CHECKING:
     from glotaran.parameter import Parameters
@@ -147,6 +150,67 @@ class Project:
             record.finish(optimization, result=result)
             result.record = record.reference
         return result
+
+    def recompute(
+        self,
+        record: str | Path | RecordReference,
+        datasets: DatasetMappable,
+        *,
+        allow_data_mismatch: bool = False,
+    ) -> Result:
+        """Recompute the results of a recorded fit from its input data.
+
+        Evaluates the recorded scheme once at the recorded optimized parameters with the
+        recorded optimizer settings. The data summary of each supplied dataset is compared with
+        the recorded one first, and the recomputed cost and RMSE with the recorded values after.
+        Records hold no data: regenerate the input data, for example by re-running the
+        preprocessing of the notebook. Nothing is recorded.
+
+        Parameters
+        ----------
+        record : str | Path | RecordReference
+            Record id in :attr:`results_folder`, path of a record folder, or
+            :attr:`Result.record`.
+        datasets : DatasetMappable
+            The input data of the fit.
+        allow_data_mismatch : bool
+            Recompute although the data differ from the recorded data; the differences are
+            listed in ``Result.recomputation``. Defaults to ``False``.
+
+        Returns
+        -------
+        Result
+            The recomputed result; ``Result.recomputation`` holds the original fit and the
+            reconstruction information. The Jacobian and covariance matrix of the original fit
+            are not recomputed.
+
+        Raises
+        ------
+        GlotaranUserError
+            If the data differ from the recorded data and ``allow_data_mismatch`` is ``False``.
+        """
+        return recompute(
+            self._fit_folder(record), datasets, allow_data_mismatch=allow_data_mismatch
+        )
+
+    def _fit_folder(self, record: str | Path | RecordReference) -> Path:
+        """Return the folder of a record given by id, path or reference.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the folder contains no record.
+        """
+        if isinstance(record, RecordReference):
+            folder = record.path
+        elif isinstance(record, str) and (self.results_folder / record).is_dir():
+            folder = self.results_folder / record
+        else:
+            folder = Path(record).resolve()
+        if not (folder / RECORD_FILE_NAME).is_file():
+            msg = f"No record found for {record!r}."
+            raise FileNotFoundError(msg)
+        return folder
 
     def __repr__(self) -> str:
         """Return the project folder and the results folder."""

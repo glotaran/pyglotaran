@@ -69,6 +69,9 @@ class Result(BaseModel):
     source_path: Path | None = None
     record: RecordReference | None = Field(default=None, exclude=True)
     """Record of the fit if it was run with ``Project.optimize``; not saved."""
+    recomputation: dict[str, Any] | None = None
+    """For a result of ``Project.recompute``: the original fit (record id, summary, standard
+    errors, cost history) and the reconstruction (time, environment, data differences, drift)."""
 
     @property
     def experiments(self) -> dict[str, ExperimentModel]:

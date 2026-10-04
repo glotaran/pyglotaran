@@ -210,6 +210,7 @@ class Optimization:
             self._free_parameter_labels,
             termination_reason,
             number_of_clps,
+            dry_run=True,
         )
         return self._parameters, data, result
 

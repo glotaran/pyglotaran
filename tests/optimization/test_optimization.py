@@ -298,3 +298,21 @@ def test_parameter_history_in_user_coordinates():
     history = optimization_info.parameter_history.to_dataframe()
     assert history["rates.decay.1"].iloc[0] == 0.9
     assert history["rates.decay.1"].iloc[-1] == optimized_parameters.get("rates.decay.1").value
+
+
+def test_dry_run_statistics():
+    """A dry run reports the statistics of its one evaluation and is not successful."""
+    _, _, info = create_single_data_optimization().dry_run()
+
+    assert info.success is False
+    assert info.termination_reason == "Dry run."
+    assert info.number_of_data_points == 150 * 10
+    assert info.number_of_parameters == 2
+    assert info.degrees_of_freedom == (
+        info.number_of_data_points - info.number_of_parameters - info.number_of_clps
+    )
+    assert info.chi_square == pytest.approx(2 * info.cost, rel=1e-12)
+    assert info.root_mean_square_error == pytest.approx(
+        np.sqrt(info.chi_square / info.degrees_of_freedom)
+    )
+    assert info.covariance_matrix is None

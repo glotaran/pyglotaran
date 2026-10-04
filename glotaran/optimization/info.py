@@ -161,8 +161,12 @@ class OptimizationInfo(BaseModel):
         free_parameter_labels: list[str],
         termination_reason: str,
         number_of_clps: int,
+        *,
+        dry_run: bool = False,
     ) -> Self:
         success = result is not None
+        # A dry run gets the statistics of its one evaluation, from the penalty
+        residual = result.fun if success else penalty  # type:ignore[union-attr]
 
         result_args = {
             "success": success,
@@ -176,25 +180,27 @@ class OptimizationInfo(BaseModel):
             "cost": 0.5 * np.dot(penalty, penalty),
         }
 
-        if success:
+        if success or dry_run:
             result_args["number_of_clps"] = number_of_clps
             result_args["additional_penalty"] = additional_penalty
-            result_args["number_of_jacobian_evaluations"] = result.njev  # type:ignore[union-attr]
-            result_args["optimality"] = float(result.optimality)  # type:ignore[union-attr]
-            result_args["number_of_data_points"] = result.fun.size  # type:ignore[union-attr]
-            result_args["number_of_parameters"] = result.x.size  # type:ignore[union-attr]
+            result_args["number_of_data_points"] = residual.size
+            result_args["number_of_parameters"] = len(free_parameter_labels)
             result_args["degrees_of_freedom"] = (
                 result_args["number_of_data_points"]
                 - result_args["number_of_parameters"]
                 - result_args["number_of_clps"]
             )
-            result_args["chi_square"] = float(np.sum(result.fun**2))  # type:ignore[union-attr]
+            result_args["chi_square"] = float(np.sum(residual**2))
             result_args["reduced_chi_square"] = (
                 result_args["chi_square"] / result_args["degrees_of_freedom"]
             )
             result_args["root_mean_square_error"] = float(
                 np.sqrt(result_args["reduced_chi_square"])
             )
+
+        if success:
+            result_args["number_of_jacobian_evaluations"] = result.njev  # type:ignore[union-attr]
+            result_args["optimality"] = float(result.optimality)  # type:ignore[union-attr]
             result_args["jacobian"] = result.jac  # type:ignore[union-attr]
             result_args["covariance_matrix"] = calculate_covariance_matrix_and_standard_errors(
                 result_args["jacobian"], result_args["root_mean_square_error"]
