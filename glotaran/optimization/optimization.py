@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import ChainMap
+from collections import Counter
 from typing import TYPE_CHECKING
 from typing import Literal
 from warnings import warn
@@ -70,6 +71,14 @@ class Optimization:
             "Levenberg-Marquardt",
         ] = "TrustRegionReflection",
     ) -> None:
+        label_counts = Counter(label for experiment in models for label in experiment.datasets)
+        if repeated := [label for label, count in label_counts.items() if count > 1]:
+            msg = (
+                f"Dataset labels {repeated} are used in more than one experiment. The results "
+                "of a fit are stored by dataset label, so dataset labels must be unique across "
+                "experiments."
+            )
+            raise GlotaranUserError(msg)
         self._parameters = Parameters.empty()
         models = [
             experiment.resolve(library, self._parameters, initial=parameters)
@@ -164,7 +173,6 @@ class Optimization:
                     termination_reason = str(e)
                     self.error = e
 
-        # TODO: check how this works for multiple experiments with possible the same dataset name
         try:
             # Without free parameters, this is the only evaluation and is recorded as such.
             penalty = (

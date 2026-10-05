@@ -66,6 +66,8 @@
 - 🩹 Reject dataset, element and activation labels that cannot be file names (empty, `.`, `..`,
   or containing `/`, `\` or `:`); `Result.save` and `Project.export` wrote their files outside
   the result folder
+- 🩹 Reject dataset labels used in more than one experiment before the fit; the result kept only
+  one experiment's result arrays for such a label
 
 ### 📚 Documentation
 
