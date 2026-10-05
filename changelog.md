@@ -75,6 +75,10 @@
 ### 🗑️❌ Deprecated functionality removed in this release
 
 - Command Line Interface, including the `glotaran` command (#1228)
+- `glotaran.examples` -> `glotaran.testing.simulated_data`
+- `glotaran.parameter.ParameterGroup` -> `glotaran.parameter.Parameters`
+- `<model_file>.clp_area_penalties` -> `<scheme_file>.experiments.<experiment>.clp_penalties`
+- `Project.generate_model` and `Project.generate_parameters` (removed without replacement)
 
 ### 🚧 Maintenance
 
