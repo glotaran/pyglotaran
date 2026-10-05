@@ -61,7 +61,6 @@ class Optimization:
         verbose: bool = True,
         raise_exception: bool = False,
         maximum_number_function_evaluations: int | None = None,
-        add_svd: bool = True,
         ftol: float | None = 1e-8,
         gtol: float | None = 1e-8,
         xtol: float | None = 1e-8,
@@ -92,7 +91,6 @@ class Optimization:
         self._verbose = verbose
         self._raise = raise_exception
 
-        self._add_svd = add_svd
         if optimization_method not in SUPPORTED_OPTIMIZATION_METHODS:
             raise UnsupportedMethodError(optimization_method)
         self.settings = OptimizerSettings(

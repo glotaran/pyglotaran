@@ -70,6 +70,8 @@
   one experiment's result arrays for such a label
 - 🩹 Report the unweighted matrix and concentrations of weighted datasets, as v0.7 did, instead
   of the matrix multiplied by the weights with an additional global dimension
+- 🩹 Remove the `add_svd` argument of `Scheme.optimize`; the singular value decompositions of
+  data and residuals were computed for every result and discarded, whatever its value
 
 ### 📚 Documentation
 

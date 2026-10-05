@@ -52,22 +52,6 @@ if TYPE_CHECKING:
     from glotaran.typing.types import Self
 
 
-def add_svd_to_result_dataset(dataset: xr.Dataset, global_dim: str, model_dim: str) -> None:
-    for name in ["data", "residual"]:
-        if f"{name}_singular_values" in dataset:
-            continue
-        lsv, sv, rsv = np.linalg.svd(dataset[name].data, full_matrices=False)
-        dataset[f"{name}_left_singular_vectors"] = (
-            (model_dim, "left_singular_value_index"),
-            lsv,
-        )
-        dataset[f"{name}_singular_values"] = (("singular_value_index"), sv)
-        dataset[f"{name}_right_singular_vectors"] = (
-            (global_dim, "right_singular_value_index"),
-            rsv.T,
-        )
-
-
 def create_input_data(
     data: OptimizationData, result_dataset: xr.Dataset
 ) -> xr.DataArray | xr.Dataset:
@@ -787,7 +771,6 @@ class OptimizationObjective:
         clp_size = len(matrix.amplitude_label) + len(global_matrix.amplitude_label)
         self._data.unweight_result_dataset(result_dataset)
 
-        add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
         result = OptimizationResult(
             input_data=create_input_data(self._data, result_dataset),
             residuals=result_dataset.residual,
@@ -863,7 +846,6 @@ class OptimizationObjective:
         )
 
         self._data.unweight_result_dataset(result_dataset)
-        add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
         result_dataset.data.attrs |= self._data.original_dataset_attributes.copy()
         result = OptimizationResult(
             input_data=create_input_data(self._data, result_dataset),
@@ -1019,7 +1001,6 @@ class OptimizationObjective:
         )
         self._data.data[label].unweight_result_dataset(result_dataset)
         result_dataset["fit"] = result_dataset.data - result_dataset.residual
-        add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
 
         concentrations = concentration.to_data_array(
             global_dim, global_axis, model_dim, model_axis
