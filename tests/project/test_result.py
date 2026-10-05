@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
 import xarray as xr
+from pydantic import ValidationError
 
 from glotaran import __version__
 from glotaran.io import SAVING_OPTIONS_DEFAULT
@@ -367,6 +369,32 @@ def test_result_save_keeps_the_scheme_source_path(tmp_path: Path):
 
     assert result.scheme.source_path is None
     assert (tmp_path / "second" / "scheme.yml").is_file()
+
+
+@pytest.mark.parametrize(
+    "label", ["../outside", "a/b", "a\\b", "/outside", "C:\\outside", "C:outside", "..", ".", ""]
+)
+def test_result_rejects_dataset_labels_that_are_no_file_names(label: str):
+    """A dataset label that would place saved files outside the result folder is rejected."""
+    fields = {name: getattr(RESULT, name) for name in Result.model_fields}
+    optimization_results = {label: RESULT.optimization_results["sequential-decay"]}
+
+    with pytest.raises(ValidationError, match="Dataset label"):
+        Result(**fields | {"optimization_results": optimization_results})
+
+
+def test_optimize_rejects_an_absolute_dataset_label(tmp_path: Path):
+    """A fit with an absolute path as dataset label fails without writing to that path."""
+    label = (tmp_path / "outside").as_posix()
+    scheme_dict = deepcopy(SCHEME_DICT)
+    datasets = scheme_dict["experiments"]["sequential-decay"]["datasets"]
+    datasets[label] = datasets.pop("sequential-decay")
+
+    with pytest.raises(ValidationError, match="Dataset label"):
+        Scheme.from_dict(scheme_dict).optimize(
+            PARAMETERS, {label: DATASET}, maximum_number_function_evaluations=1, verbose=False
+        )
+    assert not (tmp_path / "outside").exists()
 
 
 if __name__ == "__main__":

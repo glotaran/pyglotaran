@@ -63,6 +63,9 @@
   into saved data files; `load_dataset` sets them
 - 🩹 Link datasets with `clp_link_method` `forward` or `backward` at the nearest coordinate in
   that direction, instead of at a coordinate taken from the wrong position of the axis
+- 🩹 Reject dataset, element and activation labels that cannot be file names (empty, `.`, `..`,
+  or containing `/`, `\` or `:`); `Result.save` and `Project.export` wrote their files outside
+  the result folder
 
 ### 📚 Documentation
 

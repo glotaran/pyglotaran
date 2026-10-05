@@ -260,6 +260,39 @@ def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = No
     return Path(source_path).as_posix()
 
 
+def check_file_name_label(label: str, kind: str) -> str:
+    r"""Check that ``label`` can name a file or folder of a saved result.
+
+    Dataset, element and activation labels name files and folders inside the result folder.
+    A label with a path separator, a colon (a drive on Windows) or a label ``.`` or ``..``
+    would place them elsewhere.
+
+    Parameters
+    ----------
+    label : str
+        The label.
+    kind : str
+        What the label names, for the error message, e.g. ``"Dataset"``.
+
+    Returns
+    -------
+    str
+        The label.
+
+    Raises
+    ------
+    ValueError
+        If ``label`` is empty, ``.`` or ``..``, or contains ``/``, ``\`` or ``:``.
+    """
+    if label in {"", ".", ".."} or any(character in label for character in "/\\:"):
+        msg = (
+            f"{kind} label {label!r} cannot be used as a file name in a result. A label must not "
+            "be empty, '.' or '..', or contain '/', '\\' or ':'."
+        )
+        raise ValueError(msg)
+    return label
+
+
 def normalize_dataframe_columns(
     input_df: pd.DataFrame, rename_dict: dict[str, str] | None = None
 ) -> pd.DataFrame:
