@@ -68,6 +68,8 @@
   the result folder
 - 🩹 Reject dataset labels used in more than one experiment before the fit; the result kept only
   one experiment's result arrays for such a label
+- 🩹 Report the unweighted matrix and concentrations of weighted datasets, as v0.7 did, instead
+  of the matrix multiplied by the weights with an additional global dimension
 
 ### 📚 Documentation
 

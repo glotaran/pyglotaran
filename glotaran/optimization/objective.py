@@ -666,6 +666,30 @@ class OptimizationObjective:
             )
         return np.concatenate(penalties)
 
+    @staticmethod
+    def unweighted_matrix(
+        data: OptimizationData, matrix: OptimizationMatrix
+    ) -> OptimizationMatrix:
+        """Return the matrix of ``data`` without its weight, for the result.
+
+        The weighted matrix is used for the estimation only.
+
+        Parameters
+        ----------
+        data : OptimizationData
+            The data of the matrix.
+        matrix : OptimizationMatrix
+            The matrix of ``data``, weighted if ``data`` has a weight.
+
+        Returns
+        -------
+        OptimizationMatrix
+            ``matrix`` if ``data`` has no weight, else the matrix calculated without weight.
+        """
+        if data.weight is None:
+            return matrix
+        return OptimizationMatrix.from_data(data, apply_weight=False)
+
     def get_global_indices(self, label: str) -> list[int]:
         assert isinstance(self._data, LinkedOptimizationData)
         return [
@@ -729,13 +753,16 @@ class OptimizationObjective:
         model_dim = self._data.model_dimension
         model_axis = result_dataset.coords[model_dim]
 
-        matrix = OptimizationMatrix.from_data(self._data).to_data_array(
+        # Only the full matrix is weighted, for the estimation
+        model_matrix, global_model_matrix, full_matrix = OptimizationMatrix.from_global_data(
+            self._data
+        )
+        matrix = model_matrix.to_data_array(
             global_dim, global_axis.to_numpy(), model_dim, model_axis.to_numpy()
         )
-        global_matrix = OptimizationMatrix.from_data(self._data, global_matrix=True).to_data_array(
+        global_matrix = global_model_matrix.to_data_array(
             model_dim, model_axis.to_numpy(), global_dim, global_axis.to_numpy()
         )
-        _, _, full_matrix = OptimizationMatrix.from_global_data(self._data)
 
         assert self._data.flat_data is not None
         estimation = OptimizationEstimation.calculate(
@@ -812,7 +839,7 @@ class OptimizationObjective:
         amplitudes = xr.DataArray(
             [e.clp for e in estimations], dims=amplitude_coords.keys(), coords=amplitude_coords
         )
-        concentration = concentrations.to_data_array(
+        concentration = self.unweighted_matrix(self._data, concentrations).to_data_array(
             global_dim, global_axis, model_dim, model_axis
         )
 
@@ -882,7 +909,7 @@ class OptimizationObjective:
             label: self.create_dataset_result(
                 label,
                 data,
-                dataset_concentrations[label],
+                self.unweighted_matrix(data, dataset_concentrations[label]),
                 estimated_amplitude_axes,
                 estimations,
             )

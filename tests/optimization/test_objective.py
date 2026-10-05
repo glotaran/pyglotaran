@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -27,6 +28,9 @@ from glotaran.testing.plugin_system import monkeypatch_plugin_registry_data_io
 from tests.optimization.data import TestDataModelConstantIndexDependent
 from tests.optimization.data import TestDataModelConstantIndexIndependent
 from tests.optimization.data import TestDataModelGlobal
+
+if TYPE_CHECKING:
+    from glotaran.model.data_model import DataModel
 
 STUB_META_DATA = OptimizationResultMetaData(
     global_dimension="global_dim",
@@ -402,17 +406,60 @@ def test_global_data(weight: bool):
     element_result = optimization_result.elements[dataset_label]
     print(element_result)
     assert "model_concentrations" in element_result
-    assert element_result["model_concentrations"].shape == (
-        (global_coord.size, model_coord.size, 1) if weight else (model_coord.size, 1)
-    )
+    assert element_result["model_concentrations"].shape == (model_coord.size, 1)
     assert "global_concentrations" in element_result
-    assert element_result["global_concentrations"].shape == (
-        (model_coord.size, global_coord.size, 1) if weight else (global_coord.size, 1)
-    )
+    assert element_result["global_concentrations"].shape == (global_coord.size, 1)
     assert "amplitudes" in element_result
     assert element_result["amplitudes"].shape == (1, 1)
     assert optimization_result.residuals is not None
     assert optimization_result.residuals.shape == data_model.data.data.shape
+
+
+@pytest.mark.parametrize(
+    "data_models",
+    [
+        {"single": TestDataModelConstantIndexIndependent},
+        {
+            "independent": TestDataModelConstantIndexIndependent,
+            "dependent": TestDataModelConstantIndexDependent,
+        },
+        {"global": TestDataModelGlobal},
+    ],
+    ids=["single", "linked", "global"],
+)
+def test_result_matrices_are_unweighted(data_models: dict[str, DataModel]):
+    """Weights enter the estimation only; the result has the unweighted matrices."""
+
+    def optimization_results(weighted: bool) -> dict[str, OptimizationResult]:
+        experiment = ExperimentModel(
+            datasets={label: deepcopy(data_model) for label, data_model in data_models.items()}
+        )
+        if weighted:
+            for data_model in experiment.datasets.values():
+                data = data_model.data.data
+                weight = np.arange(1, data.size + 1).reshape(data.shape) / data.size
+                data_model.data["weight"] = xr.DataArray(weight, coords=data.coords)
+        return OptimizationObjective(experiment).get_result().optimization_results
+
+    unweighted_results = optimization_results(weighted=False)
+    weighted_results = optimization_results(weighted=True)
+    for label, result in weighted_results.items():
+        expected = unweighted_results[label]
+        xr.testing.assert_allclose(
+            result.fit_decomposition.matrix, expected.fit_decomposition.matrix
+        )
+        for element_label, element_result in result.elements.items():
+            for name in [name for name in element_result.data_vars if "concentrations" in name]:
+                xr.testing.assert_allclose(
+                    element_result[name], expected.elements[element_label][name]
+                )
+
+    if "single" in data_models:
+        # The constant data are fitted exactly, so matrix times clp is the fitted data
+        decomposition = weighted_results["single"].fit_decomposition
+        fitted_data = weighted_results["single"].fitted_data
+        reconstructed = (decomposition.matrix * decomposition.clp).sum("amplitude_label")
+        assert np.allclose(reconstructed.transpose(*fitted_data.dims), fitted_data)
 
 
 def test_multiple_data():
