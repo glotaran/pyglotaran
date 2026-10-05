@@ -74,6 +74,8 @@
 
 ### 🗑️❌ Deprecated functionality removed in this release
 
+- Command Line Interface, including the `glotaran` command (#1228)
+
 ### 🚧 Maintenance
 
 - 🚇 Manage development dependencies with uv: dependency groups and a `uv.lock` file replace the
