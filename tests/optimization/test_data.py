@@ -124,3 +124,49 @@ def test_linking_methods(method: str):
     elif method == "forward":
         wanted_global_axis = [1, 3, 5, 6, 7, 10]
     assert np.array_equal(data.global_axis, wanted_global_axis)
+
+
+@pytest.mark.parametrize(
+    ("method", "target_axis", "value", "tolerance", "expected"),
+    [
+        ("forward", [1, 5, 6], 5, 0, 5),
+        ("forward", [1, 5, 6], 4, 1, 5),
+        ("forward", [1, 5, 6], 4.9, 0.2, 5),
+        ("forward", [6, 5, 1], 4, 1, 5),
+        ("forward", [1, 5, 6], 3, 1, 3),
+        ("forward", [1, 5, 6], 7, 1, 7),
+        ("backward", [6, 5, 1], 5, 0, 5),
+        ("backward", [6, 5, 1], 5.1, 0.2, 5),
+        ("backward", [1, 5, 6], 7, 1, 6),
+        ("backward", [1, 5, 6], 0, 1, 0),
+        ("nearest", [1, 5, 6], 4.6, 0.5, 5),
+        ("nearest", [1, 5, 6], 3, 1, 3),
+    ],
+)
+def test_align_index(
+    method: str, target_axis: list[float], value: float, tolerance: float, expected: float
+):
+    """A value is aligned to the nearest coordinate in the direction within the tolerance."""
+    aligned = LinkedOptimizationData.align_index(value, np.array(target_axis), tolerance, method)
+
+    assert aligned == expected
+
+
+def test_forward_linking_groups_the_aligned_coordinate():
+    """Data at coordinate 5 of the second dataset are linked with coordinate 5 of the first."""
+    data_model_two = TestDataModelConstantIndexDependent.model_copy(
+        update={
+            "data": xr.DataArray(
+                np.ones((1, 3)) * 2, coords=[("global_dim", [5]), ("model_dim", [4, 11, 15])]
+            ).to_dataset(name="data")
+        }
+    )
+    all_data = {
+        "dataset1": OptimizationData(TestDataModelConstantIndexIndependent),
+        "dataset2": OptimizationData(data_model_two),
+    }
+    data = LinkedOptimizationData(all_data, 0, "forward", {})
+
+    assert np.array_equal(data.global_axis, [1, 5, 6])
+    assert list(data.group_labels) == ["dataset1", "dataset1dataset2", "dataset1"]
+    assert np.array_equal(data.data_indices[1], [1, 0])
