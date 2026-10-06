@@ -229,16 +229,12 @@ def test_spectral_irf(suite):
         assert "center_dispersion_1" in resultdata
         assert fit_data_max_at_start != fit_data_max_at_end
         if abs(fit_data_max_at_start - fit_data_max_at_end) < 3:
-            warnings.warn(
-                dedent(
-                    """
+            warnings.warn(dedent("""
                     Bad test, one of the following could be the case:
                     - dispersion too small
                     - spectral window to small
                     - time resolution (around the maximum of the IRF) too low"
-                    """
-                )
-            )
+                    """))
 
         for x in suite.axis["spectral"]:
             # calculated irf location
@@ -251,11 +247,9 @@ def test_spectral_irf(suite):
             )
             # fitted irf location
             fitted_irf_loc_at_x = resultdata["irf_center_location"].sel(spectral=x)
-            assert np.allclose(calc_irf_location_at_x, fitted_irf_loc_at_x.values), dedent(
-                f"""
+            assert np.allclose(calc_irf_location_at_x, fitted_irf_loc_at_x.values), dedent(f"""
                 Error in {suite.__name__} comparing irf_center_location,
                 - diff={calc_irf_location_at_x-fitted_irf_loc_at_x.values}
-                """
-            )
+                """)
 
     assert "irf_center" in resultdata

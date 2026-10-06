@@ -19,12 +19,10 @@ if TYPE_CHECKING:
     "model_yml_str, expected_nr_of_warnings, expected_key, expected_value",
     (
         (
-            dedent(
-                """
+            dedent("""
                 clp_area_penalties:
                     - type: equal_area
-                """
-            ),
+                """),
             1,
             "clp_penalties",
             [{"type": "equal_area"}],
