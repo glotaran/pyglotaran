@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Self  # noqa: F401
 from typing import TypeAlias
 from typing import TypeVar
 

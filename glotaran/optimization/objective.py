@@ -45,11 +45,11 @@ from glotaran.utils.pydantic_serde import serialization_info_to_kwargs
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
+    from typing import Self
 
     from glotaran.model.element import Element
     from glotaran.model.experiment_model import ExperimentModel
     from glotaran.typing.types import ArrayLike
-    from glotaran.typing.types import Self
 
 
 def create_input_data(
