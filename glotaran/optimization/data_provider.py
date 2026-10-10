@@ -76,7 +76,7 @@ class DataProvider:
             if has_dataset_model_global_model(dataset_model):
                 self._flattened_data[label] = self._data[label].T.flatten()
                 self._flattened_weight[label] = (
-                    self._weight[label].T.flatten()  # type:ignore[union-attr]
+                    self._weight[label].T.flatten()  # type: ignore[union-attr]
                     if self._weight[label] is not None
                     else None
                 )
