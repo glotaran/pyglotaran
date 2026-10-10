@@ -9,7 +9,6 @@ from __future__ import annotations
 import os
 import platform
 import sys
-from collections import Counter
 from datetime import datetime
 from importlib import metadata
 from itertools import count
@@ -325,12 +324,6 @@ class FitRecord:
                 for experiment in scheme.experiments.values()
                 for label, data_model in experiment.datasets.items()
             ]
-            if max(Counter(label for label, _ in data_models).values()) > 1:
-                warn(
-                    "Dataset labels repeat across experiments, so the per-dataset entries of the "
-                    f"record in '{folder}' are ambiguous.",
-                    stacklevel=3,
-                )
             content = {
                 "schema_version": RECORD_SCHEMA_VERSION,
                 "id": folder.name,

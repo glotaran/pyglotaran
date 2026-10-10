@@ -24,7 +24,7 @@ class CoherentArtifactElement(Element):
     register_as: ClassVar[str] = "coherent-artifact"
     dimension: str = "time"
     data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
-    order: int  # TODO: different name? count, number, degree?
+    order: int
     width: ParameterType | None = None
 
     def calculate_matrix(  # type:ignore[override]

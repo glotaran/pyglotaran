@@ -337,14 +337,17 @@ class LinkedOptimizationData(OptimizationDataProvider):
         diff = target_axis - index
 
         if method == "forward":
-            diff = diff[diff >= 0]
+            candidates = np.flatnonzero(diff >= 0)
         elif method == "backward":
-            diff = diff[diff <= 0]
+            candidates = np.flatnonzero(diff <= 0)
+        else:
+            candidates = np.arange(diff.size)
 
-        diff = np.abs(diff)
-
-        if len(diff) > 0 and diff.min() <= tolerance:
-            index = target_axis[diff.argmin()]
+        if candidates.size > 0:
+            # Position on the target axis, not in the candidates
+            nearest = candidates[np.abs(diff[candidates]).argmin()]
+            if abs(diff[nearest]) <= tolerance:
+                index = target_axis[nearest]
         return index
 
     def align_global_axes(

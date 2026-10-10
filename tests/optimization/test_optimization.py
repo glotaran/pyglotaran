@@ -7,6 +7,7 @@ import pytest
 import xarray as xr
 
 from glotaran.model.data_model import DataModel
+from glotaran.model.errors import GlotaranUserError
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization.info import OptimizationInfo
 from glotaran.optimization.objective import OptimizationObjective
@@ -166,6 +167,38 @@ def test_multiple_experiments():
     assert result.success
     assert initial_parameters != optimized_parameters
     assert optimized_parameters.close_or_equal(parameters)
+
+
+def test_dataset_label_repeated_across_experiments_is_rejected():
+    """Results are stored by dataset label, so one experiment's result would be lost."""
+    experiments = [
+        ExperimentModel(datasets={"shared": DataModel(elements=["decay_independent"])}),
+        ExperimentModel(datasets={"shared": DataModel(elements=["decay_independent"])}),
+    ]
+
+    with pytest.raises(GlotaranUserError, match=r"\['shared'\] are used in more than one"):
+        Optimization(
+            models=experiments,
+            parameters=Parameters.from_dict({"rates": {"decay": [0.8, 0.04]}}),
+            library=test_library,
+        )
+
+
+@pytest.mark.parametrize("labels", [["sample?"], ["CON"], ["sample", "Sample"]])
+def test_dataset_label_that_is_no_file_name_is_rejected_before_the_fit(labels: list[str]):
+    """A label that cannot name the folder of a saved result fails before the fit."""
+    experiments = [
+        ExperimentModel(
+            datasets={label: DataModel(elements=["decay_independent"]) for label in labels}
+        )
+    ]
+
+    with pytest.raises(GlotaranUserError, match="Dataset label"):
+        Optimization(
+            models=experiments,
+            parameters=Parameters.from_dict({"rates": {"decay": [0.8, 0.04]}}),
+            library=test_library,
+        )
 
 
 def test_global_data():

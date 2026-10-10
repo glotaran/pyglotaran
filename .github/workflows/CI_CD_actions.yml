@@ -146,6 +146,8 @@ jobs:
 
       - name: Codecov Upload
         uses: codecov/codecov-action@v4
+        # Coverage upload is informational; a Codecov outage must not fail the test job.
+        continue-on-error: true
         with:
           file: ./coverage.xml
           token: ${{ secrets.CODECOV_TOKEN }}

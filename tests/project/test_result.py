@@ -1,17 +1,21 @@
 from __future__ import annotations
 
+import re
+from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
 import xarray as xr
+from pydantic import ValidationError
 
 from glotaran import __version__
 from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import SAVING_OPTIONS_MINIMAL
 from glotaran.io import load_result
 from glotaran.io import save_dataset
+from glotaran.model.errors import GlotaranUserError
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization.info import OptimizationInfo
 from glotaran.optimization.info import OptimizerSettings
@@ -367,6 +371,89 @@ def test_result_save_keeps_the_scheme_source_path(tmp_path: Path):
 
     assert result.scheme.source_path is None
     assert (tmp_path / "second" / "scheme.yml").is_file()
+
+
+@pytest.mark.parametrize(
+    "label",
+    [
+        "../outside",
+        "a/b",
+        "a\\b",
+        "/outside",
+        "C:\\outside",
+        "C:outside",
+        "..",
+        ".",
+        "",
+        "a.",
+        "a ",
+        "a?",
+        "a*",
+        'a"',
+        "a<b>",
+        "a|b",
+        "a\tb",
+        "CON",
+        "nul.txt",
+        "com1",
+        "LPT9 .nc",
+    ],
+)
+def test_result_rejects_dataset_labels_that_are_no_file_names(label: str):
+    """A dataset label that cannot name a folder in the result on every platform is rejected."""
+    fields = {name: getattr(RESULT, name) for name in Result.model_fields}
+    optimization_results = {label: RESULT.optimization_results["sequential-decay"]}
+
+    with pytest.raises(ValidationError, match="Dataset label"):
+        Result(**fields | {"optimization_results": optimization_results})
+
+
+@pytest.mark.parametrize("label", ["sample 1", "CONSOLE", "nul_data", "a.b", "ΔA"])
+def test_result_accepts_dataset_labels_that_are_file_names(label: str):
+    """Labels that only resemble rejected ones are file names on every platform."""
+    fields = {name: getattr(RESULT, name) for name in Result.model_fields}
+    optimization_results = {label: RESULT.optimization_results["sequential-decay"]}
+
+    result = Result(**fields | {"optimization_results": optimization_results})
+
+    assert list(result.optimization_results) == [label]
+
+
+def test_result_rejects_dataset_labels_that_differ_only_in_case():
+    """Two dataset labels that would name the same folder on Windows or macOS are rejected."""
+    fields = {name: getattr(RESULT, name) for name in Result.model_fields}
+    optimization_result = RESULT.optimization_results["sequential-decay"]
+    optimization_results = {"sample": optimization_result, "Sample": optimization_result}
+
+    with pytest.raises(ValidationError, match="'sample' and 'Sample' differ only in case"):
+        Result(**fields | {"optimization_results": optimization_results})
+
+
+def test_load_result_rejects_a_dataset_label_before_reading_its_folder(tmp_path: Path):
+    """Loading checks a dataset label before it reads the files of that dataset."""
+    RESULT.save(tmp_path)
+    result_file = tmp_path / "result.yml"
+    result_file.write_text(
+        result_file.read_text().replace("  sequential-decay:", "  ../outside:", 1)
+    )
+
+    # Reading from the missing folder would raise an error that does not name the label.
+    with pytest.raises(ValidationError, match=re.escape("Dataset label '../outside'")):
+        load_result(result_file)
+
+
+def test_optimize_rejects_an_absolute_dataset_label(tmp_path: Path):
+    """A fit with an absolute path as dataset label fails before the fit, without writing."""
+    label = (tmp_path / "outside").as_posix()
+    scheme_dict = deepcopy(SCHEME_DICT)
+    datasets = scheme_dict["experiments"]["sequential-decay"]["datasets"]
+    datasets[label] = datasets.pop("sequential-decay")
+
+    with pytest.raises(GlotaranUserError, match="Dataset label"):
+        Scheme.from_dict(scheme_dict).optimize(
+            PARAMETERS, {label: DATASET}, maximum_number_function_evaluations=1, verbose=False
+        )
+    assert not (tmp_path / "outside").exists()
 
 
 if __name__ == "__main__":
