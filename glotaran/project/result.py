@@ -170,6 +170,8 @@ class Result(BaseModel):
     def validate_optimization_results(cls, value: Any, info: ValidationInfo) -> Any:  # noqa: ANN401
         """Validate the data field."""
         if context_is_dict(info) and (save_folder := save_folder_from_info(info)) is not None:
+            # The labels name the folders that the optimization results are loaded from.
+            check_file_name_labels(value, "Dataset")
             inject_saving_option_from_data_into_context(info)
             return {
                 dataset_name: OptimizationResult.model_validate(

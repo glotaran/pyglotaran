@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -425,6 +426,19 @@ def test_result_rejects_dataset_labels_that_differ_only_in_case():
 
     with pytest.raises(ValidationError, match="'sample' and 'Sample' differ only in case"):
         Result(**fields | {"optimization_results": optimization_results})
+
+
+def test_load_result_rejects_a_dataset_label_before_reading_its_folder(tmp_path: Path):
+    """Loading checks a dataset label before it reads the files of that dataset."""
+    RESULT.save(tmp_path)
+    result_file = tmp_path / "result.yml"
+    result_file.write_text(
+        result_file.read_text().replace("  sequential-decay:", "  ../outside:", 1)
+    )
+
+    # Reading from the missing folder would raise an error that does not name the label.
+    with pytest.raises(ValidationError, match=re.escape("Dataset label '../outside'")):
+        load_result(result_file)
 
 
 def test_optimize_rejects_an_absolute_dataset_label(tmp_path: Path):
