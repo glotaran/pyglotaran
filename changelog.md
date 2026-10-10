@@ -96,6 +96,8 @@
   `dev`, `docs` and `test` extras and `requirements_pinned.txt`; `just` recipes replace the docs
   Makefile; Read the Docs builds with uv
 - 🚇 Support Python 3.13 and 3.14 and allow numpy up to 2.3; add the `notebook` extra
+- 💥🚧 Drop support for Python 3.10, 3.11 and 3.12; only 3.13 and 3.14 are supported, and
+  `typing-extensions` is no longer a dependency
 
 (changes-0_7_5)=
 

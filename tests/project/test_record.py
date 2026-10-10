@@ -4,8 +4,8 @@ import copy
 import re
 import subprocess
 import sys
+from datetime import UTC
 from datetime import datetime
-from datetime import timezone
 from types import ModuleType
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
     import xarray as xr
 
-CREATED = datetime(2026, 10, 4, 14, 28, 5, tzinfo=timezone.utc)
+CREATED = datetime(2026, 10, 4, 14, 28, 5, tzinfo=UTC)
 
 
 def read_record(folder: Path) -> dict:

@@ -6,7 +6,7 @@ This guide provides step-by-step instructions for installing **pyglotaran** on W
 
 Before installing pyglotaran, ensure you have:
 
-- **Python 3.10 or higher** installed on your system.
+- **Python 3.13 or 3.14** installed on your system.
 - Basic familiarity with command-line interfaces.
 
 ### Check if Python is Installed
@@ -25,7 +25,7 @@ python3 --version
 
 If Python is installed, this command will display the Python version number.
 
-- If the version is 3.10 or higher, proceed to installing pyglotaran.
+- If the version is 3.13 or 3.14, proceed to installing pyglotaran.
 - If you see a lower version number or receive an error message, proceed to Installing Python on Your System.
 
 ## Installing pyglotaran
@@ -93,7 +93,7 @@ If you don't have Python installed, follow the instructions below for your opera
 #### Option 1: Install Python via the Microsoft Store
 
 1. Open the Microsoft Store app.
-2. Search for Python and select the latest version (Python 3.10 or higher).
+2. Search for Python and select the latest version (Python 3.13 or 3.14).
 3. Click Get or Install.
 
 **\*Note**: This method installs Python only for the current user and doesn't require administrative privileges.\*
@@ -101,7 +101,7 @@ If you don't have Python installed, follow the instructions below for your opera
 #### Option 2: Install Python from python.org
 
 1. Go to the official Python website.
-2. Download the latest Python installer (Python 3.10 or higher).
+2. Download the latest Python installer (Python 3.13 or 3.14).
 3. Run the installer:
 
 - Check the box that says "Add Python to PATH".
@@ -126,7 +126,7 @@ brew install python
 ### Option 2: Install Python from python.org
 
 1. Visit the official Python website.
-2. Download the latest Python installer (Python 3.10 or higher).
+2. Download the latest Python installer (Python 3.13 or 3.14).
 3. Run the installer and follow the prompts.
 
 ## Linux
@@ -147,7 +147,7 @@ sudo apt install python3 python3-venv python3-pip
 
 ### Other Distributions
 
-Refer to your distribution's package manager documentation to install Python 3.10 or higher, python3-venv, and python3-pip.
+Refer to your distribution's package manager documentation to install Python 3.13 or 3.14, python3-venv, and python3-pip.
 
 # Next Steps
 

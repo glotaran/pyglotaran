@@ -24,7 +24,6 @@ if TYPE_CHECKING:
 
     from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
-    from glotaran.typing.types import Self
 
 
 def _sanitize_json_schema(json_schema: dict[str, Any]) -> None:
@@ -164,7 +163,7 @@ class Element(TypedItem, abc.ABC):
 
 class ExtendableElement(Element):
     extends: list[str] | None = None
-    _original: Self = PrivateAttr(init=False)
+    _original: ExtendableElement = PrivateAttr(init=False)
 
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401, PYI063
         """Save a copy of the original instance before extending.

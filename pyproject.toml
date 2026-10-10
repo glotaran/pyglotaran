@@ -13,7 +13,7 @@ authors = [
   { name = "Sebastian Weigand", email = "s.weigand.phy@gmail.com" },
   { name = "Ivo van Stokkum", email = "i.h.m.van.stokkum@vu.nl" },
 ]
-requires-python = ">=3.10,<3.15"
+requires-python = ">=3.13,<3.15"
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Education",
@@ -22,9 +22,6 @@ classifiers = [
   "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering",
@@ -45,7 +42,6 @@ dependencies = [
   "scipy>=1.7.2",
   "sdtfile>=2020.8.3",
   "tabulate>=0.8.9",
-  "typing-extensions>=4.12.2",
   "xarray>=2022.3",
 ]
 optional-dependencies.extras = [ "pyglotaran-extras>=0.5" ]
@@ -169,7 +165,7 @@ show_error_codes = true
 warn_unused_configs = true
 warn_unused_ignores = true
 check_untyped_defs = true
-python_version = "3.10"
+python_version = "3.13"
 
 [[tool.mypy.overrides]]
 module = "glotaran.builtin.megacomplexes.*"

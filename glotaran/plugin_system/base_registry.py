@@ -128,11 +128,11 @@ def load_plugins() -> None:
             "glotaran.plugins.project_io",
         ]
         entry_points = metadata.entry_points()
-        for entry_points in [  # type:ignore[assignment]
+        for entry_points in [
             entry_points.select(group=plugin_name) for plugin_name in plugin_names
         ]:
             for entry_point in entry_points:
-                entry_point.load()  # type:ignore[attr-defined]
+                entry_point.load()
 
 
 def set_plugin(

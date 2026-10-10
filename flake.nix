@@ -13,7 +13,7 @@
         inherit system;
       };
       lib = pkgs.lib;
-      python = pkgs.python310;
+      python = pkgs.python313;
       lib-path = with pkgs; lib.makeLibraryPath [
         stdenv.cc.cc
         zlib

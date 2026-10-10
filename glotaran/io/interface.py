@@ -12,15 +12,9 @@ See: https://www.python.org/dev/peps/pep-3102/
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
-
-if sys.version_info < (3, 12):
-    from typing_extensions import TypedDict
-else:
-    from typing import TypedDict
-
 from typing import Literal
+from typing import TypedDict
 
 if TYPE_CHECKING:
     from collections.abc import Callable

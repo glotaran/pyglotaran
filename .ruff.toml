@@ -7,8 +7,8 @@ include = [ "*.py", "*.pyi", "**/pyproject.toml" ]
 
 line-length = 99
 
-# Assume Python 3.10.
-target-version = "py310"
+# Assume Python 3.13.
+target-version = "py313"
 
 
 [lint]
@@ -43,6 +43,8 @@ ignore = [
   "FIX002",  # Line contains TODO, consider resolving the issue
   "A005",    # Module `shadows a Python standard-library module, we use abs imports
   "ARG002",  # Unused method argument
+  "UP040",   # PEP 695 `type` aliases are TypeAliasType objects, which changes runtime behavior
+  "UP047",   # PEP 695 generic functions, to be converted together with UP040
   # Covered by formatter
   "ISC001",
 ]
