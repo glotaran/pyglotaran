@@ -2,18 +2,16 @@
 
 (changes-0_7_5)=
 
-## 🚀 0.7.5 (Unreleased)
-
-### ✨ Features
+## 🚀 0.7.5 (2026-10-10)
 
 ### 🩹 Bug fixes
 
 - 🩹 Add pandas 3 compatibility (#1607)
 - 🩹 Fix array dimensionality issues in add_svd_to_dataset and simulation (#1608)
 
-### 📚 Documentation
-
 ### 🚧 Maintenance
+
+- 🚇 Pin integration validation inputs (examples, gold-standard results and validator) (#1610)
 
 (changes-0_7_4)=
 
