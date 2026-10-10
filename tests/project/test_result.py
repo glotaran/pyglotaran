@@ -15,6 +15,7 @@ from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import SAVING_OPTIONS_MINIMAL
 from glotaran.io import load_result
 from glotaran.io import save_dataset
+from glotaran.model.errors import GlotaranUserError
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization.info import OptimizationInfo
 from glotaran.optimization.info import OptimizerSettings
@@ -442,13 +443,13 @@ def test_load_result_rejects_a_dataset_label_before_reading_its_folder(tmp_path:
 
 
 def test_optimize_rejects_an_absolute_dataset_label(tmp_path: Path):
-    """A fit with an absolute path as dataset label fails without writing to that path."""
+    """A fit with an absolute path as dataset label fails before the fit, without writing."""
     label = (tmp_path / "outside").as_posix()
     scheme_dict = deepcopy(SCHEME_DICT)
     datasets = scheme_dict["experiments"]["sequential-decay"]["datasets"]
     datasets[label] = datasets.pop("sequential-decay")
 
-    with pytest.raises(ValidationError, match="Dataset label"):
+    with pytest.raises(GlotaranUserError, match="Dataset label"):
         Scheme.from_dict(scheme_dict).optimize(
             PARAMETERS, {label: DATASET}, maximum_number_function_evaluations=1, verbose=False
         )

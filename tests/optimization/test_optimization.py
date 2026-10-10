@@ -184,6 +184,23 @@ def test_dataset_label_repeated_across_experiments_is_rejected():
         )
 
 
+@pytest.mark.parametrize("labels", [["sample?"], ["CON"], ["sample", "Sample"]])
+def test_dataset_label_that_is_no_file_name_is_rejected_before_the_fit(labels: list[str]):
+    """A label that cannot name the folder of a saved result fails before the fit."""
+    experiments = [
+        ExperimentModel(
+            datasets={label: DataModel(elements=["decay_independent"]) for label in labels}
+        )
+    ]
+
+    with pytest.raises(GlotaranUserError, match="Dataset label"):
+        Optimization(
+            models=experiments,
+            parameters=Parameters.from_dict({"rates": {"decay": [0.8, 0.04]}}),
+            library=test_library,
+        )
+
+
 def test_global_data():
     data_model = DataModel(elements=["decay_independent"], global_elements=["gaussian"])
     experiment = ExperimentModel(datasets={"decay_independent": data_model})

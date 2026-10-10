@@ -19,6 +19,7 @@ from glotaran.optimization.objective import OptimizationResult
 from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
+from glotaran.utils.io import check_file_name_labels
 from glotaran.utils.tee import TeeContext
 
 if TYPE_CHECKING:
@@ -78,6 +79,11 @@ class Optimization:
                 "experiments."
             )
             raise GlotaranUserError(msg)
+        # The result rejects these labels as well, but only after the fit.
+        try:
+            check_file_name_labels(label_counts, "Dataset")
+        except ValueError as error:
+            raise GlotaranUserError(str(error)) from error
         self._parameters = Parameters.empty()
         models = [
             experiment.resolve(library, self._parameters, initial=parameters)
