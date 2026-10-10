@@ -1898,7 +1898,7 @@ dev = [
     { name = "nbval", specifier = ">=0.9.6" },
     { name = "numpydoc", specifier = ">=0.8" },
     { name = "pluggy", specifier = ">=0.7" },
-    { name = "pyglotaran-extras", git = "https://github.com/glotaran/pyglotaran-extras?rev=staging_support" },
+    { name = "pyglotaran-extras", git = "https://github.com/glotaran/pyglotaran-extras?rev=main" },
     { name = "pytest", specifier = ">=3.7.1" },
     { name = "pytest-allclose", specifier = ">=1" },
     { name = "pytest-benchmark", specifier = ">=3.1.1" },
@@ -1920,7 +1920,7 @@ docs = [
     { name = "nbsphinx", specifier = ">=0.8.1" },
     { name = "nbval", specifier = ">=0.9.6" },
     { name = "numpydoc", specifier = ">=0.8" },
-    { name = "pyglotaran-extras", git = "https://github.com/glotaran/pyglotaran-extras?rev=staging_support" },
+    { name = "pyglotaran-extras", git = "https://github.com/glotaran/pyglotaran-extras?rev=main" },
     { name = "sphinx", specifier = ">=3.2" },
     { name = "sphinx-click", specifier = ">=3.0.1" },
     { name = "sphinx-copybutton", specifier = ">=0.3" },
@@ -1943,12 +1943,13 @@ test = [
 [[package]]
 name = "pyglotaran-extras"
 version = "0.8.0.dev0"
-source = { git = "https://github.com/glotaran/pyglotaran-extras?rev=staging_support#700f9de482f317afa0339edc12314fd14699e459" }
+source = { git = "https://github.com/glotaran/pyglotaran-extras?rev=main#82244d742db9de5dc8a7f009c59d454ece8fb073" }
 dependencies = [
     { name = "cycler" },
     { name = "docstring-parser" },
     { name = "matplotlib" },
     { name = "numpy" },
+    { name = "packaging" },
     { name = "pydantic" },
     { name = "pyglotaran" },
     { name = "ruamel-yaml" },
