@@ -131,6 +131,8 @@ brew install python
 
 ## Linux
 
+The `python3` package of your distribution is only suitable if it provides Python 3.13 or 3.14 (for example Debian 13 or Ubuntu 25.04 and newer). Ubuntu 24.04 and Debian 12 ship an older Python.
+
 ### Ubuntu/Debian
 
 Update the package list:
@@ -148,6 +150,23 @@ sudo apt install python3 python3-venv python3-pip
 ### Other Distributions
 
 Refer to your distribution's package manager documentation to install Python 3.13 or 3.14, python3-venv, and python3-pip.
+
+### Any Distribution with uv
+
+If your distribution does not provide Python 3.13 or 3.14, install [uv](https://docs.astral.sh/uv/getting-started/installation/) and let it install Python:
+
+```shell
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv python install 3.13
+```
+
+Then create the virtual environment from Step 2 with uv instead of `python3 -m venv`:
+
+```shell
+uv venv --python 3.13 venv
+```
+
+Activate it as described in Step 3 and install pyglotaran with `uv pip install pyglotaran`.
 
 # Next Steps
 
