@@ -1,5 +1,102 @@
 # Changelog
 
+(changes-0_8_0)=
+
+## 🚀 0.8.0 (Unreleased)
+
+### ✨ Features
+
+- ✨ Add a native v0.8 PFID element for perturbed free-induction-decay fitting (#1510)
+- ✨ Add an opt-in project (`Project.start`) that records every fit run through
+  `project.optimize`, lists, compares and recomputes recorded fits, and exports results as
+  self-contained folders that carry the `project.gta` description of the project
+- ✨ Store the optimizer settings on `Result.optimizer_settings` and in `result.yml`
+- ✨ Collect the cost of every function evaluation and, with `verbose=True`, the parameter
+  values in the parameter history
+
+### 👌 Minor Improvements:
+
+- 👌 Treat near-zero parameter standard errors as unavailable when rendering results
+  (#1510)
+- 👌 Handle optimizations with no free parameters and report consistent optimization metadata
+- 👌 Avoid repeated coordinate alignment during optimization result construction and Gaussian
+  dispersion calculations
+- 👌 Preserve shared optimization matrices when applying index-dependent scaling
+- 👌 Report chi-square, reduced chi-square, RMSE and degrees of freedom for dry runs
+
+### 🩹 Bug fixes
+
+- 🩹 Save NumPy scalar coordinates as valid numbers in explicit ASCII files (#1591)
+- 🩹 Preserve CLP label ordering when combining element matrices with mixed dimensionality
+  (#1512)
+- 🩹 Normalize kinetic activation concentrations across all activation compartments
+- 🩹 Preserve signed values and support xarray axes when calculating equal-area penalties, and
+  include expanded matrices in result metadata
+- 🩹 Skip coefficient relations whose endpoints are absent from the active axes
+- 🩹 Always persist `scale` and `weighted_root_mean_square_error` in optimization result
+  metadata, including a unit scale and an unweighted fit, matching v0.7 behaviour
+- 🩹 Resolve parameters of discriminated-union item fields (e.g. activations) on Python 3.14
+- 🩹 Add noise in `simulate(noise=True)` without a `noise_seed`; the seed defaults to 42,
+  and `noise_seed=None` draws fresh noise
+- 🩹 Stop `Scheme.optimize` from sharing the scheme, the initial parameters and the input data
+  with its result
+- 🩹 Keep a dataset `weight` in `Result.input_data`, and compute `fitted_data` of loaded results
+- 🩹 Report the optimizer error when the evaluation after a failed optimization fails again
+- 🩹 Store the parameter history in user coordinates instead of the logarithm of
+  non-negative parameters
+- 🩹 Read parameter csv and tsv files with round-trip float precision
+- 🩹 Keep the scheme source path when saving a result, and save a scheme whose source file was
+  removed
+- 🩹 Write lists of mappings as valid YAML, so that schemes built in code with penalties,
+  relations or constraints can be loaded after saving
+- 🩹 Read YAML files as UTF-8, the encoding they are written in, also on Windows
+- 🩹 Report the number of completed function evaluations of a failed optimization
+- 🩹 Compute the optimized parameters, cost and result arrays at the solution of the optimizer,
+  as chi-square and the standard errors, instead of at the last evaluated point (often a
+  finite-difference step)
+- 🩹 Give fixed and expression parameters no standard error after a fit, instead of the one of
+  the initial parameters
+- 🩹 Stop writing the `source_path` and `io_plugin_name` attributes, which hold local paths,
+  into saved data files; `load_dataset` sets them
+- 🩹 Link datasets with `clp_link_method` `forward` or `backward` at the nearest coordinate in
+  that direction, instead of at a coordinate taken from the wrong position of the axis
+- 🩹 Reject dataset, element and activation labels that cannot be file names on Windows (empty,
+  ending with `.` or a space, containing one of `<>:"/\|?*` or a control character, or a device
+  name such as `CON` or `NUL`) and labels of one kind that differ only in case; `Result.save` and
+  `Project.export` wrote their files outside the result folder, failed on Windows, or overwrote
+  the files of another label on Windows and macOS; dataset labels are checked before the fit
+- 🩹 Reject dataset labels used in more than one experiment before the fit; the result kept only
+  one experiment's result arrays for such a label
+- 🩹 Report the unweighted matrix and concentrations of weighted datasets, as v0.7 did, instead
+  of the matrix multiplied by the weights with an additional global dimension
+- 🩹 Remove the `add_svd` argument of `Scheme.optimize`; the singular value decompositions of
+  data and residuals were computed for every result and discarded, whatever its value
+
+### 📚 Documentation
+
+- 📚 Document projects for recording, recomputing and exporting fits, and use one in the
+  getting started guide
+- 📚 Recommend uv in the installation and contributing guides and update the authors list
+- 📚 Port the getting started notebook from the removed `Project` API to `load_scheme`,
+  `load_parameters` and `Scheme.optimize`
+
+### 🗑️ Deprecations (due in 0.9.0)
+
+### 🗑️❌ Deprecated functionality removed in this release
+
+- Command Line Interface, including the `glotaran` command (#1228)
+- `glotaran.examples` -> `glotaran.testing.simulated_data`
+- `glotaran.parameter.ParameterGroup` -> `glotaran.parameter.Parameters`
+- `<model_file>.clp_area_penalties` -> `<scheme_file>.experiments.<experiment>.clp_penalties`
+- `Project.generate_model` and `Project.generate_parameters` (removed without replacement)
+
+### 🚧 Maintenance
+
+- 🚇 Manage development dependencies with uv: dependency groups and a `uv.lock` file replace the
+  `dev`, `docs` and `test` extras and `requirements_pinned.txt`; `just` recipes replace the docs
+  Makefile; Read the Docs builds with uv
+- 🚇 Support Python 3.13 and 3.14 and allow numpy up to 2.3; add the `notebook` extra
+
 (changes-0_7_5)=
 
 ## 🚀 0.7.5 (2026-10-10)
@@ -8,6 +105,7 @@
 
 - 🩹 Add pandas 3 compatibility (#1607)
 - 🩹 Fix array dimensionality issues in add_svd_to_dataset and simulation (#1608)
+
 
 ### 🚧 Maintenance
 

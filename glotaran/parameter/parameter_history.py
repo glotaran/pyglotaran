@@ -8,16 +8,15 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 
-from glotaran.parameter.parameters import Parameters
-
 if TYPE_CHECKING:
-    from os import PathLike
+    from glotaran.parameter.parameters import Parameters
+    from glotaran.typing.types import StrOrPath
 
 
 class ParameterHistory:
     """A class representing a history of parameters."""
 
-    def __init__(self):  # noqa: D107
+    def __init__(self) -> None:  # noqa: D107
         self._parameter_labels: list[str] = []
         self._parameters: list[np.ndarray] = []
         self.source_path = "parameter_history.csv"
@@ -40,18 +39,18 @@ class ParameterHistory:
 
         history._parameter_labels = history_df.columns
 
-        for parameter_values in history_df.values:
+        for parameter_values in history_df.to_numpy():
             history._parameters.append(parameter_values)
 
         return history
 
     @classmethod
-    def from_csv(cls, path: str) -> ParameterHistory:
+    def from_csv(cls, path: StrOrPath) -> ParameterHistory:
         """Create a history from a csv file.
 
         Parameters
         ----------
-        path : str
+        path : StrOrPath
             The path to the csv file.
 
         Returns
@@ -59,8 +58,8 @@ class ParameterHistory:
         ParameterHistory
             The created history.
         """
-        df = pd.read_csv(path)
-        return cls.from_dataframe(df)
+        history_df = pd.read_csv(path)
+        return cls.from_dataframe(history_df)
 
     loader = from_csv
 
@@ -111,45 +110,43 @@ class ParameterHistory:
         """
         return pd.DataFrame(self._parameters, columns=self.parameter_labels)
 
-    def to_csv(self, file_name: str | PathLike[str], delimiter: str = ","):
+    def to_csv(self, path: StrOrPath, delimiter: str = ",") -> None:
         """Write a :class:`ParameterHistory` to a CSV file.
 
         Parameters
         ----------
-        file_name : str
+        path : StrOrPath
             The path to the CSV file.
         delimiter : str
             The delimiter of the CSV file.
         """
-        self.source_path = Path(file_name).as_posix()
-        self.to_dataframe().to_csv(file_name, sep=delimiter, index=False)
+        self.source_path = Path(path).as_posix()
+        self.to_dataframe().to_csv(path, sep=delimiter, index=False)
 
-    def append(self, parameters: Parameters, current_iteration: int = 0):
-        """Append :class:`Parameters` to the history.
+    def append(self, parameters: Parameters, current_iteration: int = 0) -> None:
+        """Append the values of :class:`Parameters` to the history.
 
         Parameters
         ----------
         parameters : Parameters
             The group to append.
         current_iteration: int
-            Current iteration of the optimizer.
+            Number stored in the ``iteration`` column; during an optimization the number of the
+            function evaluation, with ``0`` for the initial values.
 
         Raises
         ------
         ValueError
             Raised if the parameter labels differs from previous.
         """
-        (
-            parameter_labels,
-            parameter_values,
-            _,
-            _,
-        ) = parameters.get_label_value_and_bounds_arrays()
-        parameter_labels = ["iteration", *parameter_labels]
+        parameters.update_parameter_expression()
+        parameter_labels = ["iteration", *(parameter.label for parameter in parameters.all())]
+        parameter_values = [parameter.value for parameter in parameters.all()]
         if len(self._parameter_labels) == 0:
             self._parameter_labels = parameter_labels
         if parameter_labels != self.parameter_labels:
-            raise ValueError("Cannot append parameters. Parameter labels do not match existing.")
+            msg = "Cannot append parameters. Parameter labels do not match existing."
+            raise ValueError(msg)
 
         self._parameters.append(np.array([current_iteration, *parameter_values]))
 

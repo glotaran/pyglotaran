@@ -27,16 +27,16 @@ class NetCDFDataIo(DataIoInterface):
         -------
         xr.Dataset | xr.DataArray
         """
-        with xr.open_dataset(file_name) as ds:
+        with xr.open_dataset(file_name, engine="netcdf4") as ds:
             return ds.load()
 
     def save_dataset(
         self,
-        dataset: xr.Dataset,
+        dataset: xr.Dataset | xr.DataArray,
         file_name: str,
         *,
         data_filters: list[str] | None = None,
-    ):
+    ) -> None:
         """Write a :xarraydoc:`Dataset` to the ``*.nc`` at path ``file_name``.
 
         Parameters
@@ -49,4 +49,4 @@ class NetCDFDataIo(DataIoInterface):
             List of data variable names that should be written to file. Defaults to None.
         """
         data_to_save = dataset if data_filters is None else dataset[data_filters]
-        data_to_save.to_netcdf(file_name, mode="w")
+        data_to_save.to_netcdf(file_name, mode="w", engine="netcdf4")

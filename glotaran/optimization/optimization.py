@@ -1,0 +1,267 @@
+from __future__ import annotations
+
+from collections import ChainMap
+from collections import Counter
+from typing import TYPE_CHECKING
+from typing import Literal
+from warnings import warn
+
+import numpy as np
+from scipy.optimize import OptimizeResult
+from scipy.optimize import least_squares
+
+from glotaran.model.errors import GlotaranModelIssues
+from glotaran.model.errors import GlotaranUserError
+from glotaran.optimization.info import OptimizationInfo
+from glotaran.optimization.info import OptimizerSettings
+from glotaran.optimization.objective import OptimizationObjective
+from glotaran.optimization.objective import OptimizationResult
+from glotaran.optimization.optimization_history import OptimizationHistory
+from glotaran.parameter import ParameterHistory
+from glotaran.parameter import Parameters
+from glotaran.utils.io import check_file_name_labels
+from glotaran.utils.tee import TeeContext
+
+if TYPE_CHECKING:
+    from glotaran.model.experiment_model import ExperimentModel
+    from glotaran.project.library import ModelLibrary
+    from glotaran.typing.types import ArrayLike
+
+
+SUPPORTED_OPTIMIZATION_METHODS = {
+    "TrustRegionReflection": "trf",
+    "Dogbox": "dogbox",
+    "Levenberg-Marquardt": "lm",
+}
+
+
+class UnsupportedMethodError(GlotaranUserError):
+    """Indicates that the optimization method is unsupported."""
+
+    def __init__(self, method: str) -> None:
+        """Initialize an UnsupportedMethodError.
+
+        Parameters
+        ----------
+        method : str
+            The unsupported method.
+        """
+        super().__init__(
+            f"Unsupported optimization method {method}. "
+            f"Supported methods are '{list(SUPPORTED_OPTIMIZATION_METHODS.keys())}'"
+        )
+
+
+class Optimization:
+    def __init__(
+        self,
+        *,
+        models: list[ExperimentModel],
+        parameters: Parameters,
+        library: ModelLibrary,
+        verbose: bool = True,
+        raise_exception: bool = False,
+        maximum_number_function_evaluations: int | None = None,
+        ftol: float | None = 1e-8,
+        gtol: float | None = 1e-8,
+        xtol: float | None = 1e-8,
+        optimization_method: Literal[
+            "TrustRegionReflection",
+            "Dogbox",
+            "Levenberg-Marquardt",
+        ] = "TrustRegionReflection",
+    ) -> None:
+        label_counts = Counter(label for experiment in models for label in experiment.datasets)
+        if repeated := [label for label, count in label_counts.items() if count > 1]:
+            msg = (
+                f"Dataset labels {repeated} are used in more than one experiment. The results "
+                "of a fit are stored by dataset label, so dataset labels must be unique across "
+                "experiments."
+            )
+            raise GlotaranUserError(msg)
+        # The result rejects these labels as well, but only after the fit.
+        try:
+            check_file_name_labels(label_counts, "Dataset")
+        except ValueError as error:
+            raise GlotaranUserError(str(error)) from error
+        self._parameters = Parameters.empty()
+        models = [
+            experiment.resolve(library, self._parameters, initial=parameters)
+            for experiment in models
+        ]
+        issues = [issue for experiment in models for issue in experiment.get_issues(parameters)]
+        if len(issues) > 0:
+            raise GlotaranModelIssues(issues)
+        self._objectives = [OptimizationObjective(experiment) for experiment in models]
+        self._tee = TeeContext()
+        self._verbose = verbose
+        self._raise = raise_exception
+
+        if optimization_method not in SUPPORTED_OPTIMIZATION_METHODS:
+            raise UnsupportedMethodError(optimization_method)
+        self.settings = OptimizerSettings(
+            optimization_method=optimization_method,
+            ftol=ftol,
+            gtol=gtol,
+            xtol=xtol,
+            maximum_number_function_evaluations=maximum_number_function_evaluations,
+        )
+
+        self.cost_history: list[float] = []
+        """Cost of every function evaluation in call order, including Jacobian evaluations."""
+        self.error: Exception | None = None
+        """Exception of the optimizer, turned into a warning with ``raise_exception=False``."""
+        self.converged: bool | None = None
+        """SciPy's success flag: whether the optimizer met its tolerances."""
+        self.parameter_history = ParameterHistory()
+        self.parameter_history.append(self._parameters)
+        self._free_parameter_labels, _, _, _ = self._parameters.get_label_value_and_bounds_arrays(
+            exclude_non_vary=True
+        )
+
+    @property
+    def parameters(self) -> Parameters:
+        """Parameters of the optimization.
+
+        During a fit the last evaluated ones; after a successful fit the solution, after a failed
+        one the last evaluated ones.
+        """
+        return self._parameters
+
+    def run(self) -> tuple[Parameters, dict[str, OptimizationResult], OptimizationInfo]:
+        """Perform the optimization.
+
+        Raises
+        ------
+        Exception
+            Raised if an exception occurs during optimization and raise_exception is `True`.
+        """
+        (
+            _,
+            initial_parameter,
+            lower_bounds,
+            upper_bounds,
+        ) = self._parameters.get_label_value_and_bounds_arrays(exclude_non_vary=True)
+        ls_result = None
+        termination_reason = ""
+        no_free_parameters = initial_parameter.size == 0
+        with self._tee:
+            if no_free_parameters:
+                termination_reason = "No free parameters to optimize."
+            else:
+                try:
+                    verbose = 2 if self._verbose else 0
+                    ls_result = least_squares(
+                        self.objective_function,
+                        initial_parameter,
+                        bounds=(lower_bounds, upper_bounds),
+                        method=SUPPORTED_OPTIMIZATION_METHODS[self.settings.optimization_method],
+                        max_nfev=self.settings.maximum_number_function_evaluations,
+                        verbose=verbose,
+                        ftol=self.settings.ftol,
+                        gtol=self.settings.gtol,
+                        xtol=self.settings.xtol,
+                    )
+                    termination_reason = ls_result.message
+                    self.converged = bool(ls_result.success)
+                    # The solution, instead of the last evaluated point (often a
+                    # finite-difference Jacobian step), so that the result describes one point
+                    self._parameters.set_from_label_and_value_arrays(
+                        self._free_parameter_labels, ls_result.x
+                    )
+                # No matter the error we want to behave gracefully
+                except Exception as e:
+                    if self._raise:
+                        raise
+                    warn(f"Optimization failed:\n\n{e}", stacklevel=3)
+                    termination_reason = str(e)
+                    self.error = e
+
+        try:
+            # Without free parameters, this is the only evaluation and is recorded as such.
+            penalty = (
+                self.objective_function(initial_parameter)
+                if no_free_parameters
+                else np.concatenate([o.calculate() for o in self._objectives])
+            )
+        except Exception as e:
+            # After an exception in the objective, the evaluation at the same parameters fails
+            # again; the error of the optimization is the one to report.
+            optimization_error = self.error
+            if optimization_error is None:
+                raise
+            raise optimization_error from e
+        if no_free_parameters:
+            self.converged = True
+            ls_result = OptimizeResult(
+                x=initial_parameter,
+                fun=penalty,
+                jac=np.empty((penalty.size, 0)),
+                optimality=0.0,
+                nfev=1,
+                njev=0,
+                status=1,
+                success=True,
+                message=termination_reason,
+            )
+        results = [o.get_result() for o in self._objectives]
+        optimization_results = dict(ChainMap(*[r.optimization_results for r in results]))
+        number_of_clps = sum(r.clp_size for r in results)
+        additional_penalty = sum(r.additional_penalty for r in results)
+        optimization_info = OptimizationInfo.from_least_squares_result(
+            ls_result,
+            self.parameter_history,
+            OptimizationHistory.from_stdout_str(self._tee.read()),
+            penalty,
+            additional_penalty,
+            self._free_parameter_labels,
+            termination_reason,
+            number_of_clps,
+            number_of_function_evaluations=len(self.cost_history),
+        )
+        return self._parameters, optimization_results, optimization_info
+
+    def dry_run(self) -> tuple[Parameters, dict[str, OptimizationResult], OptimizationInfo]:
+        termination_reason = "Dry run."
+
+        penalty = np.concatenate([o.calculate() for o in self._objectives])
+        results = [o.get_result() for o in self._objectives]
+        data = dict(ChainMap(*[r.optimization_results for r in results]))
+        number_of_clps = sum(r.clp_size for r in results)
+        additional_penalty = sum(r.additional_penalty for r in results)
+        result = OptimizationInfo.from_least_squares_result(
+            None,
+            self.parameter_history,
+            OptimizationHistory.from_stdout_str(self._tee.read()),
+            penalty,
+            additional_penalty,
+            self._free_parameter_labels,
+            termination_reason,
+            number_of_clps,
+            number_of_function_evaluations=1,
+            dry_run=True,
+        )
+        return self._parameters, data, result
+
+    def objective_function(self, parameters: ArrayLike) -> ArrayLike:
+        """Calculate the objective for the optimization.
+
+        Appends the cost to ``cost_history`` and, with ``verbose``, the parameter values to the
+        parameter history.
+
+        Parameters
+        ----------
+        parameters : ArrayLike
+            the parameters provided by the optimizer.
+
+        Returns
+        -------
+        ArrayLike
+            The objective for the optimizer.
+        """
+        self._parameters.set_from_label_and_value_arrays(self._free_parameter_labels, parameters)
+        penalty = np.concatenate([o.calculate() for o in self._objectives])
+        self.cost_history.append(0.5 * float(np.dot(penalty, penalty)))
+        if self._verbose:
+            self.parameter_history.append(self._parameters, len(self.cost_history))
+        return penalty

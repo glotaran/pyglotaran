@@ -9,6 +9,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+from __future__ import annotations
 
 import subprocess
 import sys
@@ -31,7 +32,7 @@ authors = (
 project = "pyglotaran"
 title = f"{project} Documentation"
 current_year = datetime.now().year
-copyright = f"2018-{current_year}, " + ", ".join(authors)
+copyright = f"2018-{current_year}, " + ", ".join(authors)  # noqa: A001
 author = ", ".join(authors)
 
 # The version info for the project you're documenting, acts as replacement
@@ -138,9 +139,9 @@ nbsphinx_execute_arguments = [
 try:
     from subprocess import check_output
 
-    release = check_output(["git", "describe", "--tags", "--always"])
+    release = check_output(["git", "describe", "--tags", "--always"])  # noqa: S607
     release = release.decode().strip()
-    today = check_output(["git", "show", "-s", "--format=%ad", "--date=short"])
+    today = check_output(["git", "show", "-s", "--format=%ad", "--date=short"])  # noqa: S607
     today = today.decode().strip()
 except Exception:
     release = "<unknown>"
@@ -273,7 +274,7 @@ intersphinx_mapping = {
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
     "xarray": ("https://xarray.pydata.org/en/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
-    "python": ("https://docs.python.org/", None),
+    "python": ("https://docs.python.org/3", None),
 }
 
 ipython_savefig_dir = "images/plot"
@@ -296,4 +297,4 @@ extlinks = {
 
 # cleanup notebook data
 
-subprocess.run([sys.executable, DOC_FOLDER / "remove_notebook_written_data.py"], check=True)
+subprocess.run([sys.executable, DOC_FOLDER / "remove_notebook_written_data.py"], check=True)  # noqa: S603

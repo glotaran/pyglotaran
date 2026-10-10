@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 from glotaran.model.item import Item
-from glotaran.model.item import item
 
 
-@item
 class IntervalItem(Item):
     """An item with an interval."""
 
@@ -37,7 +35,7 @@ class IntervalItem(Item):
         if self.interval is None or index is None:
             return True
 
-        def applies(interval: tuple[float, float]):
+        def applies(interval: tuple[float, float]) -> bool:
             lower, upper = interval[0], interval[1]
             if lower > upper:
                 lower, upper = upper, lower

@@ -21,6 +21,7 @@ from glotaran.typing.types import DatasetMappable
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+    from collections.abc import Iterable
     from collections.abc import Iterator
 
     import pandas as pd
@@ -51,9 +52,9 @@ def _load_datasets(dataset_mappable: DatasetMappable, index: int = 1) -> dict[st
         If the type of ``dataset_mappable`` is not explicitly supported.
     """
     dataset_mapping = {}
-    if isinstance(dataset_mappable, (str, Path)):
+    if isinstance(dataset_mappable, str | Path):
         dataset_mapping[Path(dataset_mappable).stem] = load_dataset(dataset_mappable)
-    elif isinstance(dataset_mappable, (xr.Dataset, xr.DataArray)):
+    elif isinstance(dataset_mappable, xr.Dataset | xr.DataArray):
         if isinstance(dataset_mappable, xr.DataArray):
             dataset_mappable: xr.Dataset = dataset_mappable.to_dataset(  # type:ignore[no-redef]
                 name="data"
@@ -62,19 +63,20 @@ def _load_datasets(dataset_mappable: DatasetMappable, index: int = 1) -> dict[st
             dataset_mappable.attrs["source_path"] = f"dataset_{index}.nc"
         dataset_mapping[Path(dataset_mappable.source_path).stem] = dataset_mappable
     elif isinstance(dataset_mappable, Sequence):
-        for index, dataset in enumerate(dataset_mappable, start=1):
-            key, value = next(iter(_load_datasets(dataset, index=index).items()))
+        for dataset_index, dataset in enumerate(dataset_mappable, start=1):
+            key, value = next(iter(_load_datasets(dataset, index=dataset_index).items()))
             dataset_mapping[key] = value
     elif isinstance(dataset_mappable, Mapping):
         for key, dataset in dataset_mappable.items():
             _, value = next(iter(_load_datasets(dataset).items()))
             dataset_mapping[key] = value
     else:
-        raise TypeError(
+        msg = (
             f"Type '{type(dataset_mappable).__name__}' for 'dataset_mappable' of value "
             f"'{dataset_mappable}' is not supported."
             f"\nSupported types are:\n {DatasetMappable}."
         )
+        raise TypeError(msg)
     return dataset_mapping
 
 
@@ -112,7 +114,7 @@ class DatasetMapping(MutableMapping):
         return cls(_load_datasets(dataset_mappable))
 
     @property
-    def source_path(self):
+    def source_path(self) -> Mapping[str, str]:
         """Map the ``source_path`` attribute of each dataset to a standalone mapping.
 
         Note
@@ -214,7 +216,8 @@ def chdir_context(folder_path: StrOrPath) -> Generator[Path]:
     original_dir = Path(os.curdir).resolve()
     folder_path = Path(folder_path)
     if folder_path.is_file() is True:
-        raise ValueError("Value of 'folder_path' needs to be a folder but was an existing file.")
+        msg = "Value of 'folder_path' needs to be a folder but was an existing file."
+        raise ValueError(msg)
     folder_path.mkdir(parents=True, exist_ok=True)
     try:
         os.chdir(folder_path)
@@ -244,8 +247,13 @@ def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = No
         ``source_path`` as posix path relative to ``base_path`` if defined.
     """
     source_path = Path(source_path)
-    if base_path is not None and (
-        source_path.is_absolute() or Path(base_path).resolve() in source_path.resolve().parents
+    # Base path and source path have common parents except the file system root (drive on Windows)
+    if (
+        base_path is not None
+        and set(source_path.resolve().parents[:-1]).isdisjoint(
+            Path(base_path).resolve().parents[:-1]
+        )
+        is False
     ):
         with contextlib.suppress(ValueError):
             source_path = os.path.relpath(source_path.as_posix(), Path(base_path).as_posix())
@@ -253,25 +261,117 @@ def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = No
     return Path(source_path).as_posix()
 
 
-def safe_dataframe_fillna(df: pd.DataFrame, column_name: str, fill_value: Any) -> None:
+_WINDOWS_RESERVED_CHARACTERS = frozenset('<>:"/\\|?*' + "".join(chr(code) for code in range(32)))
+# The device names that ``ntpath.isreserved`` (Python 3.13) rejects.
+_WINDOWS_RESERVED_NAMES = frozenset(
+    {"CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"}
+    | {f"{device}{number}" for device in ("COM", "LPT") for number in "123456789\xb9\xb2\xb3"}
+)
+
+
+def check_file_name_labels(labels: Iterable[str], kind: str) -> None:
+    r"""Check that ``labels`` can name the files or folders of a saved result on any platform.
+
+    Dataset, element and activation labels name files and folders inside the result folder.
+    The labels have to follow the file name rules of Windows, so that a result can be saved
+    and loaded on every platform. These rules also reject labels that would place files
+    outside the result folder, such as ``..``, labels with a path separator, or labels with a
+    colon (a drive on Windows).
+
+    Parameters
+    ----------
+    labels : Iterable[str]
+        The labels of one kind, which name files or folders in the same folder.
+    kind : str
+        What the labels name, for the error message, e.g. ``"Dataset"``.
+
+    Raises
+    ------
+    ValueError
+        If a label is empty, ends with ``.`` or a space, contains one of ``<>:"/\|?*`` or an
+        ASCII control character, or is a Windows device name such as ``CON`` or ``nul.txt``, or
+        if two labels differ only in case.
+    """
+    labels_by_folded_label: dict[str, str] = {}
+    for label in labels:
+        if (
+            label == ""
+            or label[-1] in ". "
+            or not _WINDOWS_RESERVED_CHARACTERS.isdisjoint(label)
+            or label.partition(".")[0].rstrip(" ").upper() in _WINDOWS_RESERVED_NAMES
+        ):
+            msg = (
+                f"{kind} label {label!r} cannot be used as a file name in a result. A label must "
+                "not be empty, end with '.' or ' ', contain any of '<>:\"/\\|?*' or a control "
+                "character, or be a Windows device name such as 'CON', 'NUL', 'COM1' or 'LPT1'."
+            )
+            raise ValueError(msg)
+        if (other := labels_by_folded_label.setdefault(label.casefold(), label)) != label:
+            msg = (
+                f"{kind} labels {other!r} and {label!r} differ only in case. They would name the "
+                "same file in a result saved on Windows or macOS."
+            )
+            raise ValueError(msg)
+
+
+def normalize_dataframe_columns(
+    input_df: pd.DataFrame, rename_dict: dict[str, str] | None = None
+) -> pd.DataFrame:
+    """Convert columns to lower case and rename them using ``rename_dict`` if provided.
+
+    Parameters
+    ----------
+    input_df : pd.DataFrame
+        DataFrame from which specific columns names should ne normalized
+    rename_dict : dict[str, str]
+        Dict with lowercase column names as key and rename target name as value.
+
+    Returns
+    -------
+    pd.DataFrame
+    """
+    if rename_dict is None:
+        rename_dict = {}
+    rename_dict = {
+        column: (
+            column.lower() if column.lower() not in rename_dict else rename_dict[column.lower()]
+        )
+        for column in input_df.columns
+    }
+    return input_df.rename(columns=rename_dict)
+
+
+def safe_dataframe_fillna(
+    input_df: pd.DataFrame,
+    column_name: str,
+    fill_value: Any,  # noqa: ANN401
+) -> pd.DataFrame:
     """Fill NaN values with ``fill_value``  if the column exists or do nothing.
 
     Parameters
     ----------
-    df : pd.DataFrame
+    input_df : pd.DataFrame
         DataFrame from which specific column values will be replaced
     column_name : str
-        Name of column of ``df`` to fill NaNs
+        Name of column of ``input_df`` to fill NaNs
     fill_value : Any
         Value to fill NaNs with
+
+    Returns
+    -------
+        pd.DataFrame
     """
-    if column_name in df.columns:
-        df[column_name] = df[column_name].fillna(fill_value)
+    if column_name in input_df.columns:
+        return input_df.assign(**{column_name: input_df[column_name].fillna(fill_value)})
+    return input_df
 
 
 def safe_dataframe_replace(
-    df: pd.DataFrame, column_name: str, to_be_replaced_values: Any, replace_value: Any
-) -> None:
+    input_df: pd.DataFrame,
+    column_name: str,
+    to_be_replaced_values: Any,  # noqa: ANN401
+    replace_value: Any,  # noqa: ANN401
+) -> pd.DataFrame:
     """Replace column values with ``replace_value`` if the column exists or do nothing.
 
     If ``to_be_replaced_values`` is not list or tuple format,
@@ -279,19 +379,26 @@ def safe_dataframe_replace(
 
     Parameters
     ----------
-    df : pd.DataFrame
+    input_df : pd.DataFrame
         DataFrame from which specific column values will be replaced
     column_name : str
-        Name of column of ``df`` to replace values for
+        Name of column of ``input_df`` to replace values for
     to_be_replaced_values : Any
         Values to be replaced
     replace_value : Any
         Value to replace ``to_be_replaced_values`` with
+
+    Returns
+    -------
+        pd.DataFrame
     """
-    if not isinstance(to_be_replaced_values, (list, tuple)):
+    if not isinstance(to_be_replaced_values, list | tuple):
         to_be_replaced_values = [to_be_replaced_values]
-    if column_name in df.columns:
-        df[column_name] = df[column_name].replace(to_be_replaced_values, replace_value)
+    if column_name in input_df.columns:
+        return input_df.assign(
+            **{column_name: input_df[column_name].replace(to_be_replaced_values, replace_value)}
+        )
+    return input_df
 
 
 def get_script_dir(*, nesting: int = 0) -> Path:
@@ -301,12 +408,14 @@ def get_script_dir(*, nesting: int = 0) -> Path:
     In notebooks the global ``__file__`` variable isn't set, thus we need different
     means to get the folder a script is defined in, which doesn't change with the
     current working director the ``python interpreter`` was called from.
+
     Parameters
     ----------
     nesting : int
         Number to go up in the call stack to get to the initially calling function.
         This is only needed for library code and not for user code.
         , by default 0 (direct call)
+
     Returns
     -------
     Path
@@ -325,6 +434,7 @@ def make_path_absolute_if_relative(path: Path) -> Path:
     ----------
     path : Path
         The path to make absolute.
+
     Returns
     -------
     Path
@@ -391,32 +501,35 @@ def create_clp_guide_dataset(
     """
     if isinstance(result, xr.Dataset):
         dataset = result
-    elif dataset_name is None or dataset_name not in result.data:
-        raise ValueError(
+    elif dataset_name is None or dataset_name not in result.optimization_results:
+        msg = (
             f"Unknown dataset {dataset_name!r}. "
-            f"Known datasets are:\n {list(result.data.keys())}"
+            f"Known datasets are:\n {list(result.optimization_results.keys())}"
         )
+        raise ValueError(msg)
     else:
-        dataset = result.data[dataset_name]
+        dataset = result.optimization_results[dataset_name]
     if clp_label not in dataset.clp_label:
-        raise ValueError(
+        msg = (
             f"Unknown clp_label {clp_label!r}. "
-            f"Known clp_labels are:\n {[str(label) for label in dataset.clp_label.values]}"
+            f"Known clp_labels are:\n {[str(label) for label in dataset.clp_label.to_numpy()]}"
         )
+        raise ValueError(msg)
     if "model_dimension" not in dataset.attrs:
-        raise ValueError(
+        msg = (
             "Result dataset is missing attribute 'model_dimension', "
             "which means that it was created with pyglotaran<0.6.0."
             "Please recreate the result with the latest version of pyglotaran."
         )
+        raise ValueError(msg)
 
     clp_values = dataset.clp.sel(clp_label=[clp_label])
     value_dimension = next(filter(lambda x: x != dataset.model_dimension, clp_values.dims))
 
     return xr.DataArray(
-        clp_values.values.T,
+        clp_values.to_numpy().T,
         coords={
             dataset.model_dimension: [dataset.coords[dataset.model_dimension][0].item()],
-            value_dimension: clp_values.coords[value_dimension].values,
+            value_dimension: clp_values.coords[value_dimension].to_numpy(),
         },
     ).to_dataset(name="data")

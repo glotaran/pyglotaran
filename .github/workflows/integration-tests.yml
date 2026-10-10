@@ -19,23 +19,17 @@ jobs:
     outputs:
       example-list: ${{ steps.create-example-list.outputs.example-list }}
     steps:
-      # Pre-checkout the notebooks: the shared action otherwise clones main.
-      - name: Checkout pinned examples
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          repository: "glotaran/pyglotaran-examples"
-          ref: fcfe1519ac3a49e1826318646dfdda7892d0bbf1
-          path: pyglotaran-examples
       - name: Set up Python 3.10
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.10"
       - name: Set example list output
         id: create-example-list
-        uses: glotaran/pyglotaran-examples@fcfe1519ac3a49e1826318646dfdda7892d0bbf1
+        uses: glotaran/pyglotaran-examples@staging_rewrite
         with:
           example_name: set example list
           set_example_list: true
+          examples_branch: staging_rewrite
 
   run-examples:
     name: "Run Example: "
@@ -46,12 +40,6 @@ jobs:
         example_name: ${{fromJson(needs.create-example-list.outputs.example-list)}}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Checkout pinned examples
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          repository: "glotaran/pyglotaran-examples"
-          ref: fcfe1519ac3a49e1826318646dfdda7892d0bbf1
-          path: pyglotaran-examples
       - name: Set up Python 3.10
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
@@ -62,18 +50,22 @@ jobs:
         with:
           enable-cache: true
       - name: Install pyglotaran
-        run: uv pip install . -r requirements_dev.txt
+        run: |
+          export UV_PROJECT_ENVIRONMENT="${pythonLocation}"
+          uv sync --frozen --no-default-groups --no-editable
       - name: ${{ matrix.example_name }}
         id: example-run
-        uses: glotaran/pyglotaran-examples@fcfe1519ac3a49e1826318646dfdda7892d0bbf1
+        uses: glotaran/pyglotaran-examples@staging_rewrite
         with:
           example_name: ${{ matrix.example_name }}
-          install_extras: false
+          examples_branch: staging_rewrite
       - name: Installed packages
         if: always()
         run: |
           uv pip list
-      - name: Upload Example Plots Artifact
+
+      - name: Upload Example Notebook Artifact
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: example-notebooks-${{ matrix.example_name }}
@@ -83,7 +75,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: example-results-${{ matrix.example_name }}
-          path: ~/pyglotaran_examples_results
+          path: ~/pyglotaran_examples_results_staging
 
   collect-artifacts:
     if: always()
@@ -134,7 +126,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [collect-artifacts]
     steps:
-      - name: Checkout pyglotaran and pinned validator
+      - name: Checkout pyglotaran and pinned validation action
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           path: pyglotaran
@@ -144,7 +136,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: "glotaran/pyglotaran-examples"
-          # Pinned v0.7 gold standard. Refresh this only with a reviewed
+          # Pinned v0.7.4 gold standard. Refresh this only with a reviewed
           # comparison-results publication and update its provenance record.
           ref: 5effc7525baaf8d658f773bb8410d6b7cd27fdfe
           path: comparison-results
@@ -180,3 +172,17 @@ jobs:
         uses: ./pyglotaran/validation
         with:
           validation_name: pyglotaran-examples
+          comparison_mode: semantic
+          reference_root: comparison-results
+          current_root: comparison-results-current
+          report_path: semantic-report.json
+
+      - name: Upload semantic validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-validation-report
+          path: |
+            semantic-report.json
+            semantic-report.md
+          if-no-files-found: error

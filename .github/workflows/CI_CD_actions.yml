@@ -10,9 +10,6 @@ on:
       - "pre-commit-ci-update-config"
   pull_request:
 
-env:
-  UV_SYSTEM_PYTHON: 1
-
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
@@ -25,27 +22,6 @@ jobs:
           python-version: "3.10"
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.1
-
-  check-manifest:
-    name: Check Manifest
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          enable-cache: true
-
-      - name: Install check manifest
-        run: uv pip install check-manifest 'setuptools>=62.4.0'
-      - name: Run check manifest
-        run: check-manifest
 
   docs:
     runs-on: ubuntu-latest
@@ -66,15 +42,19 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Install just
+        run: uv tool install rust-just
+
       - name: Install dependencies
         run: |
           conda install -y pandoc
-          uv pip install . -r docs/requirements.txt -p $(which python)
+          uv sync --frozen --group docs
       - name: Show installed packages
         run: uv pip list
       - name: Build docs
         run: |
-          make --directory=docs clean html
+          just docs/clean
+          just docs/html
 
   docs-links:
     runs-on: ubuntu-latest
@@ -94,19 +74,23 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Install just
+        run: uv tool install rust-just
+
       - name: Install dependencies
         run: |
           conda install -y pandoc
-          uv pip install . -r docs/requirements.txt -p $(which python)
+          uv sync --frozen --group docs
       - name: Show installed packages
         run: uv pip list
       - name: Check doc links
         run: |
-          make --directory=docs clean linkcheck $@ | tee linkcheck-output.txt
-          exit ${PIPESTATUS[0]}
+          just docs/clean
+          just docs/linkcheck | tee linkcheck-output.txt
+          exit "${PIPESTATUS[0]}"
       - name: Linkcheck summary
         if: ${{ always() }}
-        run: cat linkcheck-output.txt | grep -E "(\(line.*\)|writing output)"
+        run: grep -E "(\(line.*\)|writing output)" < linkcheck-output.txt
 
   docs-notebooks:
     runs-on: ubuntu-latest
@@ -124,16 +108,17 @@ jobs:
       - name: Install dependencies
         run: |
           conda install -y pandoc
-          uv pip install . -r docs/requirements.txt
+          uv sync --frozen --group docs
       - name: Show installed packages
         run: uv pip list
-      - name: Build docs
+      - name: Run notebooks
         run: |
+          uv run python docs/remove_notebook_written_data.py
           uv run pytest -vv --nbval docs/source/notebooks
 
   test:
     runs-on: ${{ matrix.os }}
-    needs: [pre-commit, check-manifest]
+    needs: [pre-commit]
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
@@ -152,17 +137,20 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install -e . -r requirements_dev.txt
+          uv sync --frozen --group test
       - name: Show installed packages
         run: uv pip list
       - name: Run tests
         run: |
-          uv run pytest --cov=./ --cov-report term --cov-report xml --cov-config pyproject.toml glotaran
+          uv run pytest --cov=./ --cov-report term --cov-report xml --cov-config pyproject.toml tests
 
       - name: Codecov Upload
         uses: codecov/codecov-action@v4
+        # Coverage upload is informational; a Codecov outage must not fail the test job.
+        continue-on-error: true
         with:
           file: ./coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   deploy:
     runs-on: ubuntu-latest

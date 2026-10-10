@@ -1,5 +1,7 @@
 """Deprecation helpers and place to put deprecated implementations till removing."""
 
+from __future__ import annotations
+
 from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
 from glotaran.deprecation.deprecation_utils import GlotaranDeprecatedApiError
 from glotaran.deprecation.deprecation_utils import deprecate
@@ -10,12 +12,12 @@ from glotaran.deprecation.deprecation_utils import raise_deprecation_error
 from glotaran.deprecation.deprecation_utils import warn_deprecated
 
 __all__ = [
+    "GlotaranApiDeprecationWarning",
+    "GlotaranDeprecatedApiError",
     "deprecate",
     "deprecate_dict_entry",
     "deprecate_module_attribute",
     "deprecate_submodule",
     "raise_deprecation_error",
     "warn_deprecated",
-    "GlotaranApiDeprecationWarning",
-    "GlotaranDeprecatedApiError",
 ]

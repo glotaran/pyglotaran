@@ -1,5 +1,5 @@
 ci:
-  skip: [interrogate]
+  skip: [interrogate, taplo-lint]
 
 default_language_version:
   python: python3.10
@@ -7,7 +7,7 @@ default_language_version:
 repos:
   # Formatters
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: check-ast
       - id: check-builtin-literals
@@ -15,17 +15,19 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: debug-statements
-      - id: fix-encoding-pragma
-        args: [--remove]
+
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: "v2.11.1"
+    hooks:
+      - id: pyproject-fmt
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.17.0
+    rev: v3.21.2
     hooks:
       - id: pyupgrade
         types: [file]
         types_or: [python, pyi]
         args: [--py310-plus]
-        exclude: "glotaran.model.item"
 
   - repo: https://github.com/MarcoGorelli/absolufy-imports
     rev: v0.3.1
@@ -35,31 +37,16 @@ repos:
         types: [file]
         types_or: [python, pyi]
 
-  - repo: https://github.com/psf/black
-    rev: 24.8.0
+  - repo: https://github.com/ComPWA/taplo-pre-commit
+    rev: v0.9.3
     hooks:
-      - id: black
-        types: [file]
-        types_or: [python, pyi]
-        language_version: python3
-
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        types: [file]
-        types_or: [python, pyi]
-        minimum_pre_commit_version: 2.9.0
-
-  - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.5.0
-    hooks:
-      - id: setup-cfg-fmt
-        args: [--include-version-classifiers]
+      - id: taplo-format
+      - id: taplo-lint
+        args: [--no-schema]
 
   # Notebook tools
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.7.1
+    rev: 0.8.2
     hooks:
       - id: nbstripout
         args:
@@ -67,60 +54,58 @@ repos:
           - "--extra-keys"
           - "metadata.vscode metadata.language_info.version"
 
-  - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.8.7
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.14.7
     hooks:
-      - id: nbqa-black
-        additional_dependencies: [black==22.6.0]
-        args: [--nbqa-mutate]
-      - id: nbqa-pyupgrade
-        additional_dependencies: [pyupgrade==2.37.3]
-        args: [--nbqa-mutate, --py38-plus]
-      - id: nbqa-flake8
-      - id: nbqa-check-ast
-      - id: nbqa-isort
-        additional_dependencies: [isort==5.10.1]
-        args: [--nbqa-mutate]
+      - id: ruff
+        name: "ruff sort notebooks"
+        args:
+          - "--fix"
+          - "--select=I"
+          - "--config=.ruff-notebooks.toml"
+        alias: isort-notebooks
+        types_or: [jupyter]
+      - id: ruff-format
+        name: "ruff format notebooks"
+        types_or: [jupyter]
+        args:
+          - "--config=.ruff-notebooks.toml"
+        alias: format-notebooks
+      - id: ruff
+        name: "ruff lint notebooks"
+        types_or: [jupyter]
+        args:
+          - "--config=.ruff-notebooks.toml"
+        alias: check-notebooks
 
   # Linters
-  - repo: https://github.com/asottile/yesqa
-    rev: v1.5.0
-    hooks:
-      - id: yesqa
-        types: [file]
-        types_or: [python, pyi]
-        additional_dependencies: [flake8-docstrings, flake8-print>=5.0.0]
 
-  - repo: https://github.com/PyCQA/flake8
-    rev: 7.1.1
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.7
     hooks:
-      - id: flake8
-        name: "flake8 lint code"
-        types: [file]
+      - id: ruff
+        name: "ruff sort imports"
+        args:
+          - "--fix"
+          - "--select=I"
+        alias: isort
         types_or: [python, pyi]
-        additional_dependencies:
-          [flake8-pyi, flake8-comprehensions, flake8-print>=5.0.0]
-        args:
-          - "--count"
-
-  - repo: https://github.com/PyCQA/flake8
-    rev: 7.1.1
-    hooks:
-      - id: flake8
-        alias: flake8-docs
-        args:
-          - "--select=D,DAR"
-          - "--count"
-        name: "flake8 lint docstrings"
-        exclude: "docs|setup.py|tests?/|glotaran/builtin/megacomplexes|glotaran/cli|benchmark|glotaran/builtin/io/ascii"
-        additional_dependencies: [flake8-docstrings, darglint==1.8.0]
+      - id: ruff-format
+        types_or: [python, pyi]
+      # Commands above are both formatters an not linters
+      # See also: https://github.com/astral-sh/ruff/discussions/7310#discussioncomment-7102010
+      - id: ruff
+        name: "ruff lint"
+        exclude: "docs/source/conf.py"
+        types_or: [python, pyi]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
+    rev: v1.19.0
     hooks:
       - id: mypy
-        exclude: "docs|benchmark/|.*/tests?/.*"
-        additional_dependencies: [types-tabulate, types-attrs]
+        exclude: "docs|benchmark/|tests/.*"
+        additional_dependencies: [types-tabulate, numpy, pydantic]
 
   - repo: https://github.com/econchick/interrogate
     rev: 1.7.0
@@ -128,31 +113,27 @@ repos:
       - id: interrogate
         args: [--config=pyproject.toml, glotaran]
         pass_filenames: false
-        additional_dependencies: [click<8]
 
-  - repo: https://github.com/rstcheck/rstcheck
-    rev: "v6.2.4"
-    hooks:
-      - id: rstcheck
-        additional_dependencies: [sphinx]
-        exclude: "^docs/source/_templates"
-
-  - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
-    hooks:
-      - id: rst-backticks
-      - id: python-check-blanket-noqa
-        exclude: "docs|tests?"
-      - id: python-check-blanket-type-ignore
-        exclude: "docs|tests?"
-      - id: python-use-type-annotations
-      - id: rst-directive-colons
-      - id: rst-inline-touching-normal
+  # - repo: https://github.com/pre-commit/pygrep-hooks
+  #   rev: v1.10.0
+  #   hooks:
+  #     - id: python-check-blanket-noqa
+  #       exclude: "docs|tests?"
+  #     - id: python-check-blanket-type-ignore
+  #       exclude: "docs|tests?"
+  #     - id: python-use-type-annotations
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: codespell
         types: [file]
         types_or: [python, pyi, markdown, rst, jupyter]
         additional_dependencies: [tomli]
+        args:
+          - --ignore-words-list=glotaran,doas,projectio
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: "v1.7.9"
+    hooks:
+      - id: actionlint

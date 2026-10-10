@@ -12,37 +12,77 @@ See: https://www.python.org/dev/peps/pep-3102/
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import sys
 from typing import TYPE_CHECKING
+
+if sys.version_info < (3, 12):
+    from typing_extensions import TypedDict
+else:
+    from typing import TypedDict
+
+from typing import Literal
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from typing import Literal
-    from typing import Union
+    from typing import TypeAlias
 
     import xarray as xr
 
-    from glotaran.model import Model
     from glotaran.parameter import Parameters
     from glotaran.project import Result
     from glotaran.project import Scheme
 
-    DataLoader = Callable[[str], Union[xr.Dataset, xr.DataArray]]
-    DataSaver = Callable[[str, Union[xr.Dataset, xr.DataArray]], None]
+    DataLoader: TypeAlias = Callable[[str], xr.Dataset | xr.DataArray]
+    DataSaver: TypeAlias = Callable[[str, xr.Dataset | xr.DataArray], None]
 
 
-@dataclass
-class SavingOptions:
+class SavingOptions(TypedDict, total=False):
     """A collection of options for result saving."""
 
-    data_filter: list[str] | None = None
-    data_format: Literal["nc"] = "nc"
-    parameter_format: Literal["csv"] = "csv"
-    report: bool = True
+    data_filter: set[
+        Literal[
+            "input_data",
+            "residuals",
+            "fitted_data",
+            "elements",
+            "activations",
+            "fit_decomposition",
+        ]
+    ]
+    """Set of data keys to not saved."""
+    data_format: Literal["nc"] | str  # noqa: PYI051
+    """Format of the data files to be saved."""
+    data_plugin: str | None
+    """Name of the data plugin to be used for saving, determined automatically if None."""
+    parameters_format: Literal["csv", "tsv", "xlsx", "ods"] | str  # noqa: PYI051
+    """Format of the parameter files to be saved."""
+    parameters_plugin: str | None
+    """Name of the parameter plugin to be used for saving, determined automatically if None."""
+    scheme_format: Literal["yml"] | str  # noqa: PYI051
+    """Format of the scheme files to be saved."""
+    scheme_plugin: str | None
+    """Name of the scheme plugin to be used for saving, determined automatically if None."""
 
 
-SAVING_OPTIONS_DEFAULT = SavingOptions()
-SAVING_OPTIONS_MINIMAL = SavingOptions(data_filter=["fitted_data", "residual"], report=False)
+SAVING_OPTIONS_DEFAULT: SavingOptions = {
+    "data_filter": set(),
+    "data_format": "nc",
+    "data_plugin": None,
+    "parameters_format": "csv",
+    "parameters_plugin": None,
+    "scheme_format": "yml",
+    "scheme_plugin": None,
+}
+SAVING_OPTIONS_MINIMAL: SavingOptions = SAVING_OPTIONS_DEFAULT | {
+    "data_filter": {
+        "input_data",
+        "residuals",
+        "fitted_data",
+        "elements",
+        "activations",
+        "fit_decomposition",
+    }
+}
 
 
 class DataIoInterface:
@@ -77,13 +117,14 @@ class DataIoInterface:
         .. # noqa: DAR202
         .. # noqa: DAR401
         """
-        raise NotImplementedError(f"""Cannot read data with format: {self.format!r}""")
+        msg = f"""Cannot read data with format: {self.format!r}"""
+        raise NotImplementedError(msg)
 
     def save_dataset(
         self,
         dataset: xr.Dataset | xr.DataArray,
         file_name: str,
-    ):
+    ) -> None:
         """Save data from :xarraydoc:`Dataset` to a file.
 
         **NOT IMPLEMENTED**
@@ -99,7 +140,8 @@ class DataIoInterface:
         .. # noqa: DAR101
         .. # noqa: DAR401
         """
-        raise NotImplementedError(f"""Cannot save data with format: {self.format!r}""")
+        msg = f"""Cannot save data with format: {self.format!r}"""
+        raise NotImplementedError(msg)
 
 
 class ProjectIoInterface:
@@ -115,45 +157,6 @@ class ProjectIoInterface:
         """
         self.format = format_name
 
-    def load_model(self, file_name: str) -> Model:
-        """Create a Model instance from the specs defined in a file.
-
-        **NOT IMPLEMENTED**
-
-        Parameters
-        ----------
-        file_name: str
-            File containing the model specs.
-
-        Returns
-        -------
-        Model
-            Model instance created from the file.
-
-
-        .. # noqa: DAR202
-        .. # noqa: DAR401
-        """
-        raise NotImplementedError(f"Cannot read models with format {self.format!r}")
-
-    def save_model(self, model: Model, file_name: str):
-        """Save a Model instance to a spec file.
-
-        **NOT IMPLEMENTED**
-
-        Parameters
-        ----------
-        model: Model
-            Model instance to save to specs file.
-        file_name: str
-            File to write the model specs to.
-
-
-        .. # noqa: DAR101
-        .. # noqa: DAR401
-        """
-        raise NotImplementedError(f"Cannot save models with format {self.format!r}")
-
     def load_parameters(self, file_name: str) -> Parameters:
         """Create a Parameters instance from the specs defined in a file.
 
@@ -166,16 +169,17 @@ class ProjectIoInterface:
 
         Returns
         -------
-        Parameters
+        ``Parameters``
             Parameters instance created from the file.
 
 
         .. # noqa: DAR202
         .. # noqa: DAR401
         """
-        raise NotImplementedError(f"Cannot read parameters with format {self.format!r}")
+        msg = f"Cannot read parameters with format {self.format!r}"
+        raise NotImplementedError(msg)
 
-    def save_parameters(self, parameters: Parameters, file_name: str):
+    def save_parameters(self, parameters: Parameters, file_name: str) -> None:
         """Save a Parameters instance to a spec file.
 
         **NOT IMPLEMENTED**
@@ -191,7 +195,8 @@ class ProjectIoInterface:
         .. # noqa: DAR101
         .. # noqa: DAR401
         """
-        raise NotImplementedError(f"Cannot save parameters with format {self.format!r}")
+        msg = f"Cannot save parameters with format {self.format!r}"
+        raise NotImplementedError(msg)
 
     def load_scheme(self, file_name: str) -> Scheme:
         """Create a Scheme instance from the specs defined in a file.
@@ -211,9 +216,10 @@ class ProjectIoInterface:
         .. # noqa: DAR202
         .. # noqa: DAR401
         """
-        raise NotImplementedError(f"Cannot read scheme with format {self.format!r}")
+        msg = f"Cannot read scheme with format {self.format!r}"
+        raise NotImplementedError(msg)
 
-    def save_scheme(self, scheme: Scheme, file_name: str):
+    def save_scheme(self, scheme: Scheme, file_name: str) -> None:
         """Save a Scheme instance to a spec file.
 
         **NOT IMPLEMENTED**
@@ -229,7 +235,8 @@ class ProjectIoInterface:
         .. # noqa: DAR101
         .. # noqa: DAR401
         """
-        raise NotImplementedError(f"Cannot save scheme with format {self.format!r}")
+        msg = f"Cannot save scheme with format {self.format!r}"
+        raise NotImplementedError(msg)
 
     def load_result(self, result_path: str) -> Result:
         """Create a Result instance from the specs defined in a file.
@@ -250,7 +257,8 @@ class ProjectIoInterface:
         .. # noqa: DAR202
         .. # noqa: DAR401
         """
-        raise NotImplementedError(f"Cannot read result with format {self.format!r}")
+        msg = f"Cannot read result with format {self.format!r}"
+        raise NotImplementedError(msg)
 
     def save_result(
         self,
@@ -276,4 +284,5 @@ class ProjectIoInterface:
         .. # noqa: DAR101
         .. # noqa: DAR401
         """
-        raise NotImplementedError(f"Cannot save result with format {self.format!r}")
+        msg = f"Cannot save result with format {self.format!r}"
+        raise NotImplementedError(msg)

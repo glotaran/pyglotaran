@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Generator
 from textwrap import indent
 from typing import TYPE_CHECKING
 from typing import Any
@@ -17,14 +16,18 @@ from glotaran.parameter.parameter import Parameter
 from glotaran.utils.ipython import MarkdownStr
 from glotaran.utils.sanitize import pretty_format_numerical
 
+MINIMUM_STANDARD_ERROR = 1e-15
+
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from glotaran.parameter.parameter_history import ParameterHistory
 
 
-class ParameterNotFoundException(Exception):
+class ParameterNotFoundError(Exception):
     """Raised when a Parameter is not found."""
 
-    def __init__(self, label: str):  # noqa: D107
+    def __init__(self, label: str) -> None:  # noqa: D107
         super().__init__(f"Cannot find parameter {label}")
 
 
@@ -33,7 +36,7 @@ class Parameters:
 
     loader = load_parameters
 
-    def __init__(self, parameters: dict[str, Parameter]):
+    def __init__(self, parameters: dict[str, Parameter]) -> None:
         """Create :class:`Parameters`.
 
         Parameters
@@ -52,6 +55,10 @@ class Parameters:
         self.update_parameter_expression()
 
     @classmethod
+    def empty(cls) -> Parameters:
+        return cls({})
+
+    @classmethod
     def from_list(
         cls, parameter_list: list[float | int | str | list[Any] | dict[str, Any]]
     ) -> Parameters:
@@ -64,7 +71,7 @@ class Parameters:
 
         Returns
         -------
-        Parameters
+        ``Parameters``
             The created :class:`Parameters`.
 
         .. # noqa: D414
@@ -76,9 +83,9 @@ class Parameters:
 
         for i, item in enumerate(item for item in parameter_list if not isinstance(item, dict)):
             if not isinstance(item, list):
-                item = [item]
+                item = [item]  # noqa: PLW2901
             if not any(isinstance(v, str) for v in item):
-                item += [f"{i+1}"]
+                item.append(f"{i + 1}")
             parameter = Parameter.from_list(item, default_options=defaults)
             parameters[parameter.label] = parameter
         return cls(parameters)
@@ -97,7 +104,7 @@ class Parameters:
 
         Returns
         -------
-        Parameters
+        ``Parameters``
             The created :class:`Parameters`
 
         .. # noqa: D414
@@ -105,9 +112,9 @@ class Parameters:
         parameters = {}
         for label, param_def, default in flatten_parameter_dict(parameter_dict):
             parameter = Parameter.from_list(param_def, default_options=default)
-            label += f".{parameter.label}"
-            parameter.label = label
-            parameters[label] = parameter
+            full_label = f"{label}.{parameter.label}"
+            parameter.label = full_label
+            parameters[full_label] = parameter
 
         return cls(parameters)
 
@@ -122,7 +129,7 @@ class Parameters:
 
         Returns
         -------
-        Parameters
+        ``Parameters``
             The created :class:`Parameters`.
 
         .. # noqa: D414
@@ -153,23 +160,26 @@ class Parameters:
 
         Returns
         -------
-        Parameters
+        ``Parameters``
             The created parameter group.
 
         .. # noqa: D414
         """
         for column_name in ["label", "value"]:
             if column_name not in df:
-                raise ValueError(f"Missing required column '{column_name}' in '{source}'.")
+                msg = f"Missing required column '{column_name}' in '{source}'."
+                raise ValueError(msg)
 
         for column_name in filter(lambda x: x in df.columns, ["minimum", "maximum", "value"]):
             if any(not np.isreal(v) for v in df[column_name]):
-                raise ValueError(f"Column '{column_name}' in '{source}' has non numeric values.")
+                msg = f"Column '{column_name}' in '{source}' has non numeric values."
+                raise ValueError(msg)
 
         for column_name in filter(lambda x: x in df.columns, ["non_negative", "vary"]):
             df[column_name] = [v != 0 if isinstance(v, int) else v for v in df[column_name]]
             if any(not isinstance(v, bool) for v in df[column_name]):
-                raise ValueError(f"Column '{column_name}' in '{source}' has non boolean values.")
+                msg = f"Column '{column_name}' in '{source}' has non boolean values."
+                raise ValueError(msg)
 
         # clean NaN if expressions
         if "expression" in df:
@@ -197,7 +207,7 @@ class Parameters:
         """
         return [p.as_dict() for p in self.all()]
 
-    def to_parameter_dict_or_list(self, serialize_parameters: bool = False) -> dict | list:
+    def to_parameter_dict_or_list(self, *, serialize_parameters: bool = False) -> dict | list:
         """Convert to a dict or list of parameter definitions.
 
         Parameters
@@ -229,7 +239,7 @@ class Parameters:
             )
         return parameter_dict
 
-    def set_from_history(self, history: ParameterHistory, index: int):
+    def set_from_history(self, history: ParameterHistory, index: int) -> None:
         """Update the :class:`Parameters` with values from a parameter history.
 
         Parameters
@@ -239,11 +249,12 @@ class Parameters:
         index : int
             The history index.
         """
-        self.set_from_label_and_value_arrays(
-            # Omit 0th element with `iteration` label
-            history.parameter_labels[1:],
-            history.get_parameters(index)[1:],
-        )
+        # Omit 0th element with `iteration` label
+        for label, value in zip(
+            history.parameter_labels[1:], history.get_parameters(index)[1:], strict=True
+        ):
+            self.get(label).value = value
+        self.update_parameter_expression()
 
     def copy(self) -> Parameters:
         """Create a copy of the :class:`Parameters`.
@@ -256,7 +267,7 @@ class Parameters:
         .. # noqa: D414
         """
         return Parameters(
-            {label: parameter.copy() for label, parameter in self._parameters.items()}
+            {label: parameter.model_copy() for label, parameter in self._parameters.items()}
         )
 
     def all(self) -> Generator[Parameter]:
@@ -305,9 +316,19 @@ class Parameters:
         try:
             return self._parameters[label]
         except KeyError as error:
-            raise ParameterNotFoundException(label) from error
+            raise ParameterNotFoundError(label) from error
 
-    def update_parameter_expression(self):
+    def add(self, parameter: Parameter) -> None:
+        """Add a parameter.
+
+        Parameters
+        ----------
+        parameter: Parameter
+            The parameter to add.
+        """
+        self._parameters[parameter.label] = parameter
+
+    def update_parameter_expression(self) -> None:
         """Update all parameters which have an expression.
 
         Raises
@@ -317,16 +338,17 @@ class Parameters:
         """
         for parameter in self.all():
             if parameter.expression is not None:
-                value = self._evaluator(parameter.transformed_expression)
-                if not isinstance(value, (int, float)):
-                    raise ValueError(
+                value = self._evaluator(parameter._transformed_expression)  # noqa: SLF001
+                if not isinstance(value, int | float):
+                    msg = (
                         f"Expression '{parameter.expression}' of parameter '{parameter.label}' "
                         f"evaluates to non numeric value '{value}'."
                     )
+                    raise ValueError(msg)
                 parameter.value = value
 
     def get_label_value_and_bounds_arrays(
-        self, exclude_non_vary: bool = False
+        self, *, exclude_non_vary: bool = False
     ) -> tuple[list[str], np.ndarray, np.ndarray, np.ndarray]:
         """Return a arrays of all parameter labels, values and bounds.
 
@@ -358,7 +380,7 @@ class Parameters:
 
         return labels, np.asarray(values), np.asarray(lower_bounds), np.asarray(upper_bounds)
 
-    def set_from_label_and_value_arrays(self, labels: list[str], values: np.ndarray):
+    def set_from_label_and_value_arrays(self, labels: list[str], values: np.ndarray) -> None:
         """Update the parameter values from a list of labels and values.
 
         Parameters
@@ -374,11 +396,10 @@ class Parameters:
             Raised if the size of the labels does not match the stize of values.
         """
         if len(labels) != len(values):
-            raise ValueError(
-                f"Length of labels({len(labels)}) not equal to length of values({len(values)})."
-            )
+            msg = f"Length of labels({len(labels)}) not equal to length of values({len(values)})."
+            raise ValueError(msg)
 
-        for label, value in zip(labels, values):
+        for label, value in zip(labels, values, strict=False):
             self.get(label).set_value_from_optimization(value)
 
         self.update_parameter_expression()
@@ -428,19 +449,34 @@ class Parameters:
 
     def __repr__(self) -> str:
         """Representation debug."""
-        params = [f"{p.label!r}: {repr(p)}" for p in self.all()]
+        params = [f"{p.label!r}: {p!r}" for p in self.all()]
         return f"Parameters({{{', '.join(params)}}})"
 
     def __eq__(self, other: object) -> bool:
         """=="""  # noqa: D400
         if isinstance(other, Parameters):
             return self.labels == other.labels and all(
-                self.get(label)._deep_equals(other.get(label)) for label in self.labels
+                self.get(label)._deep_equals(other.get(label))  # noqa: SLF001
+                for label in self.labels
             )
-        raise NotImplementedError(
+        msg = (
             "Parameters can only be compared with instances of Parameters, "
             f"not with {type(other).__qualname__!r}."
         )
+        raise NotImplementedError(msg)
+
+    def __hash__(self) -> int:
+        """Hash function for the class."""
+        return hash(repr(self))
+
+    def close_or_equal(self, rhs: Parameters, rtol: float = 1e-3) -> bool:
+        try:
+            return all(
+                np.allclose(parameter.value, rhs.get(label).value, rtol=rtol)
+                for label, parameter in self._parameters.items()
+            )
+        except ParameterNotFoundError:
+            return False
 
 
 def flatten_parameter_dict(
@@ -470,9 +506,9 @@ def flatten_parameter_dict(
                 (list_value for list_value in value if not isinstance(list_value, dict)), start=1
             ):
                 if not isinstance(list_value, list):
-                    list_value = [str(index), list_value]
+                    list_value = [str(index), list_value]  # noqa: PLW2901
                 elif not any(isinstance(v, str) for v in list_value):
-                    list_value += [str(index)]
+                    list_value.append(str(index))
                 yield key, list_value, sub_dict
 
 
@@ -519,23 +555,26 @@ def param_dict_to_markdown(
         return_string += f"{node_indentation}* __{label}__:\n"
 
     if isinstance(parameters, list):
+        parameter_rows = []
         for parameter in parameters:
-            if abs(parameter.standard_error) < 1e-15:
-                parameter.standard_error = np.nan
-        parameter_rows = [
-            [
-                parameter.label_short,
-                parameter.value,
-                parameter.standard_error,
-                repr(pretty_format_numerical(parameter.value / parameter.standard_error)),
-                parameter.minimum,
-                parameter.maximum,
-                parameter.vary,
-                parameter.non_negative,
-                f"`{parameter.expression}`",
-            ]
-            for parameter in parameters
-        ]
+            standard_error = (
+                np.nan
+                if abs(parameter.standard_error) < MINIMUM_STANDARD_ERROR
+                else parameter.standard_error
+            )
+            parameter_rows.append(
+                [
+                    parameter.label_short,
+                    parameter.value,
+                    standard_error,
+                    repr(pretty_format_numerical(parameter.value / standard_error)),
+                    parameter.minimum,
+                    parameter.maximum,
+                    parameter.vary,
+                    parameter.non_negative,
+                    f"`{parameter.expression}`",
+                ]
+            )
         parameter_table = indent(
             tabulate(
                 parameter_rows,
@@ -548,10 +587,10 @@ def param_dict_to_markdown(
         )
         return_string += f"\n{parameter_table}\n\n"
     else:
-        for label, child in sorted(parameters.items()):
+        for child_label, child in sorted(parameters.items()):
             return_string += str(
                 param_dict_to_markdown(
-                    child, float_format=float_format, depth=depth + 1, label=label
+                    child, float_format=float_format, depth=depth + 1, label=child_label
                 )
             )
     return MarkdownStr(return_string.replace("'", " "))

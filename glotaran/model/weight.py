@@ -1,10 +1,10 @@
 """This module contains weight item."""
 
+from __future__ import annotations
+
 from glotaran.model.item import Item
-from glotaran.model.item import item
 
 
-@item
 class Weight(Item):
     """The `Weight` class describes a value by which a dataset will scaled.
 
@@ -12,7 +12,6 @@ class Weight(Item):
     will be used if not set.
     """
 
-    datasets: list[str]
     global_interval: tuple[float, float] | None = None
     model_interval: tuple[float, float] | None = None
     value: float

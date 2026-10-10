@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 from glotaran.model.interval_item import IntervalItem
-from glotaran.model.item import ParameterType
-from glotaran.model.item import item
+from glotaran.model.item import ParameterType  # noqa: TC001
 
 
-@item
 class ClpRelation(IntervalItem):
     """Applies a relation between two clps.
 

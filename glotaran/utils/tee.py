@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import sys
 from io import StringIO
-from types import TracebackType
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from types import TracebackType
+
+    from typing_extensions import Self
 
 
 class TeeContext:
@@ -19,7 +24,7 @@ class TeeContext:
         self.buffer = StringIO()
         self.stdout = sys.stdout
 
-    def __enter__(self) -> TeeContext:
+    def __enter__(self) -> Self:
         """Replace ``sys.stdout`` on entering the context.
 
         Returns
