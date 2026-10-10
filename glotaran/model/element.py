@@ -8,6 +8,7 @@ from dataclasses import field
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Self
 from typing import final
 
 from pydantic import ConfigDict
@@ -163,9 +164,9 @@ class Element(TypedItem, abc.ABC):
 
 class ExtendableElement(Element):
     extends: list[str] | None = None
-    _original: ExtendableElement = PrivateAttr(init=False)
+    _original: Self = PrivateAttr(init=False)
 
-    def model_post_init(self, __context: Any) -> None:  # noqa: ANN401, PYI063
+    def model_post_init(self: Self, __context: Any) -> None:  # noqa: ANN401, PYI063
         """Save a copy of the original instance before extending.
 
         This is needed for roundtrip serialization, where you want to dump the unextended
