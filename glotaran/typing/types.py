@@ -9,14 +9,8 @@ from typing import TypeAlias
 from typing import TypeVar
 
 import numpy as np
-
-try:
-    from numpy._typing._array_like import _SupportsArray
-except ImportError:
-    # numpy < 1.23
-    from numpy.typing._array_like import _SupportsArray  # type:ignore[no-redef]  # noqa: F401
-
 import xarray as xr
+from numpy._typing._array_like import _SupportsArray  # noqa: F401
 
 T = TypeVar("T")
 StrOrPath: TypeAlias = str | Path
