@@ -181,9 +181,10 @@ class Optimization:
         except Exception as e:
             # After an exception in the objective, the evaluation at the same parameters fails
             # again; the error of the optimization is the one to report.
-            if self.error is None:
+            optimization_error = self.error
+            if optimization_error is None:
                 raise
-            raise self.error from e
+            raise optimization_error from e
         if no_free_parameters:
             self.converged = True
             ls_result = OptimizeResult(
