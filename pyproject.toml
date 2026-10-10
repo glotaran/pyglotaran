@@ -57,7 +57,6 @@ urls."Glotaran Ecosystem" = "https://glotaran.org"
 urls.Homepage = "https://github.com/glotaran/pyglotaran"
 urls.Source = "https://github.com/glotaran/pyglotaran"
 urls.Tracker = "https://github.com/glotaran/pyglotaran/issues"
-scripts.glotaran = "glotaran.cli.main:main"
 entry-points."glotaran.plugins.data_io".ascii = "glotaran.builtin.io.ascii.wavelength_time_explicit_file"
 entry-points."glotaran.plugins.data_io".nc = "glotaran.builtin.io.netCDF.netCDF"
 entry-points."glotaran.plugins.data_io".sdt = "glotaran.builtin.io.sdt.sdt_file_reader"
@@ -179,10 +178,6 @@ ignore_errors = true
 [[tool.mypy.overrides]]
 # Should be rewritten anyway see #1171
 module = "glotaran.builtin.io.ascii.*"
-ignore_errors = true
-
-[[tool.mypy.overrides]]
-module = "glotaran.cli.*"
 ignore_errors = true
 
 [[tool.mypy.overrides]]

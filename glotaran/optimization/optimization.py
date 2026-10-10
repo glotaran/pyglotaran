@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import ChainMap
+from collections import Counter
 from typing import TYPE_CHECKING
 from typing import Literal
 from warnings import warn
@@ -18,6 +19,7 @@ from glotaran.optimization.objective import OptimizationResult
 from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
+from glotaran.utils.io import check_file_name_labels
 from glotaran.utils.tee import TeeContext
 
 if TYPE_CHECKING:
@@ -60,7 +62,6 @@ class Optimization:
         verbose: bool = True,
         raise_exception: bool = False,
         maximum_number_function_evaluations: int | None = None,
-        add_svd: bool = True,
         ftol: float | None = 1e-8,
         gtol: float | None = 1e-8,
         xtol: float | None = 1e-8,
@@ -70,6 +71,19 @@ class Optimization:
             "Levenberg-Marquardt",
         ] = "TrustRegionReflection",
     ) -> None:
+        label_counts = Counter(label for experiment in models for label in experiment.datasets)
+        if repeated := [label for label, count in label_counts.items() if count > 1]:
+            msg = (
+                f"Dataset labels {repeated} are used in more than one experiment. The results "
+                "of a fit are stored by dataset label, so dataset labels must be unique across "
+                "experiments."
+            )
+            raise GlotaranUserError(msg)
+        # The result rejects these labels as well, but only after the fit.
+        try:
+            check_file_name_labels(label_counts, "Dataset")
+        except ValueError as error:
+            raise GlotaranUserError(str(error)) from error
         self._parameters = Parameters.empty()
         models = [
             experiment.resolve(library, self._parameters, initial=parameters)
@@ -83,7 +97,6 @@ class Optimization:
         self._verbose = verbose
         self._raise = raise_exception
 
-        self._add_svd = add_svd
         if optimization_method not in SUPPORTED_OPTIMIZATION_METHODS:
             raise UnsupportedMethodError(optimization_method)
         self.settings = OptimizerSettings(
@@ -164,7 +177,6 @@ class Optimization:
                     termination_reason = str(e)
                     self.error = e
 
-        # TODO: check how this works for multiple experiments with possible the same dataset name
         try:
             # Without free parameters, this is the only evaluation and is recorded as such.
             penalty = (
@@ -175,9 +187,10 @@ class Optimization:
         except Exception as e:
             # After an exception in the objective, the evaluation at the same parameters fails
             # again; the error of the optimization is the one to report.
-            if self.error is None:
+            optimization_error = self.error
+            if optimization_error is None:
                 raise
-            raise self.error from e
+            raise optimization_error from e
         if no_free_parameters:
             self.converged = True
             ls_result = OptimizeResult(

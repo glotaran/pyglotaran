@@ -61,6 +61,19 @@
   the initial parameters
 - 🩹 Stop writing the `source_path` and `io_plugin_name` attributes, which hold local paths,
   into saved data files; `load_dataset` sets them
+- 🩹 Link datasets with `clp_link_method` `forward` or `backward` at the nearest coordinate in
+  that direction, instead of at a coordinate taken from the wrong position of the axis
+- 🩹 Reject dataset, element and activation labels that cannot be file names on Windows (empty,
+  ending with `.` or a space, containing one of `<>:"/\|?*` or a control character, or a device
+  name such as `CON` or `NUL`) and labels of one kind that differ only in case; `Result.save` and
+  `Project.export` wrote their files outside the result folder, failed on Windows, or overwrote
+  the files of another label on Windows and macOS; dataset labels are checked before the fit
+- 🩹 Reject dataset labels used in more than one experiment before the fit; the result kept only
+  one experiment's result arrays for such a label
+- 🩹 Report the unweighted matrix and concentrations of weighted datasets, as v0.7 did, instead
+  of the matrix multiplied by the weights with an additional global dimension
+- 🩹 Remove the `add_svd` argument of `Scheme.optimize`; the singular value decompositions of
+  data and residuals were computed for every result and discarded, whatever its value
 
 ### 📚 Documentation
 
@@ -73,6 +86,12 @@
 ### 🗑️ Deprecations (due in 0.9.0)
 
 ### 🗑️❌ Deprecated functionality removed in this release
+
+- Command Line Interface, including the `glotaran` command (#1228)
+- `glotaran.examples` -> `glotaran.testing.simulated_data`
+- `glotaran.parameter.ParameterGroup` -> `glotaran.parameter.Parameters`
+- `<model_file>.clp_area_penalties` -> `<scheme_file>.experiments.<experiment>.clp_penalties`
+- `Project.generate_model` and `Project.generate_parameters` (removed without replacement)
 
 ### 🚧 Maintenance
 

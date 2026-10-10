@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import re
 import subprocess
 import sys
@@ -20,8 +21,10 @@ from glotaran.io import load_parameters
 from glotaran.io import load_scheme
 from glotaran.io import save_dataset
 from glotaran.io import save_scheme
+from glotaran.model.errors import GlotaranUserError
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.project import Project
+from glotaran.project import Scheme
 from glotaran.project import record as record_module
 from glotaran.project.record import claim_record_folder
 from glotaran.project.record import detect_source
@@ -34,8 +37,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     import xarray as xr
-
-    from glotaran.project import Scheme
 
 CREATED = datetime(2026, 10, 4, 14, 28, 5, tzinfo=timezone.utc)
 
@@ -199,6 +200,18 @@ def test_unwritable_results_folder_warns(tmp_path: Path, scheme: Scheme, data: x
         result = project.optimize(scheme, PARAMETERS, {LABEL: data}, verbose=False)
     assert result.record is None
     assert result.optimization_info.success
+
+
+def test_dataset_label_repeated_across_experiments_is_not_recorded(
+    project: Project, data: xr.Dataset
+):
+    """A scheme with a dataset label in two experiments is rejected before a record is made."""
+    scheme_dict = copy.deepcopy(SCHEME_DICT)
+    scheme_dict["experiments"]["copy"] = copy.deepcopy(scheme_dict["experiments"][LABEL])
+
+    with pytest.raises(GlotaranUserError, match="more than one experiment"):
+        project.optimize(Scheme.from_dict(scheme_dict), PARAMETERS, {LABEL: data}, verbose=False)
+    assert not project.results_folder.exists() or not any(project.results_folder.iterdir())
 
 
 def test_failed_fit_is_recorded(

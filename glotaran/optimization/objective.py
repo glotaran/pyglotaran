@@ -36,6 +36,7 @@ from glotaran.optimization.penalty import calculate_clp_penalties
 from glotaran.parameter.parameter import Parameter
 from glotaran.plugin_system.base_registry import full_plugin_name
 from glotaran.plugin_system.data_io_registration import get_data_io
+from glotaran.utils.io import check_file_name_labels
 from glotaran.utils.io import relative_posix_path
 from glotaran.utils.pydantic_serde import context_is_dict
 from glotaran.utils.pydantic_serde import save_folder_from_info
@@ -49,22 +50,6 @@ if TYPE_CHECKING:
     from glotaran.model.experiment_model import ExperimentModel
     from glotaran.typing.types import ArrayLike
     from glotaran.typing.types import Self
-
-
-def add_svd_to_result_dataset(dataset: xr.Dataset, global_dim: str, model_dim: str) -> None:
-    for name in ["data", "residual"]:
-        if f"{name}_singular_values" in dataset:
-            continue
-        lsv, sv, rsv = np.linalg.svd(dataset[name].data, full_matrices=False)
-        dataset[f"{name}_left_singular_vectors"] = (
-            (model_dim, "left_singular_value_index"),
-            lsv,
-        )
-        dataset[f"{name}_singular_values"] = (("singular_value_index"), sv)
-        dataset[f"{name}_right_singular_vectors"] = (
-            (global_dim, "right_singular_value_index"),
-            rsv.T,
-        )
 
 
 def create_input_data(
@@ -506,6 +491,16 @@ class OptimizationResult(BaseModel):
             }
         return value
 
+    @field_validator("elements", "activations", mode="after")
+    @classmethod
+    def check_dataset_map_labels(
+        cls, value: dict[str, xr.Dataset], info: ValidationInfo
+    ) -> dict[str, xr.Dataset]:
+        """Reject labels that cannot name a file in the ``elements`` or ``activations`` folder."""
+        kind = "Element" if info.field_name == "elements" else "Activation"
+        check_file_name_labels(value, kind)
+        return value
+
     @model_validator(mode="before")
     @classmethod
     def validate_model(cls, value: Any) -> Any:  # noqa: ANN401
@@ -654,6 +649,30 @@ class OptimizationObjective:
             )
         return np.concatenate(penalties)
 
+    @staticmethod
+    def unweighted_matrix(
+        data: OptimizationData, matrix: OptimizationMatrix
+    ) -> OptimizationMatrix:
+        """Return the matrix of ``data`` without its weight, for the result.
+
+        The weighted matrix is used for the estimation only.
+
+        Parameters
+        ----------
+        data : OptimizationData
+            The data of the matrix.
+        matrix : OptimizationMatrix
+            The matrix of ``data``, weighted if ``data`` has a weight.
+
+        Returns
+        -------
+        OptimizationMatrix
+            ``matrix`` if ``data`` has no weight, else the matrix calculated without weight.
+        """
+        if data.weight is None:
+            return matrix
+        return OptimizationMatrix.from_data(data, apply_weight=False)
+
     def get_global_indices(self, label: str) -> list[int]:
         assert isinstance(self._data, LinkedOptimizationData)
         return [
@@ -717,13 +736,16 @@ class OptimizationObjective:
         model_dim = self._data.model_dimension
         model_axis = result_dataset.coords[model_dim]
 
-        matrix = OptimizationMatrix.from_data(self._data).to_data_array(
+        # Only the full matrix is weighted, for the estimation
+        model_matrix, global_model_matrix, full_matrix = OptimizationMatrix.from_global_data(
+            self._data
+        )
+        matrix = model_matrix.to_data_array(
             global_dim, global_axis.to_numpy(), model_dim, model_axis.to_numpy()
         )
-        global_matrix = OptimizationMatrix.from_data(self._data, global_matrix=True).to_data_array(
+        global_matrix = global_model_matrix.to_data_array(
             model_dim, model_axis.to_numpy(), global_dim, global_axis.to_numpy()
         )
-        _, _, full_matrix = OptimizationMatrix.from_global_data(self._data)
 
         assert self._data.flat_data is not None
         estimation = OptimizationEstimation.calculate(
@@ -748,7 +770,6 @@ class OptimizationObjective:
         clp_size = len(matrix.amplitude_label) + len(global_matrix.amplitude_label)
         self._data.unweight_result_dataset(result_dataset)
 
-        add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
         result = OptimizationResult(
             input_data=create_input_data(self._data, result_dataset),
             residuals=result_dataset.residual,
@@ -800,7 +821,7 @@ class OptimizationObjective:
         amplitudes = xr.DataArray(
             [e.clp for e in estimations], dims=amplitude_coords.keys(), coords=amplitude_coords
         )
-        concentration = concentrations.to_data_array(
+        concentration = self.unweighted_matrix(self._data, concentrations).to_data_array(
             global_dim, global_axis, model_dim, model_axis
         )
 
@@ -824,7 +845,6 @@ class OptimizationObjective:
         )
 
         self._data.unweight_result_dataset(result_dataset)
-        add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
         result_dataset.data.attrs |= self._data.original_dataset_attributes.copy()
         result = OptimizationResult(
             input_data=create_input_data(self._data, result_dataset),
@@ -870,7 +890,7 @@ class OptimizationObjective:
             label: self.create_dataset_result(
                 label,
                 data,
-                dataset_concentrations[label],
+                self.unweighted_matrix(data, dataset_concentrations[label]),
                 estimated_amplitude_axes,
                 estimations,
             )
@@ -980,7 +1000,6 @@ class OptimizationObjective:
         )
         self._data.data[label].unweight_result_dataset(result_dataset)
         result_dataset["fit"] = result_dataset.data - result_dataset.residual
-        add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
 
         concentrations = concentration.to_data_array(
             global_dim, global_axis, model_dim, model_axis
