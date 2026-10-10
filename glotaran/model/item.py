@@ -13,7 +13,7 @@ from types import UnionType
 from typing import Annotated
 from typing import Any
 from typing import ClassVar
-from typing import TypeAlias
+from typing import TypeAliasType
 from typing import Union
 from typing import get_args
 from typing import get_origin
@@ -33,7 +33,7 @@ if typing.TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Generator
 
-ParameterType: TypeAlias = Parameter | float | str
+type ParameterType = Parameter | float | str
 
 META_VALIDATOR = "__glotaran_validator__"
 
@@ -186,6 +186,8 @@ def get_structure_and_type_from_field(
     """
     definition = strip_option_type_from_definition(info.annotation)  # type:ignore[arg-type]
     structure, definition = strip_structure_type_from_definition(definition)
+    if isinstance(definition, TypeAliasType):
+        definition = definition.__value__
     definition = strip_option_type_from_definition(definition, strip_type=str)
     return structure, definition
 

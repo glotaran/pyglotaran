@@ -18,7 +18,6 @@ from typing import TypedDict
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from typing import TypeAlias
 
     import xarray as xr
 
@@ -26,8 +25,8 @@ if TYPE_CHECKING:
     from glotaran.project import Result
     from glotaran.project import Scheme
 
-    DataLoader: TypeAlias = Callable[[str], xr.Dataset | xr.DataArray]
-    DataSaver: TypeAlias = Callable[[str, xr.Dataset | xr.DataArray], None]
+    type DataLoader = Callable[[str], xr.Dataset | xr.DataArray]
+    type DataSaver = Callable[[str, xr.Dataset | xr.DataArray], None]
 
 
 class SavingOptions(TypedDict, total=False):
