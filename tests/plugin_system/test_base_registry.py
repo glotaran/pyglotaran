@@ -30,8 +30,6 @@ if TYPE_CHECKING:
 
     from glotaran.io.interface import DataIoInterface
     from glotaran.io.interface import ProjectIoInterface
-    from glotaran.plugin_system.base_registry import _PluginInstantiableType
-    from glotaran.plugin_system.base_registry import _PluginType
 
 
 class MockPlugin:
@@ -137,10 +135,10 @@ def test_PluginOverwriteWarning():  # noqa: N802
         ("yml_new", YmlProjectIo("yml"), copy(mock_registry_project_io)),
     ],
 )
-def test_add_plugin_to_register(
+def test_add_plugin_to_register[PluginType: (DataIoInterface, ProjectIoInterface)](
     plugin_register_key: str,
-    plugin: _PluginType,
-    plugin_registry: MutableMapping[str, _PluginType],
+    plugin: PluginType,
+    plugin_registry: MutableMapping[str, PluginType],
 ):
     """Add plugin with one key"""
     add_plugin_to_registry(plugin_register_key, plugin, plugin_registry, "set_plugin")
@@ -189,10 +187,12 @@ def test_add_plugin_to_register_existing_plugin_self():
         ("yml_new", YmlProjectIo, copy(mock_registry_project_io)),
     ],
 )
-def test_add_instantiated_plugin_to_register(
+def test_add_instantiated_plugin_to_register[
+    PluginInstantiableType: (DataIoInterface, ProjectIoInterface)
+](
     plugin_register_key: str,
-    plugin: type[_PluginInstantiableType],
-    plugin_registry: MutableMapping[str, _PluginInstantiableType],
+    plugin: type[PluginInstantiableType],
+    plugin_registry: MutableMapping[str, PluginInstantiableType],
 ):
     """Add instantiated plugin"""
     add_instantiated_plugin_to_registry(plugin_register_key, plugin, plugin_registry, "set_plugin")
@@ -208,10 +208,12 @@ def test_add_instantiated_plugin_to_register(
         (["yml_new", "yaml_new"], YmlProjectIo, copy(mock_registry_project_io)),
     ],
 )
-def test_add_instantiated_plugin_to_register_multiple_keys(
+def test_add_instantiated_plugin_to_register_multiple_keys[
+    PluginInstantiableType: (DataIoInterface, ProjectIoInterface)
+](
     plugin_register_keys: list[str],
-    plugin: type[_PluginInstantiableType],
-    plugin_registry: MutableMapping[str, _PluginInstantiableType],
+    plugin: type[PluginInstantiableType],
+    plugin_registry: MutableMapping[str, PluginInstantiableType],
 ):
     """Add instantiated plugin with multiple keys"""
     add_instantiated_plugin_to_registry(

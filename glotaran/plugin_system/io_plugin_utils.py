@@ -9,10 +9,7 @@ from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import TypeVar
 from typing import cast
-
-DecoratedFunc = TypeVar("DecoratedFunc", bound=Callable[..., Any])  # decorated function
 
 if TYPE_CHECKING:
     import os
@@ -67,7 +64,9 @@ def infer_file_format(
     raise ValueError(msg)
 
 
-def not_implemented_to_value_error(func: DecoratedFunc) -> DecoratedFunc:
+def not_implemented_to_value_error[DecoratedFunc: Callable[..., Any]](
+    func: DecoratedFunc,
+) -> DecoratedFunc:
     """Decorate a function to raise ValueError instead of NotImplementedError.
 
     This decorator is supposed to be used on functions which call functions

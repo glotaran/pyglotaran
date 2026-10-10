@@ -14,7 +14,6 @@ from typing import Annotated
 from typing import Any
 from typing import ClassVar
 from typing import TypeAlias
-from typing import TypeVar
 from typing import Union
 from typing import get_args
 from typing import get_origin
@@ -33,8 +32,6 @@ from glotaran.parameter import Parameters
 if typing.TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Generator
-
-ItemT = TypeVar("ItemT", bound="Item")
 
 ParameterType: TypeAlias = Parameter | float | str
 
@@ -240,7 +237,7 @@ def strip_structure_type_from_definition(
     return structure, definition
 
 
-def iterate_fields_of_type(
+def iterate_fields_of_type[ItemT: Item](
     item: type[ItemT] | ItemT, field_type: type
 ) -> Generator[tuple[str, FieldInfo]]:
     """Iterate over all fields of the given types.
@@ -273,7 +270,7 @@ def iterate_fields_of_type(
                 yield name, info
 
 
-def iterate_item_fields(
+def iterate_item_fields[ItemT: Item](
     item: type[ItemT] | ItemT,
 ) -> Generator[tuple[str, FieldInfo]]:
     """Iterate over all item fields.
@@ -291,7 +288,7 @@ def iterate_item_fields(
     yield from iterate_fields_of_type(item, Item)
 
 
-def iterate_parameter_fields(
+def iterate_parameter_fields[ItemT: Item](
     item: type[ItemT] | ItemT,
 ) -> Generator[tuple[str, FieldInfo]]:
     """Iterate over all parameter fields.
@@ -325,7 +322,7 @@ def resolve_parameter(
     return parameter
 
 
-def resolve_item_parameters(  # noqa: C901
+def resolve_item_parameters[ItemT: Item](  # noqa: C901
     item: ItemT, parameters: Parameters, initial: Parameters | None = None
 ) -> ItemT:
     resolved: dict[str, Any] = {}

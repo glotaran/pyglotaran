@@ -21,18 +21,10 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
     from typing import ClassVar
-    from typing import TypeVar
 
     from glotaran.io.interface import DataIoInterface
     from glotaran.io.interface import ProjectIoInterface
     from glotaran.model.element import Element
-
-    _PluginType = TypeVar("_PluginType", type[Element], DataIoInterface, ProjectIoInterface)
-    _PluginInstantiableType = TypeVar(
-        "_PluginInstantiableType", DataIoInterface, ProjectIoInterface
-    )
-
-    GenericPluginInstance = TypeVar("GenericPluginInstance", bound=object)
 
 
 class __PluginRegistry:
@@ -135,10 +127,10 @@ def load_plugins() -> None:
                 entry_point.load()
 
 
-def set_plugin(
+def set_plugin[PluginType: (type[Element], DataIoInterface, ProjectIoInterface)](
     plugin_register_key: str,
     full_plugin_name: str,
-    plugin_registry: MutableMapping[str, _PluginType],
+    plugin_registry: MutableMapping[str, PluginType],
     plugin_register_key_name: str = "format_name",
 ) -> None:
     """Set a plugins short name to a specific plugin referred by its full name.
@@ -152,7 +144,7 @@ def set_plugin(
         Name of the plugin under which it is registered.
     full_plugin_name : str
         Full name (import path) of the registered plugin.
-    plugin_registry : MutableMapping[str, _PluginType]
+    plugin_registry : MutableMapping[str, PluginType]
         Registry the plugin should be set in to.
     plugin_register_key_name: str
         Name of the arg passed ``plugin_register_key`` in the function that implements
@@ -190,10 +182,10 @@ def set_plugin(
     plugin_registry[plugin_register_key] = plugin_registry[full_plugin_name]
 
 
-def add_plugin_to_registry(
+def add_plugin_to_registry[PluginType: (type[Element], DataIoInterface, ProjectIoInterface)](
     plugin_register_key: str,
-    plugin: _PluginType,
-    plugin_registry: MutableMapping[str, _PluginType],
+    plugin: PluginType,
+    plugin_registry: MutableMapping[str, PluginType],
     plugin_set_func_name: str,
     instance_identifier: str = "",
 ) -> None:
@@ -206,9 +198,9 @@ def add_plugin_to_registry(
     ----------
     plugin_register_key : str
         Name of the plugin under which it is registered.
-    plugin: _PluginType
+    plugin: PluginType
         Plugin to be added to the registry.
-    plugin_registry: MutableMapping[str, _PluginType]
+    plugin_registry: MutableMapping[str, PluginType]
         Registry the plugin should be added to.
     plugin_set_func_name: str
         Name of the function used to pin a plugin.
@@ -251,10 +243,12 @@ def add_plugin_to_registry(
     plugin_registry[plugin_register_key] = plugin
 
 
-def add_instantiated_plugin_to_registry(
+def add_instantiated_plugin_to_registry[
+    PluginInstantiableType: (DataIoInterface, ProjectIoInterface)
+](
     plugin_register_keys: str | list[str],
-    plugin_class: type[_PluginInstantiableType],
-    plugin_registry: MutableMapping[str, _PluginInstantiableType],
+    plugin_class: type[PluginInstantiableType],
+    plugin_registry: MutableMapping[str, PluginInstantiableType],
     plugin_set_func_name: str,
 ) -> None:
     """Add instances of plugin_class to the given registry.
@@ -263,10 +257,10 @@ def add_instantiated_plugin_to_registry(
     ----------
     plugin_register_keys : str | list[str]
         Name/-s of the plugin under which it is registered.
-    plugin_class : type[_PluginInstantiableType]
+    plugin_class : type[PluginInstantiableType]
         Pluginclass which should be instantiated with ``plugin_register_keys``
         and added to the registry.
-    plugin_registry : MutableMapping[str, _PluginInstantiableType]
+    plugin_registry : MutableMapping[str, PluginInstantiableType]
         Registry the plugin should be added to.
     plugin_set_func_name: str
         Name of the function used to pin a plugin.
@@ -287,14 +281,14 @@ def add_instantiated_plugin_to_registry(
         )
 
 
-def registered_plugins(
-    plugin_registry: MutableMapping[str, _PluginType], *, full_names: bool = False
+def registered_plugins[PluginType: (type[Element], DataIoInterface, ProjectIoInterface)](
+    plugin_registry: MutableMapping[str, PluginType], *, full_names: bool = False
 ) -> list[str]:
     """Names of the plugins in the given registry.
 
     Parameters
     ----------
-    plugin_registry : MutableMapping[str, _PluginType]
+    plugin_registry : MutableMapping[str, PluginType]
         Registry to search in.
     full_names: bool
         Whether to display the full names the plugins are
@@ -311,8 +305,8 @@ def registered_plugins(
     return sorted(filter(lambda key: "." not in key, plugin_registry.keys()))
 
 
-def is_registered_plugin(
-    plugin_register_key: str, plugin_registry: MutableMapping[str, _PluginType]
+def is_registered_plugin[PluginType: (type[Element], DataIoInterface, ProjectIoInterface)](
+    plugin_register_key: str, plugin_registry: MutableMapping[str, PluginType]
 ) -> bool:
     """Check if a plugin with name ``plugin_register_key`` is registered in the given registry.
 
@@ -320,7 +314,7 @@ def is_registered_plugin(
     ----------
     plugin_register_key : str
         Name of the plugin under which it is registered.
-    plugin_registry : MutableMapping[str, _PluginType]
+    plugin_registry : MutableMapping[str, PluginType]
         Registry to search in.
 
     Returns
@@ -331,25 +325,25 @@ def is_registered_plugin(
     return plugin_register_key in plugin_registry
 
 
-def get_plugin_from_registry(
+def get_plugin_from_registry[PluginType: (type[Element], DataIoInterface, ProjectIoInterface)](
     plugin_register_key: str,
-    plugin_registry: MutableMapping[str, _PluginType],
+    plugin_registry: MutableMapping[str, PluginType],
     not_found_error_message: str,
-) -> _PluginType:
+) -> PluginType:
     """Retrieve a plugin with name ``plugin_register_key`` is registered in a given registry.
 
     Parameters
     ----------
     plugin_register_key : str
         Name of the plugin under which it is registered.
-    plugin_registry : MutableMapping[str, _PluginType]
+    plugin_registry : MutableMapping[str, PluginType]
         Registry to search in.
     not_found_error_message : str
         Error message to be shown if the plugin wasn't found.
 
     Returns
     -------
-    _PluginType
+    PluginType
         Plugin from the plugin Registry.
 
     Raises
@@ -416,7 +410,7 @@ def show_method_help(
     help(method)
 
 
-def methods_differ_from_baseclass(
+def methods_differ_from_baseclass[GenericPluginInstance](
     method_names: str | Sequence[str],
     plugin: GenericPluginInstance | type[GenericPluginInstance],
     base_class: type[GenericPluginInstance],
@@ -449,7 +443,7 @@ def methods_differ_from_baseclass(
         yield plugin_method.__code__ != base_class_method.__code__
 
 
-def methods_differ_from_baseclass_table(
+def methods_differ_from_baseclass_table[GenericPluginInstance](
     method_names: str | Sequence[str],
     plugin_registry_keys: str | Sequence[str],
     get_plugin_function: Callable[[str], GenericPluginInstance | type[GenericPluginInstance]],
@@ -508,7 +502,7 @@ def methods_differ_from_baseclass_table(
         yield row
 
 
-def supported_file_extensions(
+def supported_file_extensions[GenericPluginInstance](
     method_names: str | Sequence[str],
     plugin_registry_keys: str | Sequence[str],
     get_plugin_function: Callable[[str], GenericPluginInstance | type[GenericPluginInstance]],
