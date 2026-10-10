@@ -38,4 +38,5 @@ class ClpGuideElement(Element):
         amplitudes: xr.Dataset,
         concentrations: xr.Dataset,
     ) -> xr.Dataset:
-        return xr.Dataset()  # TODO: return correct data
+        # The guided clp estimate is part of the dataset's ``fit_decomposition.clp``.
+        return xr.Dataset()
