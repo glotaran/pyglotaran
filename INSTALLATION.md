@@ -79,7 +79,7 @@ pip install pyglotaran
 To verify that pyglotaran is installed correctly, run:
 
 ```shell
-python -c "import pyglotaran; print(pyglotaran.__version__)"
+python -c "import glotaran; print(glotaran.__version__)"
 ```
 
 If the installation was successful, this command will print the version number of pyglotaran.
