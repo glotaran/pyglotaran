@@ -12,7 +12,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import TypeVar
 
 from tabulate import tabulate
 
@@ -47,15 +46,14 @@ if TYPE_CHECKING:
     from glotaran.project import Scheme
     from glotaran.typing import StrOrPath
 
-    ProjectIoMethods = TypeVar(
-        "ProjectIoMethods",
-        Literal["load_parameters"],
-        Literal["save_parameters"],
-        Literal["load_scheme"],
-        Literal["save_scheme"],
-        Literal["load_result"],
-        Literal["save_result"],
-    )
+    type ProjectIoMethods = Literal[
+        "load_parameters",
+        "save_parameters",
+        "load_scheme",
+        "save_scheme",
+        "load_result",
+        "save_result",
+    ]
 
 PROJECT_IO_METHODS = (
     "load_parameters",

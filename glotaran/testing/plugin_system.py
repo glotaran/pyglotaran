@@ -15,14 +15,14 @@ if TYPE_CHECKING:
 
     from glotaran.io.interface import DataIoInterface
     from glotaran.io.interface import ProjectIoInterface
+    from glotaran.model.element import Element
     from glotaran.model.megacomplex import Megacomplex
-    from glotaran.plugin_system.base_registry import _PluginType
 
 
 @contextmanager
-def _monkeypatch_plugin_registry(
+def _monkeypatch_plugin_registry[PluginType: (type[Element], DataIoInterface, ProjectIoInterface)](
     register_name: str,
-    test_registry: MutableMapping[str, _PluginType] | None = None,
+    test_registry: MutableMapping[str, PluginType] | None = None,
     *,
     create_new_registry: bool = False,
 ) -> Generator[None]:
@@ -32,7 +32,7 @@ def _monkeypatch_plugin_registry(
     ----------
     register_name : str
         Name of the register which should be patched.
-    test_registry : MutableMapping[str, _PluginType]
+    test_registry : MutableMapping[str, PluginType]
         Registry to to update or replace the ``register_name`` registry with.
         , by default None
     create_new_registry : bool

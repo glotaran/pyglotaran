@@ -13,6 +13,8 @@
 
 A framework written in Python for global and target analysis; commonly used for the analysis of time-resolved spectroscopy measurements in the study of energy transfer pathways in photosynthesis, or the characterization of energy transfer (in-)efficiencies in photovoltaics.
 
+<sub>**Note**: Install a stable release of pyglotaran from [PyPI](https://pypi.org/project/pyglotaran/), e.g. with `uv pip install pyglotaran` (see the [installation guide](https://pyglotaran.readthedocs.io/en/latest/installation.html)). The `main` branch of this repository is used for development and may be unstable; installing or using pyglotaran directly from the repository is at your own risk.</sub>
+
 ## The Future of Global and Target Analysis
 
 A scientific publication titled "pyglotaran: a lego-like Python framework for global and target analysis of time-resolved spectra" (DOI: [10.1007/s43630-023-00460-y](https://doi.org/10.1007/s43630-023-00460-y)) covers aspects of the architecture and the design of the software while illustrating its flexibility as an analysis tool through some exciting case studies. This publication, along with other [pyglotaran-publications](https://github.com/glotaran/pyglotaran-publications) demonstrates why we believe this framework is the future of global and target analysis.

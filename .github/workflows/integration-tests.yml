@@ -19,17 +19,17 @@ jobs:
     outputs:
       example-list: ${{ steps.create-example-list.outputs.example-list }}
     steps:
-      - name: Set up Python 3.10
+      - name: Set up Python 3.13
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
-          python-version: "3.10"
+          python-version: "3.13"
       - name: Set example list output
         id: create-example-list
-        uses: glotaran/pyglotaran-examples@staging_rewrite
+        uses: glotaran/pyglotaran-examples@main
         with:
           example_name: set example list
           set_example_list: true
-          examples_branch: staging_rewrite
+          examples_branch: main
 
   run-examples:
     name: "Run Example: "
@@ -40,10 +40,10 @@ jobs:
         example_name: ${{fromJson(needs.create-example-list.outputs.example-list)}}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Set up Python 3.10
+      - name: Set up Python 3.13
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
-          python-version: "3.10"
+          python-version: "3.13"
 
       - name: Install uv
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
@@ -55,10 +55,10 @@ jobs:
           uv sync --frozen --no-default-groups --no-editable
       - name: ${{ matrix.example_name }}
         id: example-run
-        uses: glotaran/pyglotaran-examples@staging_rewrite
+        uses: glotaran/pyglotaran-examples@main
         with:
           example_name: ${{ matrix.example_name }}
-          examples_branch: staging_rewrite
+          examples_branch: main
       - name: Installed packages
         if: always()
         run: |
@@ -162,10 +162,10 @@ jobs:
           echo "♻️ pyglotaran-examples commit: $(< comparison-results-current/example_commit_sha.txt)"
           echo "::endgroup::"
 
-      - name: Set up Python 3.10
+      - name: Set up Python 3.13
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
-          python-version: "3.10"
+          python-version: "3.13"
 
       # Use the action from the repository's pinned validation submodule.
       - name: Run result validator

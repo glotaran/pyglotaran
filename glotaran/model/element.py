@@ -8,6 +8,7 @@ from dataclasses import field
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Self
 from typing import final
 
 from pydantic import ConfigDict
@@ -24,7 +25,6 @@ if TYPE_CHECKING:
 
     from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
-    from glotaran.typing.types import Self
 
 
 def _sanitize_json_schema(json_schema: dict[str, Any]) -> None:
@@ -166,7 +166,7 @@ class ExtendableElement(Element):
     extends: list[str] | None = None
     _original: Self = PrivateAttr(init=False)
 
-    def model_post_init(self, __context: Any) -> None:  # noqa: ANN401, PYI063
+    def model_post_init(self: Self, __context: Any) -> None:  # noqa: ANN401, PYI063
         """Save a copy of the original instance before extending.
 
         This is needed for roundtrip serialization, where you want to dump the unextended
