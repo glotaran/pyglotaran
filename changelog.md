@@ -63,9 +63,11 @@
   into saved data files; `load_dataset` sets them
 - 🩹 Link datasets with `clp_link_method` `forward` or `backward` at the nearest coordinate in
   that direction, instead of at a coordinate taken from the wrong position of the axis
-- 🩹 Reject dataset, element and activation labels that cannot be file names (empty, `.`, `..`,
-  or containing `/`, `\` or `:`); `Result.save` and `Project.export` wrote their files outside
-  the result folder
+- 🩹 Reject dataset, element and activation labels that cannot be file names on Windows (empty,
+  ending with `.` or a space, containing one of `<>:"/\|?*` or a control character, or a device
+  name such as `CON` or `NUL`) and labels of one kind that differ only in case; `Result.save` and
+  `Project.export` wrote their files outside the result folder, failed on Windows, or overwrote
+  the files of another label on Windows and macOS
 - 🩹 Reject dataset labels used in more than one experiment before the fit; the result kept only
   one experiment's result arrays for such a label
 - 🩹 Report the unweighted matrix and concentrations of weighted datasets, as v0.7 did, instead

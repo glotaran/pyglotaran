@@ -242,17 +242,33 @@ def test_optimization_result_error_bad_input_data_tuple(tmp_path: Path):
 @pytest.mark.parametrize(
     ("field_name", "kind"), [("elements", "Element"), ("activations", "Activation")]
 )
-@pytest.mark.parametrize("label", ["../outside", "a/b", "a\\b", "C:outside", ".."])
+@pytest.mark.parametrize(
+    "label", ["../outside", "a/b", "a\\b", "C:outside", "..", "a?", "a.", "AUX", "con.nc"]
+)
 def test_optimization_result_rejects_labels_that_are_no_file_names(
     field_name: str, kind: str, label: str
 ):
-    """Element and activation labels that would name a file outside the result are rejected."""
+    """Element and activation labels that cannot name a file on every platform are rejected."""
     with pytest.raises(ValidationError, match=f"{kind} label"):
         OptimizationResult(
             input_data=xr.DataArray(np.arange(4)),
             fit_decomposition=None,
             meta=STUB_META_DATA,
             **{field_name: {label: xr.Dataset()}},
+        )
+
+
+@pytest.mark.parametrize(
+    ("field_name", "kind"), [("elements", "Element"), ("activations", "Activation")]
+)
+def test_optimization_result_rejects_labels_that_differ_only_in_case(field_name: str, kind: str):
+    """Element and activation labels that would name the same file on Windows are rejected."""
+    with pytest.raises(ValidationError, match=f"{kind} labels 'irf' and 'IRF' differ only"):
+        OptimizationResult(
+            input_data=xr.DataArray(np.arange(4)),
+            fit_decomposition=None,
+            meta=STUB_META_DATA,
+            **{field_name: {"irf": xr.Dataset(), "IRF": xr.Dataset()}},
         )
 
 

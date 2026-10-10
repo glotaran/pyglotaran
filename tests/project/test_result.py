@@ -372,14 +372,58 @@ def test_result_save_keeps_the_scheme_source_path(tmp_path: Path):
 
 
 @pytest.mark.parametrize(
-    "label", ["../outside", "a/b", "a\\b", "/outside", "C:\\outside", "C:outside", "..", ".", ""]
+    "label",
+    [
+        "../outside",
+        "a/b",
+        "a\\b",
+        "/outside",
+        "C:\\outside",
+        "C:outside",
+        "..",
+        ".",
+        "",
+        "a.",
+        "a ",
+        "a?",
+        "a*",
+        'a"',
+        "a<b>",
+        "a|b",
+        "a\tb",
+        "CON",
+        "nul.txt",
+        "com1",
+        "LPT9 .nc",
+    ],
 )
 def test_result_rejects_dataset_labels_that_are_no_file_names(label: str):
-    """A dataset label that would place saved files outside the result folder is rejected."""
+    """A dataset label that cannot name a folder in the result on every platform is rejected."""
     fields = {name: getattr(RESULT, name) for name in Result.model_fields}
     optimization_results = {label: RESULT.optimization_results["sequential-decay"]}
 
     with pytest.raises(ValidationError, match="Dataset label"):
+        Result(**fields | {"optimization_results": optimization_results})
+
+
+@pytest.mark.parametrize("label", ["sample 1", "CONSOLE", "nul_data", "a.b", "ΔA"])
+def test_result_accepts_dataset_labels_that_are_file_names(label: str):
+    """Labels that only resemble rejected ones are file names on every platform."""
+    fields = {name: getattr(RESULT, name) for name in Result.model_fields}
+    optimization_results = {label: RESULT.optimization_results["sequential-decay"]}
+
+    result = Result(**fields | {"optimization_results": optimization_results})
+
+    assert list(result.optimization_results) == [label]
+
+
+def test_result_rejects_dataset_labels_that_differ_only_in_case():
+    """Two dataset labels that would name the same folder on Windows or macOS are rejected."""
+    fields = {name: getattr(RESULT, name) for name in Result.model_fields}
+    optimization_result = RESULT.optimization_results["sequential-decay"]
+    optimization_results = {"sample": optimization_result, "Sample": optimization_result}
+
+    with pytest.raises(ValidationError, match="'sample' and 'Sample' differ only in case"):
         Result(**fields | {"optimization_results": optimization_results})
 
 

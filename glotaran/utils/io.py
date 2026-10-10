@@ -21,6 +21,7 @@ from glotaran.typing.types import DatasetMappable
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+    from collections.abc import Iterable
     from collections.abc import Iterator
 
     import pandas as pd
@@ -260,37 +261,57 @@ def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = No
     return Path(source_path).as_posix()
 
 
-def check_file_name_label(label: str, kind: str) -> str:
-    r"""Check that ``label`` can name a file or folder of a saved result.
+_WINDOWS_RESERVED_CHARACTERS = frozenset('<>:"/\\|?*' + "".join(chr(code) for code in range(32)))
+# The device names that ``ntpath.isreserved`` (Python 3.13) rejects.
+_WINDOWS_RESERVED_NAMES = frozenset(
+    {"CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"}
+    | {f"{device}{number}" for device in ("COM", "LPT") for number in "123456789\xb9\xb2\xb3"}
+)
+
+
+def check_file_name_labels(labels: Iterable[str], kind: str) -> None:
+    r"""Check that ``labels`` can name the files or folders of a saved result on any platform.
 
     Dataset, element and activation labels name files and folders inside the result folder.
-    A label with a path separator, a colon (a drive on Windows) or a label ``.`` or ``..``
-    would place them elsewhere.
+    The labels have to follow the file name rules of Windows, so that a result can be saved
+    and loaded on every platform. These rules also reject labels that would place files
+    outside the result folder, such as ``..``, labels with a path separator, or labels with a
+    colon (a drive on Windows).
 
     Parameters
     ----------
-    label : str
-        The label.
+    labels : Iterable[str]
+        The labels of one kind, which name files or folders in the same folder.
     kind : str
-        What the label names, for the error message, e.g. ``"Dataset"``.
-
-    Returns
-    -------
-    str
-        The label.
+        What the labels name, for the error message, e.g. ``"Dataset"``.
 
     Raises
     ------
     ValueError
-        If ``label`` is empty, ``.`` or ``..``, or contains ``/``, ``\`` or ``:``.
+        If a label is empty, ends with ``.`` or a space, contains one of ``<>:"/\|?*`` or an
+        ASCII control character, or is a Windows device name such as ``CON`` or ``nul.txt``, or
+        if two labels differ only in case.
     """
-    if label in {"", ".", ".."} or any(character in label for character in "/\\:"):
-        msg = (
-            f"{kind} label {label!r} cannot be used as a file name in a result. A label must not "
-            "be empty, '.' or '..', or contain '/', '\\' or ':'."
-        )
-        raise ValueError(msg)
-    return label
+    labels_by_folded_label: dict[str, str] = {}
+    for label in labels:
+        if (
+            label == ""
+            or label[-1] in ". "
+            or not _WINDOWS_RESERVED_CHARACTERS.isdisjoint(label)
+            or label.partition(".")[0].rstrip(" ").upper() in _WINDOWS_RESERVED_NAMES
+        ):
+            msg = (
+                f"{kind} label {label!r} cannot be used as a file name in a result. A label must "
+                "not be empty, end with '.' or ' ', contain any of '<>:\"/\\|?*' or a control "
+                "character, or be a Windows device name such as 'CON', 'NUL', 'COM1' or 'LPT1'."
+            )
+            raise ValueError(msg)
+        if (other := labels_by_folded_label.setdefault(label.casefold(), label)) != label:
+            msg = (
+                f"{kind} labels {other!r} and {label!r} differ only in case. They would name the "
+                "same file in a result saved on Windows or macOS."
+            )
+            raise ValueError(msg)
 
 
 def normalize_dataframe_columns(

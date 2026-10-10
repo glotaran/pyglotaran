@@ -36,7 +36,7 @@ from glotaran.optimization.penalty import calculate_clp_penalties
 from glotaran.parameter.parameter import Parameter
 from glotaran.plugin_system.base_registry import full_plugin_name
 from glotaran.plugin_system.data_io_registration import get_data_io
-from glotaran.utils.io import check_file_name_label
+from glotaran.utils.io import check_file_name_labels
 from glotaran.utils.io import relative_posix_path
 from glotaran.utils.pydantic_serde import context_is_dict
 from glotaran.utils.pydantic_serde import save_folder_from_info
@@ -498,8 +498,7 @@ class OptimizationResult(BaseModel):
     ) -> dict[str, xr.Dataset]:
         """Reject labels that cannot name a file in the ``elements`` or ``activations`` folder."""
         kind = "Element" if info.field_name == "elements" else "Activation"
-        for label in value:
-            check_file_name_label(label, kind)
+        check_file_name_labels(value, kind)
         return value
 
     @model_validator(mode="before")

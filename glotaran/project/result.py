@@ -26,7 +26,7 @@ from glotaran.optimization.objective import OptimizationResult
 from glotaran.parameter import Parameters  # noqa: TC001
 from glotaran.project.record import RecordReference  # noqa: TC001
 from glotaran.project.scheme import Scheme
-from glotaran.utils.io import check_file_name_label
+from glotaran.utils.io import check_file_name_labels
 from glotaran.utils.io import relative_posix_path
 from glotaran.utils.pydantic_serde import ValidationInfoWithContext
 from glotaran.utils.pydantic_serde import context_is_dict
@@ -187,8 +187,7 @@ class Result(BaseModel):
         cls, value: dict[str, OptimizationResult]
     ) -> dict[str, OptimizationResult]:
         """Reject dataset labels that cannot name the folder of a dataset in a saved result."""
-        for label in value:
-            check_file_name_label(label, "Dataset")
+        check_file_name_labels(value, "Dataset")
         return value
 
     @field_serializer("initial_parameters", "optimized_parameters", when_used="json")
