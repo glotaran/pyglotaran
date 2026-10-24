@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING
 from typing import Protocol
 
 if TYPE_CHECKING:
-    from glotaran.typing.types import Self
+    from typing import Self
+
     from glotaran.typing.types import StrOrPath
 
 

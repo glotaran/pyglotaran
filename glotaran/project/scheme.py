@@ -20,9 +20,9 @@ from glotaran.utils.io import load_datasets
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
+    from typing import Self
 
     import xarray as xr
-    from typing_extensions import Self
 
     from glotaran.parameter import Parameters
     from glotaran.project.result import Result

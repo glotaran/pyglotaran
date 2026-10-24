@@ -9,14 +9,61 @@ from typing import Any
 from typing import overload
 
 from pydantic import create_model
+from pydantic.json_schema import GenerateJsonSchema
 
 from glotaran.io import load_parameters
 from glotaran.model.data_model import DataModel
 from glotaran.project import Scheme
 
 if TYPE_CHECKING:
+    from pydantic.json_schema import CoreSchemaOrField
+    from pydantic.json_schema import JsonSchemaValue
+    from pydantic_core import CoreSchema
+    from pydantic_core import core_schema
+
     from glotaran.parameter import Parameters
     from glotaran.typing.types import StrOrPath
+
+# Core schema types whose JSON schema definition has its own title.
+_TITLED_CORE_SCHEMA_TYPES = frozenset({"model", "dataclass", "typed-dict", "enum"})
+_FUNCTION_CORE_SCHEMA_TYPES = frozenset({"function-before", "function-after", "function-wrap"})
+
+
+def _has_own_title(schema: CoreSchema) -> bool:
+    """Check if the JSON schema of ``schema`` has its own title, ignoring validator functions."""
+    while schema["type"] in _FUNCTION_CORE_SCHEMA_TYPES:
+        schema = schema["schema"]
+    return schema["type"] in _TITLED_CORE_SCHEMA_TYPES
+
+
+class _TypeAliasFieldTitleGenerateJsonSchema(GenerateJsonSchema):
+    """JSON schema generator that sets the title of fields annotated with a ``type`` alias.
+
+    Pydantic does not set the title of a field whose schema has or references a definition, since
+    a model or enum definition has its own title. Fields annotated with a ``type`` alias, such as
+    ``ParameterType``, also have or reference a definition, but that definition has no title.
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
+        super().__init__(*args, **kwargs)
+        self._core_definitions: dict[str, CoreSchema] = {}
+
+    def definitions_schema(self, schema: core_schema.DefinitionsSchema) -> JsonSchemaValue:
+        self._core_definitions |= {
+            definition["ref"]: definition for definition in schema["definitions"]
+        }
+        return super().definitions_schema(schema)
+
+    def field_title_should_be_set(self, schema: CoreSchemaOrField) -> bool:
+        definition: CoreSchema | None = None
+        if schema["type"] == "definition-ref":
+            definition = self._core_definitions.get(schema["schema_ref"])  # type:ignore[typeddict-item]
+        elif "ref" in schema:
+            # Definitions that are only used once are inlined with their ref
+            definition = schema
+        if definition is not None and not _has_own_title(definition):
+            return True
+        return super().field_title_should_be_set(schema)
 
 
 @lru_cache
@@ -44,7 +91,12 @@ def _create_vanilla_schema_cached() -> tuple[dict[str, Any], dict[str, Any]]:
             if subclass.__qualname__.startswith("GlotaranDataModel_") is False
         ),
     )
-    return Scheme.model_json_schema(), data_model_class.model_json_schema()
+    return (
+        Scheme.model_json_schema(schema_generator=_TypeAliasFieldTitleGenerateJsonSchema),
+        data_model_class.model_json_schema(
+            schema_generator=_TypeAliasFieldTitleGenerateJsonSchema
+        ),
+    )
 
 
 def _create_vanilla_schema() -> tuple[dict[str, Any], dict[str, Any]]:

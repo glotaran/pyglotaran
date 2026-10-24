@@ -17,7 +17,6 @@ from typing import Any
 import xarray as xr
 
 from glotaran.plugin_system.data_io_registration import load_dataset
-from glotaran.typing.types import DatasetMappable
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -27,6 +26,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
     from glotaran.project.result import Result
+    from glotaran.typing.types import DatasetMappable
     from glotaran.typing.types import StrOrPath
 
 
@@ -74,7 +74,8 @@ def _load_datasets(dataset_mappable: DatasetMappable, index: int = 1) -> dict[st
         msg = (
             f"Type '{type(dataset_mappable).__name__}' for 'dataset_mappable' of value "
             f"'{dataset_mappable}' is not supported."
-            f"\nSupported types are:\n {DatasetMappable}."
+            "\nSupported types are str, Path, xr.Dataset and xr.DataArray, "
+            "or a Sequence or Mapping of these."
         )
         raise TypeError(msg)
     return dataset_mapping

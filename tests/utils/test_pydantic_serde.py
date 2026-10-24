@@ -31,8 +31,8 @@ from glotaran.utils.pydantic_serde import serialize_to_csv
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import Self
 
-    from glotaran.typing.types import Self
     from glotaran.typing.types import StrOrPath
 
 

@@ -22,8 +22,9 @@ from glotaran.utils.pydantic_serde import deserialize_from_csv
 from glotaran.utils.pydantic_serde import serialize_to_csv
 
 if TYPE_CHECKING:
+    from typing import Self
+
     from scipy.optimize import OptimizeResult
-    from typing_extensions import Self
 
     from glotaran.parameter import Parameters
     from glotaran.typing.types import ArrayLike

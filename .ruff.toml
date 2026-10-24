@@ -7,8 +7,8 @@ include = [ "*.py", "*.pyi", "**/pyproject.toml" ]
 
 line-length = 99
 
-# Assume Python 3.10.
-target-version = "py310"
+# Assume Python 3.13.
+target-version = "py313"
 
 
 [lint]

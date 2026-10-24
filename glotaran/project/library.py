@@ -3,7 +3,6 @@ from __future__ import annotations
 from functools import reduce
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import TypeAlias
 from typing import Union
 
 from pydantic import RootModel
@@ -18,8 +17,8 @@ from glotaran.utils.pydantic_serde import serialization_info_to_kwargs
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-ElementType: TypeAlias = Union[tuple(__PluginRegistry.element.values())]  # type:ignore[valid-type] # noqa: UP007
-LibraryType: TypeAlias = dict[str, ElementType]
+type ElementType = Union[tuple(__PluginRegistry.element.values())]  # type:ignore[valid-type] # noqa: UP007
+type LibraryType = dict[str, ElementType]
 
 
 class ModelLibrary(RootModel[LibraryType]):

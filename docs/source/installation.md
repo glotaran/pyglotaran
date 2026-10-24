@@ -6,7 +6,7 @@
 
 ## Prerequisites
 
-- Python 3.10 or higher
+- Python 3.13 or 3.14
 - (Recommended) [uv] installed and on the path.
 - Basic familiarity with command-line interfaces.
 
@@ -23,7 +23,7 @@ If you go down this route, note that uv can also be used to install Python itsel
 
    ```shell
    uv python install # Automatically installs the latest Python version
-   # or use `uv python install 3.10` to install a specific Python version
+   # or use `uv python install 3.13` to install a specific Python version
    ```
 
 3. Create a virtual environment and activate it:

@@ -417,6 +417,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
                 for label, axis in aligned_global_axes.items()
             ],
             dim="model",
+            join="outer",
         )
         aligned_global_axis = aligned_data.coords["global"].data
         return (
@@ -450,6 +451,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
                 for axis in aligned_global_axes.values()
             ],
             dim="dataset",
+            join="outer",
         )
         return [
             aligned_indices.isel({"global": i}).dropna(dim="dataset").data.astype(int)
@@ -480,6 +482,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
             ],
             dim="dataset",
             fill_value="",
+            join="outer",
         )
         # for every element along the global axis, concatenate all dataset labels
         # into an ndarray of shape (len(global,)

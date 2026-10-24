@@ -4,6 +4,11 @@
 
 ## 🚀 0.8.0 (Unreleased)
 
+### 💥 BREAKING CHANGE
+
+- 🐍⬆️ Update minimum python version to 3.13 (#1621)
+
+
 ### ✨ Features
 
 - ✨ Add a native v0.8 PFID element for perturbed free-induction-decay fitting (#1510)
@@ -96,6 +101,10 @@
   `dev`, `docs` and `test` extras and `requirements_pinned.txt`; `just` recipes replace the docs
   Makefile; Read the Docs builds with uv
 - 🚇 Support Python 3.13 and 3.14 and allow numpy up to 2.3; add the `notebook` extra
+- 💥🚧 Drop support for Python 3.10, 3.11 and 3.12; only 3.13 and 3.14 are supported, and
+  `typing-extensions` is no longer a dependency
+- 💥🚧 Raise the minimum versions of the dependencies to the first releases that support
+  Python 3.13 (e.g. numpy 2.1, scipy 1.14.1, pandas 2.2.3, xarray 2025.3)
 
 (changes-0_7_5)=
 
