@@ -312,3 +312,20 @@ extlinks = {
         "xarray.%s",
     ),
 }
+
+
+def exclude_pydantic_inherited_members(app, obj_type, name, obj, skip, options):
+    """Filter functions for members inherited from pydantic classes.
+
+    See Sphinx docs:
+    https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#skipping-members
+    """
+    if hasattr(obj, "__code__") and obj.__code__.co_qualname.startswith(
+        ("BaseModel.", "FieldInfo.")
+    ):
+        return True
+    return None
+
+
+def setup(app):
+    app.connect("autodoc-skip-member", exclude_pydantic_inherited_members)
