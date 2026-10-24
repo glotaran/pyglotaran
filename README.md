@@ -34,7 +34,7 @@ Results of a target analysis of Photosystem I (see [study_florescence](https://g
 ![overview plot of the fluorescence case study from the pyglotaran-examples](https://github.com/glotaran/pyglotaran/blob/main/docs/source/images/png/plot_overview_study_fluorescence.png?raw=true)
 <sub>Plot created with the `plot_overview` function of the [pyglotaran-extras](https://github.com/glotaran/pyglotaran-extras) package.</sub>
 
-<sub>**Notice**: This is (still) an _early access_ release, please refer to the [usage notice](NOTICE.md#usage-notice) prior to committing to use pyglotaran to avoid surprises down the line.</sub>
+<sub>**Notice**: This is (still) an _early access_ release, please refer to the [usage notice](https://github.com/glotaran/pyglotaran/blob/main/NOTICE.md#scientific-usage) prior to committing to use pyglotaran to avoid surprises down the line.</sub>
 
 ## Glotaran legacy
 
