@@ -4,6 +4,11 @@
 
 ## 🚀 0.8.0 (Unreleased)
 
+### 💥 BREAKING CHANGE
+
+- 🐍⬆️ Update minimum python version to 3.13 (#1621)
+
+
 ### ✨ Features
 
 - ✨ Add a native v0.8 PFID element for perturbed free-induction-decay fitting (#1510)
