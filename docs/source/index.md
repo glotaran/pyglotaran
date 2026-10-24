@@ -13,26 +13,10 @@
 
 installation
 notebooks/getting_started/getting_started
-changelog
-authors
-```
-
-```{toctree}
-:maxdepth: 1
-
 user_documentation/index
-```
-
-```{toctree}
-:maxdepth: 1
-
+changelog
 dev_docs/index
-```
-
-% Included by readme
-```{toctree}
-:hidden:
-NOTICE
+authors
 ```
 
 # Indices and tables

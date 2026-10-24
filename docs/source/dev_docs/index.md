@@ -1,4 +1,4 @@
-# Developer Documentation
+# Developer Docs
 
 ```{toctree}
 :maxdepth: 1

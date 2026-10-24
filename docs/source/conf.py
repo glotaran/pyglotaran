@@ -179,6 +179,7 @@ html_theme_options = {
         "image_dark": "images/pyglotaran_logo_dark_theme.svg",
     },
     "navigation_depth": -1,
+    "header_links_before_dropdown": 6,
 }
 # Hide empty sidebars
 # Ref.: https://github.com/pydata/pydata-sphinx-theme/issues/1662#issuecomment-1913672649
