@@ -31,10 +31,10 @@ For state of the art usage of this framework you may want to check out the list 
 
 Results of a target analysis of Photosystem I (see [study_florescence](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples/study_fluorescence) in the [examples](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples).)
 
-![overview plot of the fluorescence case study from the pyglotaran-examples](https://github.com/glotaran/pyglotaran/blob/main/docs/source/images/png/plot_overview_study_fluorescence.png?raw=true)
+![overview plot of the fluorescence case study from the pyglotaran-examples](https://raw.githubusercontent.com/glotaran/pyglotaran/32930cf0e6187332144bad400013d81bbffda98a/docs/source/images/png/plot_overview_study_fluorescence.png)
 <sub>Plot created with the `plot_overview` function of the [pyglotaran-extras](https://github.com/glotaran/pyglotaran-extras) package.</sub>
 
-<sub>**Notice**: This is (still) an _early access_ release, please refer to the [usage notice](https://github.com/glotaran/pyglotaran/blob/main/NOTICE.md#scientific-usage) prior to committing to use pyglotaran to avoid surprises down the line.</sub>
+<sub>**Notice**: This is (still) an _early access_ release, please refer to the [usage notice](https://github.com/glotaran/pyglotaran/blob/32930cf0e6187332144bad400013d81bbffda98a/NOTICE.md#usage-notice-for-scientists) prior to committing to use pyglotaran to avoid surprises down the line.</sub>
 
 ## Glotaran legacy
 
