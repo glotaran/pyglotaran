@@ -4,7 +4,7 @@
 
 [![PyPI version](https://badge.fury.io/py/pyglotaran.svg)](https://badge.fury.io/py/pyglotaran)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/pyglotaran.svg)](https://anaconda.org/conda-forge/pyglotaran)
-![Tests](https://github.com/glotaran/pyglotaran/workflows/Tests/badge.svg)
+[![Tests](https://github.com/glotaran/pyglotaran/actions/workflows/CI_CD_actions.yml/badge.svg)](https://github.com/glotaran/pyglotaran/actions/workflows/CI_CD_actions.yml)
 [![Documentation Status](https://app.readthedocs.org/projects/pyglotaran/badge/?version=latest)](https://pyglotaran.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://codecov.io/gh/glotaran/pyglotaran/branch/master/graph/badge.svg)](https://codecov.io/gh/glotaran/pyglotaran)
 [![CodeQL](https://github.com/glotaran/pyglotaran/actions/workflows/codeql.yml/badge.svg)](https://github.com/glotaran/pyglotaran/actions/workflows/codeql.yml)
