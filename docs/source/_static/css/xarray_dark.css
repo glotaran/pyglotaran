@@ -1,0 +1,14 @@
+/* Overwrite xarray wrapper in dark mode. */
+html[data-theme="dark"] div.output_area.rendered_html {
+  background-color: var(--pst-color-on-background) !important;
+  color: var(--pst-color-text-base) !important;
+}
+
+/* Tables */
+html[data-theme="dark"] div.output_area.rendered_html table {
+  color: var(--pst-color-text-base) !important;
+}
+
+html[data-theme="dark"] div.output_area.rendered_html tbody tr:nth-child(odd) {
+  background-color: var(--pst-color-on-background) !important;
+}

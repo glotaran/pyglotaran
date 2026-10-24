@@ -66,8 +66,9 @@ extensions = [
     "myst_parser",
     "numpydoc",
     "sphinx_copybutton",
-    "sphinx_rtd_theme",
 ]
+
+myst_heading_anchors = 3
 
 autoclass_content = "both"
 autosummary_generate = True
@@ -159,8 +160,6 @@ html_theme = "sphinx_rtd_theme"
 html_theme_options = {
     "navigation_depth": -1,
 }
-html_favicon = "images/pyglotaran_favicon_transparent.svg"
-html_logo = "images/pyglotaran_logo_light_theme.svg"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -182,6 +181,58 @@ html_logo = "images/pyglotaran_logo_light_theme.svg"
 # 'searchbox.html']``.
 #
 # html_sidebars = {}
+
+
+# -- Options for HTML output -------------------------------------------
+
+# The theme to use for HTML and HTML Help pages.  See the documentation for
+# a list of builtin themes.
+#
+html_theme = "pydata_sphinx_theme"
+
+html_favicon = "images/pyglotaran_favicon_transparent.svg"
+html_logo = "images/pyglotaran_logo_light_theme.svg"
+
+# Theme options are theme-specific and customize the look and feel of a
+# theme further.  For a list of options available for each theme, see the
+# documentation.
+
+html_theme_options = {
+    "pygments_dark_style": "monokai",
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/glotaran/pyglotaran",
+            "icon": "fa-brands fa-square-github",
+            "type": "fontawesome",
+        }
+    ],
+    "logo": {
+        "text": "Pyglotaran",
+        "image_dark": "images/pyglotaran_logo_dark_theme.svg",
+    },
+}
+# Hide empty sidebars
+# Ref.: https://github.com/pydata/pydata-sphinx-theme/issues/1662#issuecomment-1913672649
+html_sidebars = {
+    "introduction": [],
+    "installation": [],
+    "notebooks/getting_started/getting_started": [],
+    "usage": [],
+    "changelog": [],
+    "authors": [],
+    "NOTICE": [],
+    "notebooks/plugin_system": [],
+}
+
+# Add any paths that contain custom static files (such as style sheets) here,
+# relative to this directory. They are copied after the builtin static files,
+# so a file named "default.css" will overwrite the builtin "default.css".
+html_static_path = ["_static"]
+html_css_files = [
+    "css/xarray_dark.css",
+]
+
 
 copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
 copybutton_prompt_is_regexp = True
@@ -294,7 +345,3 @@ extlinks = {
         "xarray.%s",
     ),
 }
-
-# cleanup notebook data
-
-subprocess.run([sys.executable, DOC_FOLDER / "remove_notebook_written_data.py"], check=True)  # noqa: S603
