@@ -13,7 +13,7 @@
 
 A framework written in Python for global and target analysis; commonly used for the analysis of time-resolved spectroscopy measurements in the study of energy transfer pathways in photosynthesis, or the characterization of energy transfer (in-)efficiencies in photovoltaics.
 
-<sub>**Note**: Install a stable release of pyglotaran from [PyPI](https://pypi.org/project/pyglotaran/), e.g. with `uv pip install pyglotaran` (see the [installation guide](./docs/source/installation.md)). The `main` branch of this repository is used for development and may be unstable; installing or using pyglotaran directly from the repository is at your own risk.</sub>
+<sub>**Note**: Install a stable release of pyglotaran from [PyPI](https://pypi.org/project/pyglotaran/), e.g. with `uv pip install pyglotaran` (see the [installation guide](https://pyglotaran.readthedocs.io/en/latest/installation.html)). The `main` branch of this repository is used for development and may be unstable; installing or using pyglotaran directly from the repository is at your own risk.</sub>
 
 ## The Future of Global and Target Analysis
 
@@ -31,10 +31,10 @@ For state of the art usage of this framework you may want to check out the list 
 
 Results of a target analysis of Photosystem I (see [study_florescence](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples/study_fluorescence) in the [examples](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples).)
 
-![overview plot of the fluorescence case study from the pyglotaran-examples](./docs/source/images/png/plot_overview_study_fluorescence.png)
+![overview plot of the fluorescence case study from the pyglotaran-examples](https://github.com/glotaran/pyglotaran/blob/main/docs/source/images/png/plot_overview_study_fluorescence.png?raw=true)
 <sub>Plot created with the `plot_overview` function of the [pyglotaran-extras](https://github.com/glotaran/pyglotaran-extras) package.</sub>
 
-<sub>**Notice**: This is (still) an _early access_ release, please refer to the [usage notice](NOTICE.md#usage-notice-for-scientists) prior to committing to use pyglotaran to avoid surprises down the line.</sub>
+<sub>**Notice**: This is (still) an _early access_ release, please refer to the [usage notice](NOTICE.md#usage-notice) prior to committing to use pyglotaran to avoid surprises down the line.</sub>
 
 ## Glotaran legacy
 
