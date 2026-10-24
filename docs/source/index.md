@@ -8,18 +8,33 @@
 ```
 
 ```{toctree}
-:caption: 'Contents:'
-:maxdepth: 1
+:caption: 'Table of Contents:'
+:maxdepth: 2
 
 installation
 notebooks/getting_started/getting_started
 user_documentation/index
+```
+
+```{toctree}
+:maxdepth: 1
+
 changelog
+```
+
+```{toctree}
+:maxdepth: 2
+
 dev_docs/index
+```
+
+```{toctree}
+:maxdepth: 1
+
 authors
 ```
 
-# Indices and tables
+### Indices and tables
 
 - {ref}`genindex`
 - {ref}`modindex`
