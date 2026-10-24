@@ -91,6 +91,9 @@ source_suffix = {".rst": "restructuredtext", ".md": "restructuredtext"}
 linkcheck_ignore = [
     r"https://github\.com/.+?#.+",
     r"https://stackoverflow\.com/a/(65375904|47663099)/3990615",
+    # TODO (s-weigand): Reactivate when their servers are up again
+    r"https://dx\.doi\.org/.*",
+    r"https://www\.jstatsoft\.org/.*",
 ]
 
 # The master toctree document.
