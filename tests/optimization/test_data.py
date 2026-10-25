@@ -1,0 +1,172 @@
+from __future__ import annotations
+
+from copy import deepcopy
+
+import numpy as np
+import pytest
+import xarray as xr
+
+from glotaran.optimization.data import LinkedOptimizationData
+from glotaran.optimization.data import OptimizationData
+from tests.optimization.data import TestDataModelConstantIndexDependent
+from tests.optimization.data import TestDataModelConstantIndexIndependent
+from tests.optimization.data import TestDataModelGlobal
+
+
+def test_data_model_has_original_dataset_attributes():
+    """Test that original dataset attributes are stored in OptimizationData."""
+    data_model = deepcopy(TestDataModelConstantIndexIndependent)
+    data = OptimizationData(data_model)
+
+    assert data.original_dataset_attributes == {"test_attr": "test_value"}
+
+
+@pytest.mark.parametrize("weight", [True, False])
+def test_optimization_data(weight: bool):
+    data_model = deepcopy(TestDataModelConstantIndexIndependent)
+    if weight:
+        data_model.data["weight"] = xr.ones_like(data_model.data.data) * 0.5
+    data = OptimizationData(data_model)
+
+    dataset = data_model.data
+    assert data.model_dimension == "model_dim"
+    assert data.global_dimension == "global_dim"
+    assert np.array_equal(dataset.coords["model_dim"], data.model_axis)
+    assert np.array_equal(dataset.coords["global_dim"], data.global_axis)
+    if weight:
+        assert np.array_equal(dataset.data * dataset.weight, data.data)
+        assert np.array_equal(dataset.weight, data.weight)
+    else:
+        assert np.array_equal(dataset.data, data.data)
+
+
+@pytest.mark.parametrize("weight", [True, False])
+def test_optimization_data_global_model(weight: bool):
+    data_model = deepcopy(TestDataModelGlobal)
+    if weight:
+        data_model.data["weight"] = xr.ones_like(data_model.data.data) * 0.5
+    data = OptimizationData(data_model)
+
+    dataset = data_model.data
+    print(dataset.data)
+    assert data.model_dimension == "model_dim"
+    assert data.global_dimension == "global_dim"
+    assert np.array_equal(dataset.coords["model_dim"], data.model_axis)
+    assert np.array_equal(dataset.coords["global_dim"], data.global_axis)
+    if weight:
+        assert np.array_equal(
+            dataset.data.data.T.flatten() * dataset.weight.data.T.flatten(), data.flat_data
+        )
+        assert np.array_equal(dataset.weight.data.T.flatten(), data.flat_weight)
+    else:
+        assert np.array_equal(dataset.data.data.T.flatten(), data.flat_data)
+
+
+def test_linked_optimization_data():
+    data_model_one = deepcopy(TestDataModelConstantIndexIndependent)
+    data_model_one.data["weight"] = xr.ones_like(data_model_one.data.data) * 0.5
+    data_model_two = deepcopy(TestDataModelConstantIndexDependent)
+    all_data = {
+        "dataset1": OptimizationData(data_model_one),
+        "dataset2": OptimizationData(data_model_two),
+    }
+    tolerance, method = 1, "nearest"
+    data = LinkedOptimizationData(all_data, tolerance, method, scales={"dataset2": 4})
+
+    dataset_one = data_model_one.data
+    dataset_two = data_model_two.data
+
+    assert "dataset1" in data.group_definitions
+    assert data.group_definitions["dataset1"] == ["dataset1"]
+    assert "dataset2" in data.group_definitions
+    assert data.group_definitions["dataset2"] == ["dataset2"]
+    assert "dataset1dataset2" in data.group_definitions
+    assert data.group_definitions["dataset1dataset2"] == ["dataset1", "dataset2"]
+
+    assert np.array_equal(data.global_axis, [1, 3, 5, 6, 10])
+
+    assert len(data.group_labels) == data.global_axis.size
+    assert data.group_labels[0] == "dataset1dataset2"
+    assert data.group_labels[1] == "dataset2"
+    assert data.group_labels[2] == "dataset1"
+    assert data.group_labels[3] == "dataset1dataset2"
+    assert data.group_labels[4] == "dataset2"
+
+    assert len(data.data_indices) == data.global_axis.size
+    assert np.array_equal(data.data_indices[0], [0, 0])
+    assert np.array_equal(data.data_indices[1], [1])
+    assert np.array_equal(data.data_indices[2], [1])
+    assert np.array_equal(data.data_indices[3], [2, 2])
+    assert np.array_equal(data.data_indices[4], [3])
+
+    dataset1_size = dataset_one.coords["model_dim"].size
+    dataset2_size = dataset_two.coords["model_dim"].size
+
+    assert data.data_slices[0].size == dataset1_size + dataset2_size
+    assert data.data_slices[1].size == dataset2_size
+    assert data.data_slices[2].size == dataset1_size
+    assert data.data_slices[3].size == dataset1_size + dataset2_size
+    assert data.data_slices[4].size == dataset2_size
+
+
+@pytest.mark.parametrize("method", ["nearest", "backward", "forward"])
+def test_linking_methods(method: str):
+    all_data = {
+        "dataset1": OptimizationData(TestDataModelConstantIndexIndependent),
+        "dataset2": OptimizationData(TestDataModelConstantIndexDependent),
+    }
+    tolerance = 1
+    data = LinkedOptimizationData(all_data, tolerance, method, {})
+
+    wanted_global_axis = [1, 3, 5, 6, 10]
+    if method == "backward":
+        wanted_global_axis = [0, 1, 3, 5, 6, 10]
+    elif method == "forward":
+        wanted_global_axis = [1, 3, 5, 6, 7, 10]
+    assert np.array_equal(data.global_axis, wanted_global_axis)
+
+
+@pytest.mark.parametrize(
+    ("method", "target_axis", "value", "tolerance", "expected"),
+    [
+        ("forward", [1, 5, 6], 5, 0, 5),
+        ("forward", [1, 5, 6], 4, 1, 5),
+        ("forward", [1, 5, 6], 4.9, 0.2, 5),
+        ("forward", [6, 5, 1], 4, 1, 5),
+        ("forward", [1, 5, 6], 3, 1, 3),
+        ("forward", [1, 5, 6], 7, 1, 7),
+        ("backward", [6, 5, 1], 5, 0, 5),
+        ("backward", [6, 5, 1], 5.1, 0.2, 5),
+        ("backward", [1, 5, 6], 7, 1, 6),
+        ("backward", [1, 5, 6], 0, 1, 0),
+        ("nearest", [1, 5, 6], 4.6, 0.5, 5),
+        ("nearest", [1, 5, 6], 3, 1, 3),
+    ],
+)
+def test_align_index(
+    method: str, target_axis: list[float], value: float, tolerance: float, expected: float
+):
+    """A value is aligned to the nearest coordinate in the direction within the tolerance."""
+    aligned = LinkedOptimizationData.align_index(value, np.array(target_axis), tolerance, method)
+
+    assert aligned == expected
+
+
+def test_forward_linking_groups_the_aligned_coordinate():
+    """Data at coordinate 5 of the second dataset are linked with coordinate 5 of the first."""
+    data_model_two = TestDataModelConstantIndexDependent.model_copy(
+        update={
+            "data": xr.DataArray(
+                np.ones((1, 3)) * 2, coords=[("global_dim", [5]), ("model_dim", [4, 11, 15])]
+            ).to_dataset(name="data")
+        }
+    )
+    all_data = {
+        "dataset1": OptimizationData(TestDataModelConstantIndexIndependent),
+        "dataset2": OptimizationData(data_model_two),
+    }
+    data = LinkedOptimizationData(all_data, 0, "forward", {})
+
+    assert np.array_equal(data.global_axis, [1, 5, 6])
+    assert list(data.group_labels) == ["dataset1", "dataset1dataset2", "dataset1"]
+    assert np.array_equal(data.data_indices[1], [1, 0])

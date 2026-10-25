@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from typing import Annotated
+from typing import Literal
+
+from pydantic import AfterValidator
+
 from glotaran.model.interval_item import IntervalItem
 from glotaran.model.item import TypedItem
-from glotaran.model.item import item
 
 
-@item
 class ClpConstraint(TypedItem, IntervalItem):
     """Baseclass for clp constraints.
 
@@ -15,21 +18,19 @@ class ClpConstraint(TypedItem, IntervalItem):
     the respective classes for details.
     """
 
-    target: str
+    target: Annotated[str | list[str], AfterValidator(lambda v: [v] if isinstance(v, str) else v)]
 
 
-@item
 class ZeroConstraint(ClpConstraint):
     """Constraints the target to 0 in the given interval."""
 
-    type: str = "zero"
+    type: Literal["zero"]  # type:ignore[assignment]
 
 
-@item
 class OnlyConstraint(ZeroConstraint):
     """Constraints the target to 0 outside the given interval."""
 
-    type: str = "only"
+    type: Literal["only"]  # type:ignore[assignment]
 
     def applies(self, index: float | None) -> bool:
         """Check if the constraint applies on this index.

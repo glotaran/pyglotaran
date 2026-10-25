@@ -1,0 +1,136 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import Literal
+
+import numba as nb
+import numpy as np
+import xarray as xr
+
+from glotaran.builtin.items.activation import ActivationDataModel
+from glotaran.builtin.items.activation import MultiGaussianActivation
+from glotaran.model.element import Element
+from glotaran.model.errors import GlotaranModelError
+from glotaran.model.item import ParameterType  # noqa: TC001
+
+if TYPE_CHECKING:
+    from glotaran.model.data_model import DataModel
+    from glotaran.typing.types import ArrayLike
+
+
+class CoherentArtifactElement(Element):
+    type: Literal["coherent-artifact"]  # type:ignore[assignment]
+    register_as: ClassVar[str] = "coherent-artifact"
+    dimension: str = "time"
+    data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
+    order: int
+    width: ParameterType | None = None
+
+    def calculate_matrix(  # type:ignore[override]
+        self,
+        model: ActivationDataModel,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
+    ) -> tuple[list[str], ArrayLike]:
+        if not 1 <= self.order <= 3:  # noqa: PLR2004
+            msg = "Coherent artifact order must be between in [1,3]"
+            raise GlotaranModelError(msg)
+
+        activations = {
+            key: a
+            for key, a in model.activations.items()
+            if isinstance(a, MultiGaussianActivation) and self.label in a.compartments
+        }
+
+        if not activations:
+            msg = f'No (multi-)gaussian activation for coherent-artifact "{self.label}".'
+            raise GlotaranModelError(msg)
+        if len(activations) > 1:
+            msg = (
+                f'Coherent artifact "{self.label}" must be associated with exactly one activation.'
+            )
+            raise GlotaranModelError(msg)
+        activation = next(iter(activations.values()))
+
+        parameters = activation.parameters(global_axis)
+
+        matrix_shape = (model_axis.size, self.order)
+        index_dependent = any(isinstance(p, list) for p in parameters)
+        if index_dependent:
+            matrix_shape = (global_axis.size, *matrix_shape)  # type:ignore[assignment]
+        matrix = np.zeros(matrix_shape, dtype=np.float64)
+        if index_dependent:
+            _calculate_coherent_artifact_matrix(
+                matrix,
+                np.array([ps[0].center for ps in parameters]),
+                np.array([self.width or ps[0].width for ps in parameters]),
+                global_axis.size,
+                model_axis,
+                self.order,
+            )
+
+        else:
+            _calculate_coherent_artifact_matrix_on_index(
+                matrix,
+                parameters[0].center,  # type:ignore[attr-defined]
+                self.width or parameters[0].width,  # type:ignore[attr-defined]
+                model_axis,
+                self.order,
+            )
+        matrix *= activation.compartments[self.label]  # type:ignore[arg-type]
+
+        return self.compartments, matrix
+
+    @property
+    def compartments(self) -> list[str]:
+        return [f"{self.label}_derivative_{i}" for i in range(self.order)]
+
+    def create_result(
+        self,
+        model: ActivationDataModel,  # type:ignore[override]
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        amplitude = (
+            amplitudes.sel(amplitude_label=self.compartments)
+            .rename(amplitude_label="derivative")
+            .assign_coords({"derivative": range(self.order)})
+        )
+        concentration = (
+            concentrations.sel(amplitude_label=self.compartments)
+            .rename(amplitude_label="derivative")
+            .assign_coords({"derivative": range(self.order)})
+        )
+        return xr.Dataset({"amplitudes": amplitude, "concentrations": concentration})
+
+
+@nb.jit(nopython=True, parallel=False)
+def _calculate_coherent_artifact_matrix(
+    matrix: np.ndarray,
+    centers: list[float],
+    widths: list[float],
+    global_axis_size: np.ndarray,
+    model_axis: np.ndarray,
+    order: int,
+) -> None:
+    for i in nb.prange(global_axis_size):
+        _calculate_coherent_artifact_matrix_on_index(
+            matrix[i], centers[i], widths[i], model_axis, order
+        )
+
+
+@nb.jit(nopython=True, parallel=True)
+def _calculate_coherent_artifact_matrix_on_index(
+    matrix: np.ndarray, center: float, width: float, axis: np.ndarray, order: int
+) -> None:
+    matrix[:, 0] = np.exp(-1 * (axis - center) ** 2 / (2 * width**2))
+    if order > 1:
+        matrix[:, 1] = matrix[:, 0] * (center - axis) / width**2
+
+    if order > 2:  # noqa: PLR2004
+        matrix[:, 2] = (
+            matrix[:, 0] * (center**2 - width**2 - 2 * center * axis + axis**2) / width**4
+        )

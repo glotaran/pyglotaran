@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 def write_dict(
-    data: Mapping[str, Any] | Sequence[Any], file_name: str | Path | None = None, offset: int = 0
+    data: Mapping[str, Any] | Sequence[Any], file_name: str | Path | None = None, offset: int = 2
 ) -> str | None:
     """Write a mapping (e.g. ``dict``) or sequence (e.g. ``list``) as ``yaml`` to file or str.
 
@@ -30,7 +30,7 @@ def write_dict(
         Path of the file to write the ``yaml`` code to.
         Defaults to None which makes this function return a string.
     offset: int
-        Block indentation level. Defaults to 0
+        Block indentation level. Defaults to 2.
         See https://yaml.dev/doc/ruamel.yaml/detail/#Indentation_of_block_sequences
 
     Returns
@@ -40,10 +40,11 @@ def write_dict(
     """
     yaml = YAML()
     yaml.representer.add_representer(type(None), _yaml_none_representer)
-    yaml.indent(mapping=2, sequence=2, offset=offset)
+    # A mapping in a sequence needs ``sequence >= offset + 2``, else its keys align with the dash
+    yaml.indent(mapping=2, sequence=offset + 2, offset=offset)
 
     if file_name is not None:
-        with open(file_name, "w", encoding="utf8") as f:
+        with Path(file_name).open("w", encoding="utf8") as f:
             yaml.dump(data, f)
     else:
         stream = StringIO()
@@ -52,7 +53,7 @@ def write_dict(
     return None
 
 
-def load_dict(source: str | Path, is_file: bool) -> dict[str, Any]:
+def load_dict(source: str | Path, *, is_file: bool) -> dict[str, Any]:
     """Load ``yaml`` code from a file or string and returns the dict interpretation.
 
     Parameters
@@ -69,14 +70,12 @@ def load_dict(source: str | Path, is_file: bool) -> dict[str, Any]:
     yaml = YAML()
     yaml.representer.add_representer(type(None), _yaml_none_representer)
     if is_file:
-        with open(source) as f:
-            spec = yaml.load(f)
-    else:
-        spec = yaml.load(source)
-    return spec
+        with Path(source).open(encoding="utf8") as f:
+            return yaml.load(f)
+    return yaml.load(source)
 
 
-def _yaml_none_representer(representer: BaseRepresenter, data: Mapping[str, Any]) -> ScalarNode:
+def _yaml_none_representer(representer: BaseRepresenter, data: Mapping[str, Any]) -> ScalarNode:  # noqa: ARG001
     """Yaml repr for ``None`` python values.
 
     Parameters

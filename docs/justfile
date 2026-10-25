@@ -1,0 +1,47 @@
+# Sphinx documentation build recipes
+# Use 'just --list' to see all available recipes
+
+# Set shell for Windows compatibility
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
+
+# Sphinx configuration
+SPHINXOPTS := ""
+SPHINXBUILD := "uv run python -m sphinx"
+SOURCEDIR := "source"
+BUILDDIR := "build"
+API_TOCTREE_DIR := "source/api"
+
+# Default recipe (show help)
+default:
+    @just --list
+
+# ============================================================================
+# Hidden helpers (cross-platform using Python)
+# ============================================================================
+
+# Remove directory recursively (cross-platform)
+[private]
+_rm-rf path:
+    uv run python -c "import shutil, pathlib; p = pathlib.Path('{{path}}'); shutil.rmtree(p, ignore_errors=True) if p.exists() else None"
+
+# Remove data written by the notebooks
+[private]
+_remove-notebook-data:
+    uv run python remove_notebook_written_data.py
+
+# Remove build directory and API toctree
+clean:
+    @just _rm-rf {{BUILDDIR}}
+    @just _rm-rf {{API_TOCTREE_DIR}}
+
+# Generate HTML documentation
+html: (sphinx "html")
+
+# Check all external links for integrity
+linkcheck: (sphinx "linkcheck")
+
+# Run any Sphinx builder - Available: dirhtml, singlehtml, pickle, json, htmlhelp, qthelp, applehelp, devhelp, epub, latex, latexpdf, latexpdfja, text, man, texinfo, info, gettext, changes, doctest, coverage, xml, pseudoxml
+sphinx builder:
+    @just _remove-notebook-data
+    {{SPHINXBUILD}} -M {{builder}} {{SOURCEDIR}} {{BUILDDIR}} {{SPHINXOPTS}}
+    @just _remove-notebook-data

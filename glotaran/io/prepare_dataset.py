@@ -49,7 +49,8 @@ def prepare_time_trace_dataset(
     if irf is not None:
         if isinstance(irf, np.ndarray):
             if len(irf.shape) != 1:
-                raise ValueError("IRF with more than one dimension must be `xarray.DataArray`.")
+                msg = "IRF with more than one dimension must be `xarray.DataArray`."
+                raise ValueError(msg)
             dataset["irf"] = (("time",), irf)
         else:
             dataset["irf"] = irf
@@ -85,9 +86,12 @@ def add_svd_to_dataset(
     if data_array is None:
         data_array = dataset[name] if name != "data" else dataset.data
     if f"{name}_singular_values" not in dataset:
-        l, s, r = np.linalg.svd(
+        lsv, sv, rsv = np.linalg.svd(
             data_array.transpose(lsv_dim, rsv_dim).to_numpy(), full_matrices=False
         )
-        dataset[f"{name}_left_singular_vectors"] = ((lsv_dim, "left_singular_value_index"), l)
-        dataset[f"{name}_singular_values"] = (("singular_value_index"), s)
-        dataset[f"{name}_right_singular_vectors"] = ((rsv_dim, "right_singular_value_index"), r.T)
+        dataset[f"{name}_left_singular_vectors"] = ((lsv_dim, "left_singular_value_index"), lsv)
+        dataset[f"{name}_singular_values"] = (("singular_value_index"), sv)
+        dataset[f"{name}_right_singular_vectors"] = (
+            (rsv_dim, "right_singular_value_index"),
+            rsv.T,
+        )
