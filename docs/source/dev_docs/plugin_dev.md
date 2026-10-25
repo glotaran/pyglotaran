@@ -7,7 +7,7 @@ In time we will also provide you with a [cookiecutter](https://github.com/cookie
 to kickstart your new plugin for publishing as a package on PyPi.
 
 ```{toctree}
-notebooks/plugin_system/plugin_howto_write_a_io_plugin
+../notebooks/plugin_system/plugin_howto_write_a_io_plugin
 ```
 
 % TODO: Add guide on how to create your own Model

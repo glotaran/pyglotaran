@@ -84,6 +84,7 @@
 - 📚 Recommend uv in the installation and contributing guides and update the authors list
 - 📚 Port the getting started notebook from the removed `Project` API to `load_scheme`,
   `load_parameters` and `Scheme.optimize`
+- 📚🎨👌 Use pydata theme for docs (#1623)
 
 ### 🗑️ Deprecations (due in 0.9.0)
 

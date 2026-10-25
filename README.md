@@ -1,11 +1,11 @@
 # pyglotaran
 
-<img align="right" width="100" height="100" src="https://raw.githubusercontent.com/glotaran/pyglotaran/main/docs/source/images/pyglotaran_logo_transparent.svg">
+<img align="right" width="100" height="100" src="https://raw.githubusercontent.com/glotaran/pyglotaran/main/docs/source/images/pyglotaran_logo_transparent.svg" style="background-color: transparent;">
 
 [![PyPI version](https://badge.fury.io/py/pyglotaran.svg)](https://badge.fury.io/py/pyglotaran)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/pyglotaran.svg)](https://anaconda.org/conda-forge/pyglotaran)
-![Tests](https://github.com/glotaran/pyglotaran/workflows/Tests/badge.svg)
-[![Documentation Status](https://readthedocs.org/projects/pyglotaran/badge/?version=latest)](https://pyglotaran.readthedocs.io/en/latest/?badge=latest)
+[![Tests](https://github.com/glotaran/pyglotaran/actions/workflows/CI_CD_actions.yml/badge.svg)](https://github.com/glotaran/pyglotaran/actions/workflows/CI_CD_actions.yml)
+[![Documentation Status](https://app.readthedocs.org/projects/pyglotaran/badge/?version=latest)](https://pyglotaran.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://codecov.io/gh/glotaran/pyglotaran/branch/master/graph/badge.svg)](https://codecov.io/gh/glotaran/pyglotaran)
 [![CodeQL](https://github.com/glotaran/pyglotaran/actions/workflows/codeql.yml/badge.svg)](https://github.com/glotaran/pyglotaran/actions/workflows/codeql.yml)
 [![Discord](https://img.shields.io/discord/883443835135475753.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/KfnEYRSTJx)
@@ -31,10 +31,10 @@ For state of the art usage of this framework you may want to check out the list 
 
 Results of a target analysis of Photosystem I (see [study_florescence](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples/study_fluorescence) in the [examples](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples).)
 
-![overview plot of the fluorescence case study from the pyglotaran-examples](docs/source/images/png/plot_overview_study_fluorescence.png)
+![overview plot of the fluorescence case study from the pyglotaran-examples](https://raw.githubusercontent.com/glotaran/pyglotaran/32930cf0e6187332144bad400013d81bbffda98a/docs/source/images/png/plot_overview_study_fluorescence.png)
 <sub>Plot created with the `plot_overview` function of the [pyglotaran-extras](https://github.com/glotaran/pyglotaran-extras) package.</sub>
 
-<sub>**Notice**: This is (still) an _early access_ release, please refer to the [usage notice](NOTICE.md#usage-notice) prior to committing to use pyglotaran to avoid surprises down the line.</sub>
+<sub>**Notice**: This is (still) an _early access_ release, please refer to the [usage notice](https://github.com/glotaran/pyglotaran/blob/32930cf0e6187332144bad400013d81bbffda98a/NOTICE.md#usage-notice-for-scientists) prior to committing to use pyglotaran to avoid surprises down the line.</sub>
 
 ## Glotaran legacy
 

@@ -190,3 +190,6 @@ comparison-results-current
 docs/source/notebooks/getting_started/my_project/data
 docs/source/notebooks/getting_started/my_project/results
 docs/source/notebooks/getting_started/my_project/exports
+
+# Generated schema
+docs/source/_static/pygta_config.schema.json

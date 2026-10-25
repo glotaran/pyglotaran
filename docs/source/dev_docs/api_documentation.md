@@ -4,7 +4,7 @@ The API Documentation for pyglotaran is automatically created from its docstring
 
 ```{eval-rst}
 .. autosummary::
-    :toctree: api
+    :toctree: ../api
     :recursive:
 
     glotaran
