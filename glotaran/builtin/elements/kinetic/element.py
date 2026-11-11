@@ -18,6 +18,7 @@ from glotaran.model.element import ExtendableElement
 from glotaran.model.item import ParameterType  # noqa:F401
 
 if TYPE_CHECKING:
+    from glotaran.builtin.items.activation import Activation
     from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
 
@@ -63,6 +64,30 @@ class KineticElement(ExtendableElement, Kinetic):
             return lhs[np.newaxis, :, :] + rhs
         return lhs + rhs
 
+    def raw_initial_concentrations(self, activation: Activation) -> ArrayLike:
+        """Return the activation inputs for the compartments of this element."""
+        return np.array(
+            [float(activation.compartments.get(label, 0)) for label in self.compartments]
+        )
+
+    def normalized_initial_concentrations(self, activation: Activation) -> ArrayLike:
+        """Return the initial concentrations as used to calculate the matrix.
+
+        The normalization sum runs over all activation compartments except
+        ``not_normalized_compartments``, including compartments of other elements.
+        """
+        initial_concentrations = self.raw_initial_concentrations(activation)
+        normalized_compartments = [
+            c not in activation.not_normalized_compartments for c in self.compartments
+        ]
+        normalization_sum = sum(
+            float(value)
+            for compartment, value in activation.compartments.items()
+            if compartment not in activation.not_normalized_compartments
+        )
+        initial_concentrations[normalized_compartments] /= normalization_sum
+        return initial_concentrations
+
     def calculate_matrix(  # type:ignore[override]
         self,
         model: ActivationDataModel,
@@ -73,18 +98,7 @@ class KineticElement(ExtendableElement, Kinetic):
         compartments = self.compartments
         matrices = []
         for activation in model.activations.values():
-            initial_concentrations = np.array(
-                [float(activation.compartments.get(label, 0)) for label in compartments]
-            )
-            normalized_compartments = [
-                c not in activation.not_normalized_compartments for c in compartments
-            ]
-            normalization_sum = sum(
-                float(value)
-                for compartment, value in activation.compartments.items()
-                if compartment not in activation.not_normalized_compartments
-            )
-            initial_concentrations[normalized_compartments] /= normalization_sum
+            initial_concentrations = self.normalized_initial_concentrations(activation)
             rates = self.calculate(initial_concentrations)
 
             matrix = (
@@ -183,11 +197,11 @@ class KineticElement(ExtendableElement, Kinetic):
         kinetic_amplitudes_list = []
         activation_names = list(model.activations.keys())
         for activation in model.activations.values():
-            initial_concentration_activation = np.array(
-                [float(activation.compartments.get(label, 0)) for label in self.compartments]
-            )
-            initial_concentrations_list.append(initial_concentration_activation)
-            a_matrix = self.a_matrix(initial_concentration_activation)
+            # Report the raw inputs, but build the A matrix from the normalized
+            # concentrations used in the fit, so the kinetic amplitudes (DAS)
+            # reconstruct the fitted data.
+            initial_concentrations_list.append(self.raw_initial_concentrations(activation))
+            a_matrix = self.a_matrix(self.normalized_initial_concentrations(activation))
             a_matrices.append(a_matrix)
             kinetic_amplitudes_list.append(species_amplitudes.to_numpy() @ a_matrix.T)
 

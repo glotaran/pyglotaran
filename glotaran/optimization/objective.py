@@ -751,7 +751,7 @@ class OptimizationObjective:
         estimation = OptimizationEstimation.calculate(
             full_matrix.array,
             self._data.flat_data,
-            self._data.model.residual_function,
+            self._model.residual_function,
         )
         clp = xr.DataArray(
             estimation.clp.reshape(

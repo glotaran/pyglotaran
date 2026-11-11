@@ -13,6 +13,7 @@ from glotaran.io import SAVING_OPTIONS_MINIMAL
 from glotaran.io import save_dataset
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.experiment_model import ExperimentModel
+from glotaran.model.experiment_model import LinkedGlobalModelIssue
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
@@ -23,6 +24,7 @@ from glotaran.optimization.objective import OptimizationResult
 from glotaran.optimization.objective import OptimizationResultMetaData
 from glotaran.optimization.objective import calculate_root_mean_square_error
 from glotaran.optimization.penalty import calculate_clp_penalties
+from glotaran.parameter import Parameters
 from glotaran.plugin_system.data_io_registration import get_data_io
 from glotaran.testing.plugin_system import monkeypatch_plugin_registry_data_io
 from tests.optimization.data import TestDataModelConstantIndexDependent
@@ -429,6 +431,41 @@ def test_global_data(weight: bool):
     assert element_result["amplitudes"].shape == (1, 1)
     assert optimization_result.residuals is not None
     assert optimization_result.residuals.shape == data_model.data.data.shape
+
+
+def test_global_result_uses_experiment_residual_function():
+    """The global result is calculated with the residual function used by the fit."""
+    dataset_label = "dataset1"
+    data_model = deepcopy(TestDataModelGlobal)
+    data_model.data["data"] = -data_model.data.data
+    experiment = ExperimentModel(
+        datasets={dataset_label: data_model}, residual_function="non_negative_least_squares"
+    )
+    objective = OptimizationObjective(experiment)
+    penalty = objective.calculate()
+
+    optimization_result = objective.get_result().optimization_results[dataset_label]
+
+    assert np.all(optimization_result.elements[dataset_label]["amplitudes"] >= 0)
+    assert np.sum(optimization_result.residuals.to_numpy() ** 2) == pytest.approx(
+        np.sum(penalty**2)
+    )
+
+
+def test_linked_datasets_with_global_elements_are_rejected():
+    """Linked datasets do not support global elements, so this is reported as an issue."""
+    linked = ExperimentModel(
+        datasets={
+            "global": deepcopy(TestDataModelGlobal),
+            "ordinary": deepcopy(TestDataModelConstantIndexIndependent),
+        }
+    )
+    issues = linked.get_issues(Parameters({}))
+    assert [type(issue) for issue in issues] == [LinkedGlobalModelIssue]
+    assert "'global'" in issues[0].to_string()
+
+    single = ExperimentModel(datasets={"global": deepcopy(TestDataModelGlobal)})
+    assert single.get_issues(Parameters({})) == []
 
 
 @pytest.mark.parametrize(
