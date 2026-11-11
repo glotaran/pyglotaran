@@ -1,0 +1,197 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+import numpy as np
+import pytest
+from ruamel.yaml import YAML
+
+from glotaran.builtin.elements.kinetic.element import KineticElement
+from glotaran.builtin.io.yml.utils import load_dict
+from glotaran.builtin.io.yml.utils import write_dict
+from glotaran.builtin.items.activation import ActivationDataModel
+from glotaran.io import load_parameters
+from glotaran.io import load_result
+from glotaran.io import load_scheme
+from glotaran.io import save_result
+from glotaran.io import save_scheme
+from glotaran.project import Scheme
+from glotaran.testing.simulated_data.sequential_spectral_decay import RESULT
+
+TEST_SCHEME_YML = """
+# Just a comment
+library:
+    parallel:
+        type: kinetic
+        rates:
+            (s1, s1): rates.1
+
+experiments:
+    myexp:
+        datasets:
+            kinetic_parallel:
+                elements: [parallel]
+                activations:
+                    irf:
+                        type: instant
+                        compartments:
+                            "s1": 1
+"""
+
+
+def test_parameter_group_copy():
+    params = """
+    a:
+        - ["foo", 1, {non-negative: true, min: -1, max: 1, vary: false}]
+        - 4
+        - 5
+    b:
+        - 7
+        - 8
+    """
+    parameters = load_parameters(params, format_name="yml_str")
+
+    assert parameters.get("a.foo").value == 1
+    assert parameters.get("a.foo").non_negative
+    assert parameters.get("a.foo").minimum == -1
+    assert parameters.get("a.foo").maximum == 1
+    assert not parameters.get("a.foo").vary
+
+    assert parameters.get("a.2").value == 4
+    assert not parameters.get("a.2").non_negative
+    assert parameters.get("a.2").minimum == -np.inf
+    assert parameters.get("a.2").maximum == np.inf
+    assert parameters.get("a.2").vary
+
+    assert parameters.get("a.3").value == 5
+
+    assert parameters.get("b.1").value == 7
+    assert not parameters.get("b.1").non_negative
+    assert parameters.get("b.1").minimum == -np.inf
+    assert parameters.get("b.1").maximum == np.inf
+    assert parameters.get("b.1").vary
+
+    assert parameters.get("b.2").value == 8
+
+
+def test_load_scheme():
+    """Load scheme from string."""
+    scheme = load_scheme(TEST_SCHEME_YML, format_name="yml_str")
+    assert isinstance(scheme.library["parallel"], KineticElement)
+    assert isinstance(
+        scheme.experiments["myexp"].datasets["kinetic_parallel"], ActivationDataModel
+    )
+
+
+def test_save_scheme_from_string(tmp_path: Path):
+    """Save and load scheme from file."""
+    input_scheme = load_scheme(TEST_SCHEME_YML, format_name="yml_str")
+    save_path = tmp_path / "test_scheme.yml"
+    save_scheme(input_scheme, save_path)
+    assert "(s1, s1): rates.1" in save_path.read_text()
+    loaded_scheme = load_scheme(save_path)
+    assert loaded_scheme.model_dump() == input_scheme.model_dump()
+
+
+def test_save_scheme_from_file(tmp_path: Path):
+    """YAML file roundtrip preserves comments."""
+    input_path = tmp_path / "input_scheme.yml"
+    input_path.write_text(TEST_SCHEME_YML)
+
+    save_path = tmp_path / "test_scheme.yml"
+    scheme = load_scheme(input_path)
+    save_scheme(scheme, save_path)
+
+    assert save_path.read_text() == TEST_SCHEME_YML
+
+    # copyfile does fail if source and target are the same
+    reloaded_scheme = load_scheme(save_path)
+    assert reloaded_scheme.source_path == save_path
+    save_scheme(reloaded_scheme, save_path, allow_overwrite=True)
+
+    assert save_path.read_text() == TEST_SCHEME_YML
+
+
+def test_save_scheme_from_file_edited(tmp_path: Path):
+    """YAML file writes changes when scheme was changed in memory."""
+    input_path = tmp_path / "input_scheme.yml"
+    input_path.write_text(TEST_SCHEME_YML)
+
+    save_path = tmp_path / "test_scheme.yml"
+    scheme = load_scheme(input_path)
+    scheme.experiments.pop("myexp")
+    save_scheme(scheme, save_path)
+
+    assert save_path.read_text() != TEST_SCHEME_YML
+    assert load_scheme(save_path).experiments == {}
+
+
+def test_save_scheme_with_list_of_mappings(tmp_path: Path):
+    """A scheme built in code with a list of mappings (here penalties) is written as valid YAML."""
+    scheme_dict = YAML().load(TEST_SCHEME_YML)
+    scheme_dict["experiments"]["myexp"]["clp_penalties"] = [
+        {"type": "equal_area", "source": "s1", "target": "s2", "parameter": "area.1", "weight": 1}
+    ]
+    scheme = Scheme.from_dict(scheme_dict)
+
+    save_scheme(scheme, tmp_path / "scheme.yml")
+
+    assert load_scheme(tmp_path / "scheme.yml").model_dump() == scheme.model_dump()
+
+
+def test_save_scheme_after_source_file_was_removed(tmp_path: Path):
+    """A scheme whose source file no longer exists is written from memory."""
+    input_path = tmp_path / "input_scheme.yml"
+    input_path.write_text(TEST_SCHEME_YML)
+    scheme = load_scheme(input_path)
+    input_path.unlink()
+
+    save_scheme(scheme, tmp_path / "test_scheme.yml")
+
+    assert load_scheme(tmp_path / "test_scheme.yml").model_dump() == scheme.model_dump()
+
+
+def test_non_ascii_round_trip(tmp_path: Path):
+    """YAML is read as UTF-8, as it is written, whatever the locale encoding."""
+    write_dict({"name": "ΔA café β₂ Ё"}, file_name=tmp_path / "test.yml")
+
+    assert load_dict(tmp_path / "test.yml", is_file=True) == {"name": "ΔA café β₂ Ё"}
+
+
+@pytest.mark.parametrize("result_file_name", ["result.yml", ""])
+def test_result_round_tripping(tmp_path: Path, result_file_name: str):
+    """Saving and loading Result via YAML preserves data."""
+    save_path = tmp_path / result_file_name
+    result_file_paths = save_result(RESULT, save_path)
+    assert result_file_paths == [
+        (tmp_path / "result.yml").as_posix(),
+        (tmp_path / "scheme.yml").as_posix(),
+        (tmp_path / "initial_parameters.csv").as_posix(),
+        (tmp_path / "optimized_parameters.csv").as_posix(),
+        (tmp_path / "parameter_history.csv").as_posix(),
+        (tmp_path / "optimization_history.csv").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/input_data.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/residuals.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/fitted_data.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/elements/sequential.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/activations/irf.nc").as_posix(),
+        (tmp_path / "optimization_results/sequential-decay/fit_decomposition/clp.nc").as_posix(),
+        (
+            tmp_path / "optimization_results/sequential-decay/fit_decomposition/matrix.nc"
+        ).as_posix(),
+    ]
+    assert all(Path(path).exists() for path in result_file_paths)
+    loaded_result = load_result(save_path)
+    yaml = YAML()
+    saved_meta = yaml.load((tmp_path / "result.yml").read_text())["optimization_results"]
+    for label, dataset in loaded_result.optimization_results.items():
+        # An unweighted fit has a unit scale and a weighted RMSE equal to the
+        # unweighted one. Both are persisted rather than dropped as defaults.
+        assert dataset.meta.weighted_root_mean_square_error == pytest.approx(
+            dataset.meta.root_mean_square_error
+        )
+        assert dataset.meta.scale == 1
+        assert saved_meta[label]["meta"]["scale"] == 1
+        assert "weighted_root_mean_square_error" in saved_meta[label]["meta"]
+
+    loaded_result.scheme.optimize(loaded_result.optimized_parameters, loaded_result.input_data)

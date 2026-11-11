@@ -9,6 +9,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+from __future__ import annotations
 
 import subprocess
 import sys
@@ -31,7 +32,7 @@ authors = (
 project = "pyglotaran"
 title = f"{project} Documentation"
 current_year = datetime.now().year
-copyright = f"2018-{current_year}, " + ", ".join(authors)
+copyright = f"2018-{current_year}, " + ", ".join(authors)  # noqa: A001
 author = ", ".join(authors)
 
 # The version info for the project you're documenting, acts as replacement
@@ -65,7 +66,11 @@ extensions = [
     "myst_parser",
     "numpydoc",
     "sphinx_copybutton",
-    "sphinx_rtd_theme",
+]
+
+myst_heading_anchors = 3
+myst_enable_extensions = [
+    "colon_fence",
 ]
 
 autoclass_content = "both"
@@ -89,6 +94,9 @@ source_suffix = {".rst": "restructuredtext", ".md": "restructuredtext"}
 linkcheck_ignore = [
     r"https://github\.com/.+?#.+",
     r"https://stackoverflow\.com/a/(65375904|47663099)/3990615",
+    # TODO (s-weigand): Reactivate when their servers are up again
+    r"https://dx\.doi\.org/.*",
+    r"https://www\.jstatsoft\.org/.*",
 ]
 
 # The master toctree document.
@@ -138,9 +146,9 @@ nbsphinx_execute_arguments = [
 try:
     from subprocess import check_output
 
-    release = check_output(["git", "describe", "--tags", "--always"])
+    release = check_output(["git", "describe", "--tags", "--always"])  # noqa: S607
     release = release.decode().strip()
-    today = check_output(["git", "show", "-s", "--format=%ad", "--date=short"])
+    today = check_output(["git", "show", "-s", "--format=%ad", "--date=short"])  # noqa: S607
     today = today.decode().strip()
 except Exception:
     release = "<unknown>"
@@ -148,39 +156,58 @@ except Exception:
 
 git_untracked_check_dependencies = False
 
-
-# -- Options for HTML output -------------------------------------------------
+# -- Options for HTML output -------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
-html_theme_options = {
-    "navigation_depth": -1,
-}
+html_theme = "pydata_sphinx_theme"
+
 html_favicon = "images/pyglotaran_favicon_transparent.svg"
 html_logo = "images/pyglotaran_logo_light_theme.svg"
 
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
+# Theme options are theme-specific and customize the look and feel of a
+# theme further.  For a list of options available for each theme, see the
 # documentation.
-#
-# html_theme_options = {}
+
+html_theme_options = {
+    "pygments_dark_style": "monokai",
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/glotaran/pyglotaran",
+            "icon": "fa-brands fa-square-github",
+            "type": "fontawesome",
+        }
+    ],
+    "logo": {
+        "text": "Pyglotaran",
+        "image_dark": "images/pyglotaran_logo_dark_theme.svg",
+    },
+    "navigation_depth": -1,
+    "header_links_before_dropdown": 6,
+}
+# Hide empty sidebars
+# Ref.: https://github.com/pydata/pydata-sphinx-theme/issues/1662#issuecomment-1913672649
+html_sidebars = {
+    "introduction": [],
+    "installation": [],
+    "notebooks/getting_started/getting_started": [],
+    "usage": [],
+    "changelog": [],
+    "authors": [],
+    "NOTICE": [],
+    "notebooks/plugin_system": [],
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
+html_static_path = ["_static"]
+html_css_files = [
+    "css/xarray_dark.css",
+]
 
-# Custom sidebar templates, must be a dictionary that maps document names
-# to template names.
-#
-# The default sidebars (for documents that don't match any pattern) are
-# defined by theme itself.  Builtin themes are using these templates by
-# default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
-# 'searchbox.html']``.
-#
-# html_sidebars = {}
 
 copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
 copybutton_prompt_is_regexp = True
@@ -273,7 +300,7 @@ intersphinx_mapping = {
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
     "xarray": ("https://xarray.pydata.org/en/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
-    "python": ("https://docs.python.org/", None),
+    "python": ("https://docs.python.org/3", None),
 }
 
 ipython_savefig_dir = "images/plot"
@@ -294,6 +321,19 @@ extlinks = {
     ),
 }
 
-# cleanup notebook data
 
-subprocess.run([sys.executable, DOC_FOLDER / "remove_notebook_written_data.py"], check=True)
+def exclude_pydantic_inherited_members(app, obj_type, name, obj, skip, options):
+    """Filter functions for members inherited from pydantic classes.
+
+    See Sphinx docs:
+    https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#skipping-members
+    """
+    if hasattr(obj, "__code__") and obj.__code__.co_qualname.startswith(
+        ("BaseModel.", "FieldInfo.")
+    ):
+        return True
+    return None
+
+
+def setup(app):
+    app.connect("autodoc-skip-member", exclude_pydantic_inherited_members)

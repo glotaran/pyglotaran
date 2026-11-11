@@ -3,19 +3,20 @@
 from __future__ import annotations
 
 import abc
+from typing import TYPE_CHECKING
 from typing import Literal
 
-import xarray as xr
 from pydantic import BaseModel
+from pydantic import ConfigDict
+
+if TYPE_CHECKING:
+    import xarray as xr
 
 
 class PreProcessor(BaseModel, abc.ABC):
     """A base class for pre=processors."""
 
-    class Config:
-        """Config for BaseModel."""
-
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @abc.abstractmethod
     def apply(self, data: xr.DataArray) -> xr.DataArray:

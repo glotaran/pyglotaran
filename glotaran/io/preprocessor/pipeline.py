@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Annotated
 
-import xarray as xr
 from pydantic import BaseModel
 from pydantic import Field
 
 from glotaran.io.preprocessor.preprocessor import CorrectBaselineAverage
 from glotaran.io.preprocessor.preprocessor import CorrectBaselineValue
+
+if TYPE_CHECKING:
+    import xarray as xr
 
 PipelineAction = Annotated[
     CorrectBaselineValue | CorrectBaselineAverage,

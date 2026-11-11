@@ -5,6 +5,8 @@ This script uses https://github.com/shakiba/svgexport
 ``npm install svgexport -g``
 """
 
+from __future__ import annotations
+
 import subprocess
 from pathlib import Path
 
@@ -28,7 +30,7 @@ def render_svg(glob_pattern: str, size: int) -> None:
     for logo in image_folder.glob(glob_pattern):
         input_file = logo.resolve().as_posix()
         output_file = (output_folder / f"{logo.stem}_{size}x{size}.png").resolve().as_posix()
-        subprocess.run(f"svgexport {input_file} {output_file} {size}:", shell=True)
+        subprocess.run(f"svgexport {input_file} {output_file} {size}:", shell=True, check=True)  # noqa: S602
 
 
 if __name__ == "__main__":

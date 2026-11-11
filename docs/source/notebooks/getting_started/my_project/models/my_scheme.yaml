@@ -1,0 +1,20 @@
+library:
+  sequential:
+    type: kinetic
+    rates:
+      (s2, s1): kinetic.1
+      (s3, s2): kinetic.2
+      (s3, s3): kinetic.3
+
+experiments:
+  my_experiment:
+    datasets:
+      my_data:
+        elements: [sequential]
+        activations:
+          irf:
+            type: gaussian
+            center: irf.center
+            width: irf.width
+            compartments:
+              s1: input.1

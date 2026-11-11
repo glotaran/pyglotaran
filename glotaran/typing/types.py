@@ -1,25 +1,20 @@
 """Glotaran types module containing commonly used types."""
 
+from __future__ import annotations
+
 from collections.abc import Mapping
 from collections.abc import Sequence
 from pathlib import Path
 from typing import TypeVar
-from typing import Union
 
 import numpy as np
-
-try:
-    from numpy._typing._array_like import _SupportsArray
-except ImportError:
-    # numpy < 1.23
-    from numpy.typing._array_like import _SupportsArray
-
 import xarray as xr
+from numpy._typing._array_like import _SupportsArray  # noqa: F401
 
 T = TypeVar("T")
-StrOrPath = Union[str, Path]
-LoadableDataset = Union[StrOrPath, xr.Dataset, xr.DataArray]
-DatasetMappable = Union[LoadableDataset, Sequence[LoadableDataset], Mapping[str, LoadableDataset]]
+type StrOrPath = str | Path
+type LoadableDataset = StrOrPath | xr.Dataset | xr.DataArray
+type DatasetMappable = LoadableDataset | Sequence[LoadableDataset] | Mapping[str, LoadableDataset]
 
 
 ArrayLike = np.ndarray

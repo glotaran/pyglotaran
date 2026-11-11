@@ -21,7 +21,9 @@ class OptimizationHistory:
     https://stackoverflow.com/a/65375904/3990615
     """
 
-    def __init__(self, data=None, source_path: StrOrPath | None = None) -> None:
+    def __init__(
+        self, data: None | list[dict[str, Any]] = None, source_path: StrOrPath | None = None
+    ) -> None:
         """Ensure DataFrame has the correct columns, is numeric and has iteration as index."""
         self._df = (
             pd.DataFrame(
@@ -36,7 +38,7 @@ class OptimizationHistory:
         else:
             self.source_path = "optimization_history.csv"
 
-    def __getattr__(self, attr: str) -> Any:
+    def __getattr__(self, attr: str) -> Any:  # noqa: ANN401
         """Access class attribute and fallback to DataFrame attribute if not present.
 
         Parameters
@@ -117,7 +119,7 @@ class OptimizationHistory:
 
     loader = from_csv
 
-    def to_csv(self, path: StrOrPath, delimiter: str = ","):
+    def to_csv(self, path: StrOrPath, delimiter: str = ",") -> None:
         """Write a ``OptimizationHistory`` to a CSV file and set ``source_path``.
 
         Parameters

@@ -6,7 +6,7 @@ This guide provides step-by-step instructions for installing **pyglotaran** on W
 
 Before installing pyglotaran, ensure you have:
 
-- **Python 3.10 or higher** installed on your system.
+- **Python 3.13 or 3.14** installed on your system.
 - Basic familiarity with command-line interfaces.
 
 ### Check if Python is Installed
@@ -25,7 +25,7 @@ python3 --version
 
 If Python is installed, this command will display the Python version number.
 
-- If the version is 3.10 or higher, proceed to installing pyglotaran.
+- If the version is 3.13 or 3.14, proceed to installing pyglotaran.
 - If you see a lower version number or receive an error message, proceed to Installing Python on Your System.
 
 ## Installing pyglotaran
@@ -79,7 +79,7 @@ pip install pyglotaran
 To verify that pyglotaran is installed correctly, run:
 
 ```shell
-python -c "import pyglotaran; print(pyglotaran.__version__)"
+python -c "import glotaran; print(glotaran.__version__)"
 ```
 
 If the installation was successful, this command will print the version number of pyglotaran.
@@ -93,7 +93,7 @@ If you don't have Python installed, follow the instructions below for your opera
 #### Option 1: Install Python via the Microsoft Store
 
 1. Open the Microsoft Store app.
-2. Search for Python and select the latest version (Python 3.10 or higher).
+2. Search for Python and select the latest version (Python 3.13 or 3.14).
 3. Click Get or Install.
 
 **\*Note**: This method installs Python only for the current user and doesn't require administrative privileges.\*
@@ -101,7 +101,7 @@ If you don't have Python installed, follow the instructions below for your opera
 #### Option 2: Install Python from python.org
 
 1. Go to the official Python website.
-2. Download the latest Python installer (Python 3.10 or higher).
+2. Download the latest Python installer (Python 3.13 or 3.14).
 3. Run the installer:
 
 - Check the box that says "Add Python to PATH".
@@ -126,10 +126,12 @@ brew install python
 ### Option 2: Install Python from python.org
 
 1. Visit the official Python website.
-2. Download the latest Python installer (Python 3.10 or higher).
+2. Download the latest Python installer (Python 3.13 or 3.14).
 3. Run the installer and follow the prompts.
 
 ## Linux
+
+The `python3` package of your distribution is only suitable if it provides Python 3.13 or 3.14 (for example Debian 13 or Ubuntu 25.04 and newer). Ubuntu 24.04 and Debian 12 ship an older Python.
 
 ### Ubuntu/Debian
 
@@ -147,7 +149,24 @@ sudo apt install python3 python3-venv python3-pip
 
 ### Other Distributions
 
-Refer to your distribution's package manager documentation to install Python 3.10 or higher, python3-venv, and python3-pip.
+Refer to your distribution's package manager documentation to install Python 3.13 or 3.14, python3-venv, and python3-pip.
+
+### Any Distribution with uv
+
+If your distribution does not provide Python 3.13 or 3.14, install [uv](https://docs.astral.sh/uv/getting-started/installation/) and let it install Python:
+
+```shell
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv python install 3.13
+```
+
+Then create the virtual environment from Step 2 with uv instead of `python3 -m venv`:
+
+```shell
+uv venv --python 3.13 venv
+```
+
+Activate it as described in Step 3 and install pyglotaran with `uv pip install pyglotaran`.
 
 # Next Steps
 

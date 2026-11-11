@@ -1,1 +1,0 @@
-from glotaran.builtin.megacomplexes.pfid.pfid_megacomplex import PFIDMegacomplex

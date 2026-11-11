@@ -7,14 +7,16 @@ If you use ``tox`` to run the tests (``tox`` or ``tox -e docs-notebooks``)
 this script will be run before the tests.
 """
 
+from __future__ import annotations
+
 import shutil
 from pathlib import Path
 
 NOTEBOOK_PATH = Path(__file__).parent / "source/notebooks"
 
 
-def remove_files(path: Path, glob_pattern: str):
-    """Removes files with a given pattern from a folder.
+def remove_files(path: Path, glob_pattern: str) -> None:
+    """Remove files with a given pattern from a folder.
 
     To not accidentally delete files, we only use glob and not rglob.
 
@@ -31,6 +33,6 @@ def remove_files(path: Path, glob_pattern: str):
 
 if __name__ == "__main__":
     remove_files(NOTEBOOK_PATH / "getting_started", "*.nc")
-    remove_files(NOTEBOOK_PATH / "getting_started/my_project", "*.gta")
     shutil.rmtree(NOTEBOOK_PATH / "getting_started/my_project/data", ignore_errors=True)
     shutil.rmtree(NOTEBOOK_PATH / "getting_started/my_project/results", ignore_errors=True)
+    shutil.rmtree(NOTEBOOK_PATH / "getting_started/my_project/exports", ignore_errors=True)
