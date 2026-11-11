@@ -76,6 +76,12 @@
   of the matrix multiplied by the weights with an additional global dimension
 - 🩹 Remove the `add_svd` argument of `Scheme.optimize`; the singular value decompositions of
   data and residuals were computed for every result and discarded, whatever its value
+- 🩹 Calculate kinetic amplitudes (DAS) and the A-matrix with the normalized initial
+  concentrations used in the fit; they were scaled by the sum of the activation inputs
+- 🩹 Calculate full-model results with the residual function of the experiment, which the fit
+  uses, so that non-negative least squares fits no longer return negative amplitudes
+- 🩹 Reject an experiment with several datasets of which one has `global_elements` before the fit;
+  the global elements were ignored. Put such a dataset in its own experiment
 
 ### 📚 Documentation
 
