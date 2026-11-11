@@ -98,7 +98,7 @@ jobs:
           overwrite: true
 
       - name: Delete Intermediate Notebooks artifacts
-        uses: GeekyEggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5
+        uses: GeekyEggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
         with:
           name: example-notebooks-*
 
@@ -117,7 +117,7 @@ jobs:
           overwrite: true
 
       - name: Delete Intermediate Result artifacts
-        uses: GeekyEggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5
+        uses: GeekyEggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
         with:
           name: example-results-*
 
@@ -148,7 +148,7 @@ jobs:
           path: comparison-results-current
 
       - name: Delete Intermediate artifacts
-        uses: GeekyEggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5
+        uses: GeekyEggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
         with:
           name: example-results-*
 
