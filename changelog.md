@@ -2,7 +2,7 @@
 
 (changes-0_8_0)=
 
-## 🚀 0.8.0 (Unreleased)
+## 🚀 0.8.0 (2026-11-11)
 
 ### 💥 BREAKING CHANGE
 
