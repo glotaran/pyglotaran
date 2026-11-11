@@ -462,7 +462,11 @@ def test_linked_datasets_with_global_elements_are_rejected():
     )
     issues = linked.get_issues(Parameters({}))
     assert [type(issue) for issue in issues] == [LinkedGlobalModelIssue]
-    assert "'global'" in issues[0].to_string()
+    assert issues[0].to_string() == (
+        "Dataset 'global' has global elements, but its experiment contains several datasets. "
+        "Linked datasets do not support global elements yet. Put each dataset with global "
+        "elements in its own experiment; experiments can still share parameters."
+    )
 
     single = ExperimentModel(datasets={"global": deepcopy(TestDataModelGlobal)})
     assert single.get_issues(Parameters({})) == []
