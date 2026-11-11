@@ -39,7 +39,7 @@ jobs:
       matrix:
         example_name: ${{fromJson(needs.create-example-list.outputs.example-list)}}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up Python 3.13
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
@@ -127,13 +127,13 @@ jobs:
     needs: [collect-artifacts]
     steps:
       - name: Checkout pyglotaran and pinned validation action
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: pyglotaran
           submodules: recursive
 
       - name: Checkout compare results
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: "glotaran/pyglotaran-examples"
           # Pinned v0.7.4 gold standard. Refresh this only with a reviewed
