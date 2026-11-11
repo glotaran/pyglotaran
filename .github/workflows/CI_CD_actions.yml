@@ -9,12 +9,6 @@ on:
       - "sourcery/**"
       - "pre-commit-ci-update-config"
   pull_request:
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: "Existing release tag to build and publish to PyPI (e.g. v0.8.0)"
-        required: true
-        type: string
 
 jobs:
   pre-commit:
@@ -160,14 +154,12 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')) || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     needs: [test, docs, docs-notebooks]
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ inputs.tag || github.ref }}
       - name: Set up Python 3.13
         uses: actions/setup-python@v7
         with:
