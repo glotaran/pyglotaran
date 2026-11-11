@@ -161,3 +161,51 @@ def test_decay(decay_method: str, activation: Activation):
         # TODO: check if we need more tests here
         # assert "gaussian_activation" in optimization_result["dataset1"].coords
         # assert "gaussian_activation_function" in optimization_result["dataset1"]
+
+
+@pytest.mark.parametrize(
+    ("rates", "compartments"),
+    [
+        ({("s1", "s1"): 0.5, ("s2", "s2"): 0.1}, {"s1": 1, "s2": 1}),
+        ({("s2", "s1"): 0.5, ("s2", "s2"): 0.1}, {"s1": 1, "outside": 3}),
+        ({("s2", "s1"): 0.5, ("s2", "s2"): 0.1}, {"s1": 1}),
+    ],
+    ids=["parallel-unnormalized", "sequential-outside-compartment", "sequential-normalized"],
+)
+def test_kinetic_amplitudes_reconstruct_fitted_data(
+    rates: dict[tuple[str, str], float], compartments: dict[str, float]
+):
+    """Kinetic amplitudes (DAS) use the same normalization as the fit."""
+    element = KineticElement(label="kinetic", type="kinetic", rates=rates)
+    model = ActivationDataModel(
+        elements=["kinetic"],
+        activations={"irf": InstantActivation(type="instant", compartments=compartments)},
+    )
+    global_axis = np.array([500.0, 600.0])
+    model_axis = np.linspace(0, 50, 101)
+    labels, concentrations = element.calculate_matrix(model, global_axis, model_axis)
+    species_amplitudes = np.array([[1.0, 2.0], [3.0, -1.0]])
+    fitted_data = concentrations @ species_amplitudes
+
+    result = element.create_result(
+        model,
+        "spectral",
+        "time",
+        xr.DataArray(
+            species_amplitudes.T,
+            coords={"spectral": global_axis, "amplitude_label": labels},
+        ),
+        xr.DataArray(concentrations, coords={"time": model_axis, "amplitude_label": labels}),
+    )
+
+    kinetic_amplitudes = (
+        result.kinetic_amplitudes.sel(activation="irf").transpose("spectral", "kinetic").to_numpy()
+    )
+    reconstructed = (
+        np.exp(np.outer(model_axis, -result.kinetic_amplitudes.rate.to_numpy()))
+        @ kinetic_amplitudes.T
+    )
+    assert np.allclose(reconstructed, fitted_data)
+    assert result.initial_concentrations.sel(activation="irf").to_numpy() == pytest.approx(
+        [float(compartments.get(label, 0)) for label in labels]
+    )

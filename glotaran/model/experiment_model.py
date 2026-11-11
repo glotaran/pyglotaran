@@ -15,7 +15,9 @@ from pydantic import field_serializer
 from glotaran.model.clp_penalties import EqualAreaPenalty  # noqa: TC001
 from glotaran.model.clp_relation import ClpRelation  # noqa: TC001
 from glotaran.model.data_model import DataModel
+from glotaran.model.data_model import is_data_model_global
 from glotaran.model.data_model import resolve_data_model
+from glotaran.model.errors import ItemIssue
 from glotaran.model.item import ParameterType
 from glotaran.model.item import get_item_issues
 from glotaran.model.item import resolve_item_parameters
@@ -24,7 +26,6 @@ from glotaran.parameter import Parameters
 from glotaran.utils.pydantic_serde import serialization_info_to_kwargs
 
 if TYPE_CHECKING:
-    from glotaran.model.errors import ItemIssue
     from glotaran.project.library import ModelLibrary
 
 
@@ -97,11 +98,46 @@ class ExperimentModel(BaseModel):
         return result
 
     def get_issues(self, parameters: Parameters) -> list[ItemIssue]:
-        return [
+        issues: list[ItemIssue] = [
             issue
             for dataset in self.datasets.values()
             for issue in get_item_issues(dataset, parameters)
         ]
+        if len(self.datasets) > 1:
+            issues.extend(
+                LinkedGlobalModelIssue(label)
+                for label, dataset in self.datasets.items()
+                if is_data_model_global(dataset)
+            )
+        return issues
+
+
+class LinkedGlobalModelIssue(ItemIssue):
+    """Issue for a dataset with global elements in an experiment with several datasets."""
+
+    def __init__(self, label: str) -> None:
+        """Create a LinkedGlobalModelIssue.
+
+        Parameters
+        ----------
+        label : str
+            The dataset label.
+        """
+        self._label = label
+
+    def to_string(self) -> str:
+        """Get the issue as string.
+
+        Returns
+        -------
+        str
+        """
+        return (
+            f"Dataset '{self._label}' has global elements, but its experiment contains "
+            "several datasets. Linked datasets do not support global elements yet. "
+            "Put each dataset with global elements in its own experiment; experiments "
+            "can still share parameters."
+        )
 
 
 ExperimentModel.model_rebuild()
