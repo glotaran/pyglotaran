@@ -13,6 +13,14 @@ from glotaran.utils.io import normalize_dataframe_columns
 from glotaran.utils.io import safe_dataframe_fillna
 from glotaran.utils.io import safe_dataframe_replace
 
+# Read back exactly the values that were written. pandas >= 3.1 does this by default and
+# deprecates the ``float_precision`` argument.
+_FLOAT_PRECISION_KWARGS = (
+    {}
+    if tuple(int(part) for part in pd.__version__.split(".")[:2]) >= (3, 1)
+    else {"float_precision": "round_trip"}
+)
+
 
 @register_project_io(["csv"])
 class CsvProjectIo(ProjectIoInterface):
@@ -38,8 +46,7 @@ class CsvProjectIo(ProjectIoInterface):
                 skipinitialspace=True,
                 na_values=["None", "none"],
                 sep=sep,
-                # Read back exactly the values that were written
-                float_precision="round_trip",
+                **_FLOAT_PRECISION_KWARGS,
             )
             .pipe(normalize_dataframe_columns, rename_dict=OPTION_NAMES_DESERIALIZED)
             .pipe(safe_dataframe_fillna, column_name="minimum", fill_value=-np.inf)

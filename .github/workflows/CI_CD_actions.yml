@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.13"
       - name: Run pre-commit
@@ -26,14 +26,14 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - name: Setup conda
         uses: s-weigand/setup-conda@v1
         with:
           conda-channels: conda-forge
           activate-conda: false
       - name: Set up Python 3.13
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.13"
 
@@ -59,14 +59,14 @@ jobs:
   docs-links:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - name: Setup conda
         uses: s-weigand/setup-conda@v1
         with:
           conda-channels: conda-forge
           activate-conda: false
       - name: Set up Python 3.13
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.13"
       - name: Install uv
@@ -95,9 +95,9 @@ jobs:
   docs-notebooks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - name: Set up Python 3.13
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.13"
       - name: Install uv
@@ -125,9 +125,9 @@ jobs:
         python-version: ["3.13", "3.14"]
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v7.1.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install uv
@@ -145,11 +145,11 @@ jobs:
           uv run pytest --cov=./ --cov-report term --cov-report xml --cov-config pyproject.toml tests
 
       - name: Codecov Upload
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         # Coverage upload is informational; a Codecov outage must not fail the test job.
         continue-on-error: true
         with:
-          file: ./coverage.xml
+          files: ./coverage.xml
           token: ${{ secrets.CODECOV_TOKEN }}
 
   deploy:
@@ -159,9 +159,9 @@ jobs:
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - name: Set up Python 3.13
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.13"
       - name: Install uv
