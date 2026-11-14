@@ -116,6 +116,24 @@ jobs:
           uv run python docs/remove_notebook_written_data.py
           uv run pytest -vv --nbval docs/source/notebooks
 
+  docs-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Build wheel
+        run: uv build --wheel
+      - name: Run the example scripts of the docs against the wheel
+        run: |
+          for script in docs/source/examples/*.py; do
+            echo "::group::${script}"
+            uv run --no-project --isolated --python 3.13 --with dist/*.whl python "${script}"
+            echo "::endgroup::"
+          done
+
   test:
     runs-on: ${{ matrix.os }}
     needs: [pre-commit]
@@ -155,7 +173,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-    needs: [test, docs, docs-notebooks]
+    needs: [test, docs, docs-notebooks, docs-examples]
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
