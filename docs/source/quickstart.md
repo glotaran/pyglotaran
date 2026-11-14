@@ -4,7 +4,7 @@ This page runs one fit from a script: it creates a dataset, describes a model, f
 
 ## Run the script
 
-Download {download}`fit_and_reload.py <quickstart/fit_and_reload.py>` and run it with [uv]:
+Download {download}`fit_and_reload.py <examples/fit_and_reload.py>` and run it with [uv]:
 
 ```shell
 uv run fit_and_reload.py
@@ -29,7 +29,7 @@ The fit recovers the rates 0.6 and 0.1 that the data were created with.
 
 ## The script
 
-```{literalinclude} quickstart/fit_and_reload.py
+```{literalinclude} examples/fit_and_reload.py
 :language: python
 ```
 
@@ -44,6 +44,6 @@ The fit recovers the rates 0.6 and 0.1 that the data were created with.
 ## Where to go next
 
 - The {doc}`getting started guide <notebooks/getting_started/getting_started>` adds an instrument response function, plotting and a project that records each fit.
-- [Public API and file formats](user_documentation/public_api.md) lists the names, arguments and files used here, for applications that call pyglotaran.
+- [Public API and file formats](reference/public_api.md) lists the names, arguments and files used here, for applications that call pyglotaran.
 
 [uv]: https://docs.astral.sh/uv/

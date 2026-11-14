@@ -34,7 +34,7 @@ These rules are proposed for 1.0 and later.
 - A public name that is deprecated keeps working until the next major version and emits `GlotaranApiDeprecationWarning`. The changelog names the replacement.
 - A file written by a 1.x release loads in every later 1.x release.
 - New optional fields, element types and result arrays can be added in a minor release. A file that uses them does not load in an older release: experiments, datasets, elements and results reject unknown fields.
-- Numerical results can differ within floating-point tolerance between versions of pyglotaran, NumPy and SciPy. A [project record](project.md) stores the versions that were used.
+- Numerical results can differ within floating-point tolerance between versions of pyglotaran, NumPy and SciPy. A [project record](../user_documentation/project.md) stores the versions that were used.
 
 ## Workflow
 
@@ -166,7 +166,7 @@ For data with a `weight`, `meta.root_mean_square_error` is computed from the res
 | `RecordReference` | `glotaran.project.record` | `id` and `path` of a record |
 | `FitComparison` | `glotaran.project.compare` | Result of `Project.compare_results` |
 
-`Project` has the methods `start`, `optimize`, `recompute`, `list_results`, `compare_results` and `export`, and the attributes `folder`, `results_folder`, `exports_folder` and `project_file`. [Projects](project.md) describes them.
+`Project` has the methods `start`, `optimize`, `recompute`, `list_results`, `compare_results` and `export`, and the attributes `folder`, `results_folder`, `exports_folder` and `project_file`. [Projects](../user_documentation/project.md) describes them.
 
 ### Simulation
 
@@ -336,7 +336,7 @@ The covariance matrix and the Jacobian are not saved; `optimized_parameters.csv`
 
 ### Project folder
 
-A project folder holds `project.gta`, one record folder for each fit in `results/` and one folder for each export in `exports/`. `record.yml` and `export.yml` carry `schema_version: 1`. A record folder holds the scheme, the parameters and the histories of a fit, without data or result arrays; `Project.recompute` needs the input data again. An export is a result folder with `export.yml` and a copy of `project.gta` added, and includes the input data. [Projects](project.md) describes the files.
+A project folder holds `project.gta`, one record folder for each fit in `results/` and one folder for each export in `exports/`. `record.yml` and `export.yml` carry `schema_version: 1`. A record folder holds the scheme, the parameters and the histories of a fit, without data or result arrays; `Project.recompute` needs the input data again. An export is a result folder with `export.yml` and a copy of `project.gta` added, and includes the input data. [Projects](../user_documentation/project.md) describes the files.
 
 ## Open before 1.0
 

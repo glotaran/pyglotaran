@@ -1,8 +1,10 @@
-# Usage
+# Guides
+
+Each guide covers one task.
 
 ```{toctree}
 :maxdepth: 1
-:glob:
 
-./*
+project
+using_plugins
 ```

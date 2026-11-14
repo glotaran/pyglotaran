@@ -190,12 +190,8 @@ html_theme_options = {
 # Hide empty sidebars
 # Ref.: https://github.com/pydata/pydata-sphinx-theme/issues/1662#issuecomment-1913672649
 html_sidebars = {
-    "introduction": [],
-    "installation": [],
-    "quickstart": [],
-    "notebooks/getting_started/getting_started": [],
+    "index": [],
     "usage": [],
-    "changelog": [],
     "authors": [],
     "NOTICE": [],
     "notebooks/plugin_system": [],
