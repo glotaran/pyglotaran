@@ -12,6 +12,7 @@
 :maxdepth: 2
 
 installation
+quickstart
 notebooks/getting_started/getting_started
 user_documentation/index
 ```

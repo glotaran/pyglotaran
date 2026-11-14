@@ -192,6 +192,7 @@ html_theme_options = {
 html_sidebars = {
     "introduction": [],
     "installation": [],
+    "quickstart": [],
     "notebooks/getting_started/getting_started": [],
     "usage": [],
     "changelog": [],
