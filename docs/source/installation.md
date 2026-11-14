@@ -37,8 +37,18 @@ If you go down this route, note that uv can also be used to install Python itsel
 4. Install pyglotaran:
 
    ```shell
-   uv pip install pyglotaran pyglotaran-extras jupyterlab
+   uv pip install pyglotaran
    ```
+
+   This is all the [quickstart](quickstart.md) needs.
+
+5. To plot results in a notebook, as in the {doc}`getting started guide <notebooks/getting_started/getting_started>`, also install pyglotaran-extras and JupyterLab. pyglotaran 0.8 needs pyglotaran-extras 0.8, which is not released yet. Until it is, install pyglotaran-extras from its repository (this needs [git]):
+
+   ```shell
+   uv pip install git+https://github.com/glotaran/pyglotaran-extras.git jupyterlab
+   ```
+
+   `uv pip install pyglotaran-extras` installs version 0.7.5, which cannot read the results of pyglotaran 0.8.
 
 :::{note}
 If you use PowerShell you may have to set your LocalMachine's Execution Policy to RemoteSigned to be able to run scripts.
