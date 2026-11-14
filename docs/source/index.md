@@ -31,6 +31,7 @@ The [quickstart](quickstart.md) is a complete script that runs as it is.
 | --- | --- |
 | Run a first fit from a script | [Quickstart](quickstart.md) |
 | Analyse data in a notebook, with plots | {doc}`Getting started <notebooks/getting_started/getting_started>` |
+| Port an analysis written for pyglotaran 0.7 | [Migrating from 0.7](migrating_from_0_7.md) |
 | Record, compare and export fits | [Projects](user_documentation/project.md) |
 | Build an application that calls pyglotaran | [Public API and file formats](reference/public_api.md) |
 | See analyses of measured data | [pyglotaran-examples](https://github.com/glotaran/pyglotaran-examples) |
