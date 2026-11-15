@@ -10,22 +10,37 @@ import xarray as xr
 from glotaran.builtin.elements.spectral.shape import SpectralShape  # noqa: TC001
 from glotaran.model.data_model import DataModel
 from glotaran.model.element import Element
+from glotaran.model.item import Attribute
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
 
 
 class SpectralDataModel(DataModel):
-    spectral_axis_inverted: bool = False
-    spectral_axis_scale: float = 1
+    spectral_axis_inverted: bool = Attribute(
+        default=False,
+        description=(
+            "Convert values on the spectral axis as `spectral_axis_scale / value`, "
+            "for example between wavelength and wavenumber."
+        ),
+    )
+    spectral_axis_scale: float = Attribute(
+        default=1, description="The factor of the conversion of the spectral axis."
+    )
 
 
 class SpectralElement(Element):
+    """Spectral shapes, each with one amplitude for each value of the other dimension."""
+
     type: Literal["spectral"]  # type:ignore[assignment]
     register_as: ClassVar[str] = "spectral"
-    dimension: str = "spectral"
+    dimension: str = Attribute(
+        default="spectral", description="The dimension of the data that the element describes."
+    )
     data_model_type: ClassVar[type[DataModel]] = SpectralDataModel  # type:ignore[valid-type]
-    shapes: dict[str, SpectralShape.get_annotated_type()]  # type:ignore[valid-type]
+    shapes: dict[str, SpectralShape.get_annotated_type()] = Attribute(  # type:ignore[valid-type]
+        description="The spectral shapes by label, for example the label of a compartment."
+    )
 
     def calculate_matrix(  # type:ignore[override]
         self,

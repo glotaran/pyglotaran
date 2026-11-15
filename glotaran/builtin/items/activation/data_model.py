@@ -43,7 +43,10 @@ def validate_activations(
 class ActivationDataModel(DataModel):
     activations: dict[str, Activation.get_annotated_type()] = Attribute(  # type:ignore[valid-type]
         validator=validate_activations,
-        description="The activation(s) of the dataset.",
+        description=(
+            "The activations of the dataset by label: "
+            "how the compartments of its elements are excited."
+        ),
     )
 
     # TODO: Move result creation logic to activation classes to allow extendability

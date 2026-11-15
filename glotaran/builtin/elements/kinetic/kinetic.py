@@ -13,6 +13,7 @@ from pydantic import PlainSerializer
 from scipy.linalg import eig
 from scipy.linalg import solve
 
+from glotaran.model.item import Attribute
 from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 
@@ -60,7 +61,12 @@ class Kinetic(Item):
         dict[tuple[str, str], ParameterType],
         BeforeValidator(ensure_keys),
         PlainSerializer(tuple_to_string_keys, when_used="json"),
-    ]
+    ] = Attribute(
+        description=(
+            "The rates by `(to, from)`: the target and the source compartment. "
+            "`(s1, s1)` is the decay of `s1`, and `(s2, s1)` the conversion of `s1` to `s2`."
+        )
+    )
 
     @classmethod
     def combine(cls, kinetics: list[Kinetic]) -> Kinetic:

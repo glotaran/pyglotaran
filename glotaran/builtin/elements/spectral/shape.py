@@ -7,6 +7,7 @@ from typing import Literal
 
 import numpy as np
 
+from glotaran.model.item import Attribute
 from glotaran.model.item import ParameterType
 from glotaran.model.item import TypedItem
 
@@ -22,9 +23,11 @@ class SpectralShapeGaussian(SpectralShape):
     """A Gaussian spectral shape."""
 
     type: Literal["gaussian"]  # type:ignore[assignment]
-    amplitude: ParameterType | None = None
-    location: ParameterType
-    width: ParameterType
+    amplitude: ParameterType | None = Attribute(
+        default=None, description="The height of the maximum. Without it the height is 1."
+    )
+    location: ParameterType = Attribute(description="The position of the maximum.")
+    width: ParameterType = Attribute(description="The full width at half maximum.")
 
     def calculate(self, axis: np.ndarray) -> np.ndarray:
         r"""Calculate a normal Gaussian shape for a given ``axis``.
@@ -75,7 +78,9 @@ class SpectralShapeSkewedGaussian(SpectralShapeGaussian):
     """A skewed Gaussian spectral shape."""
 
     type: Literal["skewed-gaussian"]  # type:ignore[assignment]
-    skewness: ParameterType
+    skewness: ParameterType = Attribute(
+        description="The skewness of the shape. With 0 the shape is a Gaussian."
+    )
 
     def calculate(self, axis: np.ndarray) -> np.ndarray:
         r"""Calculate the skewed Gaussian shape for ``axis``.

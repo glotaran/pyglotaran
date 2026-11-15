@@ -2,13 +2,20 @@
 
 from __future__ import annotations
 
+from glotaran.model.item import Attribute
 from glotaran.model.item import Item
 
 
 class IntervalItem(Item):
     """An item with an interval."""
 
-    interval: tuple[float, float] | list[tuple[float, float]] | None = None
+    interval: tuple[float, float] | list[tuple[float, float]] | None = Attribute(
+        default=None,
+        description=(
+            "An interval `[minimum, maximum]` on the global dimension, or a list of intervals, "
+            "where the item applies. Without it the item applies everywhere."
+        ),
+    )
 
     def has_interval(self) -> bool:
         """Check if intervals are defined.

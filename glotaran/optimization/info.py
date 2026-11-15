@@ -40,25 +40,39 @@ class OptimizerSettings(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     optimization_method: Literal["TrustRegionReflection", "Dogbox", "Levenberg-Marquardt"]
+    """The method of :func:`scipy.optimize.least_squares`: ``trf``, ``dogbox`` or ``lm``."""
     ftol: float | None
+    """Tolerance for termination by the change of the cost."""
     gtol: float | None
+    """Tolerance for termination by the norm of the gradient."""
     xtol: float | None
+    """Tolerance for termination by the change of the parameters."""
     maximum_number_function_evaluations: int | None
+    """The limit of function evaluations; ``None`` for the default of SciPy."""
 
 
 class OptimizationInfo(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
+    """The statistics of a fit and the reason it stopped.
 
-    """The result of a global analysis."""
+    ``success`` does not say whether the fit converged: it is ``True`` whenever the optimizer
+    returned a solution. ``termination_reason`` tells the outcomes apart.
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     number_of_function_evaluations: int
     """The number of function evaluations."""
 
     success: bool
-    """Indicates if the optimization was successful."""
+    """Whether the optimizer returned a solution.
+
+    ``True`` also for a fit that stopped at the limit of function evaluations. ``False`` after
+    an error of the optimizer and for a dry run.
+    """
 
     termination_reason: str
-    """The reason (message when) the optimizer terminated"""
+    """Why the fit stopped: the message of SciPy, ``Dry run.``, ``No free parameters to
+    optimize.`` or the message of an error."""
 
     free_parameter_labels: list[str]
     """List of labels of the free parameters used in optimization."""
@@ -72,7 +86,7 @@ class OptimizationInfo(BaseModel):
     # The below can be none in case of unsuccessful optimization
 
     cost: float | None = None
-    """The final cost."""
+    """The final cost: half the sum of the squares of the residual vector."""
 
     chi_square: float | None = None
     r"""The chi-square of the optimization.
@@ -85,6 +99,7 @@ class OptimizationInfo(BaseModel):
     The rows and columns are corresponding to :attr:`free_parameter_labels`."""
 
     number_of_clps: int | None = None
+    """Number of conditionally linear parameters: the amplitudes estimated in each evaluation."""
     degrees_of_freedom: int | None = None
     """Degrees of freedom in optimization :math:`N - N_{vars}`."""
 
@@ -100,6 +115,9 @@ class OptimizationInfo(BaseModel):
     number_of_parameters: int | None = None
     """Number of parameters in optimization :math:`N_{vars}`"""
     optimality: float | None = None
+    """First-order optimality measure at the solution.
+    See also: :func:`scipy.optimize.least_squares`
+    """
     reduced_chi_square: float | None = None
     r"""The reduced chi-square of the optimization.
 
@@ -112,6 +130,7 @@ class OptimizationInfo(BaseModel):
     :math:`rms = \sqrt{\chi^2_{red}}`
     """
     additional_penalty: float | None = None
+    """Sum of the terms that clp penalties add to the residual."""
 
     @computed_field  # type: ignore[prop-decorator]
     @property

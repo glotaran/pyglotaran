@@ -58,17 +58,29 @@ def inject_saving_option_from_data_into_context(info: ValidationInfoWithContext)
 
 
 class Result(BaseModel):
+    """The result of a fit, as returned by ``Scheme.optimize``.
+
+    Save a result with :meth:`save` and load it with :func:`glotaran.io.load_result`.
+    """
+
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT
+    """The options the result is saved with, or was loaded with."""
     optimization_results: dict[str, OptimizationResult]
+    """The result arrays of each dataset, by dataset label."""
     scheme: Scheme
+    """A copy of the scheme the fit ran with."""
     optimization_info: OptimizationInfo
+    """The fit statistics and the reason the fit stopped."""
     initial_parameters: Parameters
+    """The starting values."""
     optimized_parameters: Parameters
+    """The optimized values, with a standard error for each free parameter."""
     optimizer_settings: OptimizerSettings | None = None
     """Settings passed to the optimizer; ``None`` for results saved without them."""
     source_path: Path | None = None
+    """Path of the file the result was loaded from or saved to."""
     record: RecordReference | None = Field(default=None, exclude=True)
     """Record of the fit run with ``Project.optimize``, or recomputed with ``Project.recompute``;
     not saved."""
@@ -84,6 +96,7 @@ class Result(BaseModel):
 
     @property
     def experiments(self) -> dict[str, ExperimentModel]:
+        """The experiments of the scheme, by label."""
         return self.scheme.experiments
 
     @property

@@ -54,10 +54,18 @@ class Element(TypedItem, abc.ABC):
     is_unique: ClassVar[bool] = False
     register_as: ClassVar[str | None] = None
 
-    dimension: str | None = None
+    dimension: str | None = Field(
+        default=None, description="The dimension of the data that the element describes."
+    )
     label: str = Field(exclude=True)
     clp_constraints: list[ClpConstraint.get_annotated_type()] = (  # type:ignore[valid-type]
-        Field(default_factory=list)
+        Field(
+            default_factory=list,
+            description=(
+                "Constraints on the amplitudes of the element along the global dimension, "
+                "for example on the spectrum of a compartment."
+            ),
+        )
     )
 
     model_config = ConfigDict(json_schema_extra=_sanitize_json_schema)
@@ -163,7 +171,13 @@ class Element(TypedItem, abc.ABC):
 
 
 class ExtendableElement(Element):
-    extends: list[str] | None = None
+    extends: list[str] | None = Field(
+        default=None,
+        description=(
+            "Labels of elements of the same type that this element takes over. "
+            "Entries of this element replace the entries it takes over."
+        ),
+    )
     _original: Self = PrivateAttr(init=False)
 
     def model_post_init(self: Self, __context: Any) -> None:  # noqa: ANN401, PYI063

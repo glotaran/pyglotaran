@@ -12,6 +12,7 @@ from glotaran.builtin.elements.pfid.matrix import calculate_pfid_matrix
 from glotaran.builtin.items.activation import MultiGaussianActivation  # noqa: TC001
 from glotaran.model.data_model import DataModel
 from glotaran.model.element import Element
+from glotaran.model.item import Attribute
 from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 
@@ -23,16 +24,26 @@ if TYPE_CHECKING:
 class PFIDOscillation(Item):
     """Parameters describing one perturbed free-induction-decay oscillation."""
 
-    frequency: ParameterType
-    rate: ParameterType
+    frequency: ParameterType = Attribute(description="The frequency of the oscillation.")
+    rate: ParameterType = Attribute(description="The decay rate of the oscillation.")
 
 
 class PFIDDataModel(DataModel):
     """Dataset fields required by a PFID element."""
 
-    activation: MultiGaussianActivation
-    spectral_axis_inverted: bool = False
-    spectral_axis_scale: float = 1
+    activation: MultiGaussianActivation = Attribute(
+        description="The activation of type `multi-gaussian` that the PFID element uses."
+    )
+    spectral_axis_inverted: bool = Attribute(
+        default=False,
+        description=(
+            "Convert values on the spectral axis as `spectral_axis_scale / value`, "
+            "for example between wavelength and wavenumber."
+        ),
+    )
+    spectral_axis_scale: float = Attribute(
+        default=1, description="The factor of the conversion of the spectral axis."
+    )
 
 
 class PFIDElement(Element):
@@ -40,9 +51,11 @@ class PFIDElement(Element):
 
     type: Literal["pfid"]  # type:ignore[assignment]
     register_as: ClassVar[str] = "pfid"
-    dimension: str = "time"
+    dimension: str = Attribute(
+        default="time", description="The dimension of the data that the element describes."
+    )
     data_model_type: ClassVar[type[DataModel]] = PFIDDataModel  # type:ignore[valid-type]
-    oscillations: dict[str, PFIDOscillation]
+    oscillations: dict[str, PFIDOscillation] = Attribute(description="The oscillations by label.")
 
     def calculate_matrix(  # type:ignore[override]
         self,

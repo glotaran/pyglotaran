@@ -8,6 +8,7 @@ from typing import Literal
 from pydantic import AfterValidator
 
 from glotaran.model.interval_item import IntervalItem
+from glotaran.model.item import Attribute
 from glotaran.model.item import TypedItem
 
 
@@ -18,17 +19,22 @@ class ClpConstraint(TypedItem, IntervalItem):
     the respective classes for details.
     """
 
-    target: Annotated[str | list[str], AfterValidator(lambda v: [v] if isinstance(v, str) else v)]
+    target: Annotated[
+        str | list[str], AfterValidator(lambda v: [v] if isinstance(v, str) else v)
+    ] = Attribute(
+        description="Label, or list of labels, of the constrained amplitudes, "
+        "for example the compartments of a kinetic element."
+    )
 
 
 class ZeroConstraint(ClpConstraint):
-    """Constraints the target to 0 in the given interval."""
+    """Sets the target to zero inside the interval."""
 
     type: Literal["zero"]  # type:ignore[assignment]
 
 
 class OnlyConstraint(ZeroConstraint):
-    """Constraints the target to 0 outside the given interval."""
+    """Sets the target to zero outside the interval."""
 
     type: Literal["only"]  # type:ignore[assignment]
 

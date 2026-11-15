@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 from glotaran.model.interval_item import IntervalItem
-from glotaran.model.item import ParameterType  # noqa: TC001
+from glotaran.model.item import Attribute
+from glotaran.model.item import ParameterType
 
 
 class ClpRelation(IntervalItem):
-    """Applies a relation between two clps.
+    """Sets one amplitude to a factor times another: ``target = parameter * source``."""
 
-    The relation is applied as :math:`target = parameter * source`.
-    """
-
-    source: str
-    target: str
-    parameter: ParameterType
+    source: str = Attribute(description="Label of the amplitude the target is computed from.")
+    target: str = Attribute(description="Label of the amplitude that is replaced by the relation.")
+    parameter: ParameterType = Attribute(
+        description="The factor of the relation: target = parameter * source."
+    )

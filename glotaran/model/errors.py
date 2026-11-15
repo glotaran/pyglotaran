@@ -6,15 +6,24 @@ class GlotaranDefinitionError(Exception):
 
 
 class GlotaranModelError(Exception):
-    pass
+    """Raised for a model that is inconsistent, for example elements with different dimensions."""
 
 
 class GlotaranUserError(Exception):
-    pass
+    """Raised for input that cannot be used, for example a dataset label without data."""
 
 
 class GlotaranModelIssues(GlotaranModelError):  # noqa: N818
+    """Raised with the list of the problems of a model that are found when a fit starts."""
+
     def __init__(self, issues: list[ItemIssue]) -> None:
+        """Create the error from the issues of a model.
+
+        Parameters
+        ----------
+        issues : list[ItemIssue]
+            The issues, which are listed in the message of the error.
+        """
         joiner = "\n* "
         super().__init__(
             f"The model has issues:\n\n* {joiner.join([i.to_string() for i in issues])}"

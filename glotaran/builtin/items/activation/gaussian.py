@@ -106,41 +106,63 @@ class GaussianActivationParameters:
 
 
 class MultiGaussianActivation(Activation):
+    """Excitation through an instrument response function that is a sum of Gaussians."""
+
     type: Literal["multi-gaussian"]  # type:ignore[assignment]
 
     center: list[ParameterType] = Attribute(
         validator=validate_multi_gaussian,
-        description="The center of the gaussian",
+        description="The centers of the Gaussians on the model dimension.",
     )
 
-    width: list[ParameterType] = Attribute(description="The width of the gaussian.")
+    width: list[ParameterType] = Attribute(
+        description="The widths of the Gaussians, as standard deviations."
+    )
     scale: list[ParameterType] | None = Attribute(
-        default=None, description="The scales of the gaussians."
+        default=None,
+        description="The scales of the Gaussians. Without it every Gaussian has the scale 1.",
     )
     shift: list[ParameterType] | None = Attribute(
         default=None,
         description=(
-            "A list parameters which gets subtracted from the centers along the global axis."
+            "One value for each point of the global dimension, subtracted from the centers."
         ),
     )
 
-    normalize: bool = Attribute(default=True, description="Whether to normalize the gaussians.")
+    normalize: bool = Attribute(default=True, description="Whether to normalize the Gaussians.")
 
     backsweep: ParameterType | None = Attribute(
         default=None, description="The period of the backsweep in a streak experiment."
     )
     dispersion_center: ParameterType | None = Attribute(
-        default=None, validator=validate_dispersion, description="The center of the dispersion."
+        default=None,
+        validator=validate_dispersion,
+        description=(
+            "The value of the global dimension at which the dispersion is zero. "
+            "Setting it turns the dispersion on."
+        ),
     )
     center_dispersion_coefficients: list[ParameterType] = Attribute(
-        factory=list, description="The center coefficients of the dispersion."
+        factory=list,
+        description=(
+            "The coefficients of the polynomial that moves the centers along the global "
+            "dimension. Coefficient i, counted from 1, multiplies "
+            "((value - dispersion_center) / 100) ** i."
+        ),
     )
     width_dispersion_coefficients: list[ParameterType] = Attribute(
-        factory=list, description="The width coefficients of the dispersion."
+        factory=list,
+        description=(
+            "The coefficients of the polynomial that changes the widths along the global "
+            "dimension, used like `center_dispersion_coefficients`."
+        ),
     )
     reciproke_global_axis: bool = Attribute(
         default=False,
-        description="Set `True` if the global axis is reciproke (e.g. for wavennumbers),",
+        description=(
+            "Calculate the dispersion with 1000 / value - 1000 / dispersion_center, "
+            "for example for a global dimension in wavenumbers."
+        ),
     )
 
     def calculate_dispersion(self, axis: ArrayLike) -> ArrayLike:
@@ -245,6 +267,12 @@ class MultiGaussianActivation(Activation):
 
 
 class GaussianActivation(MultiGaussianActivation):
+    """Excitation through a Gaussian instrument response function."""
+
     type: Literal["gaussian"]  # type:ignore[assignment]
-    center: ParameterType  # type:ignore[assignment]
-    width: ParameterType  # type:ignore[assignment]
+    center: ParameterType = Attribute(  # type:ignore[assignment]
+        description="The center of the Gaussian on the model dimension."
+    )
+    width: ParameterType = Attribute(  # type:ignore[assignment]
+        description="The width of the Gaussian, as standard deviation."
+    )

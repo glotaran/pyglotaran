@@ -11,12 +11,14 @@
 #
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 
 import glotaran
+from glotaran.utils.json_schema import create_model_scheme_json_schema
 
 DOC_FOLDER = Path(__file__).parent.parent
 
@@ -66,6 +68,7 @@ extensions = [
     "myst_parser",
     "numpydoc",
     "sphinx_copybutton",
+    "sphinx_llms_txt",
 ]
 
 myst_heading_anchors = 3
@@ -140,6 +143,37 @@ nbsphinx_execute_arguments = [
 ]
 
 
+# -- Plain text files for tools and AI assistants -------------------------
+
+# llms.txt lists the pages, llms-full.txt holds their source text. Left out are the generated
+# module reference (large, and the installed package has the same docstrings), the notebooks
+# (their source is JSON) and the page that keeps the old introduction URL. The example scripts
+# are appended, because the pages only include them.
+llms_txt_summary = (
+    "pyglotaran is a Python library for global and target analysis of time-resolved "
+    "spectroscopy data. It is installed as `pyglotaran` and imported as `glotaran`."
+)
+llms_txt_exclude = [
+    "api/*",
+    "dev_docs/api_documentation",
+    "authors",
+    "changelog",
+    "introduction",
+    "notebooks/*",
+]
+llms_txt_code_files = ["+:examples/*.py"]
+# The links in llms.txt are absolute on Read the Docs, where they include the version
+html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "")
+
+# JSON Schema of a scheme file for this version, served as _static/scheme.schema.json
+create_model_scheme_json_schema(Path(__file__).parent / "_static" / "scheme.schema.json")
+
+# The scheme reference page is written from the same schema before Sphinx reads the sources
+sys.path.insert(0, str(Path(__file__).parent))
+from _scheme_reference import write_scheme_reference  # noqa: E402
+
+write_scheme_reference(Path(__file__).parent / "reference" / "scheme.md")
+
 # -- Config for sphinx_last_updated_by_git --------------------------------
 
 # Get version information and date from Git
@@ -190,11 +224,8 @@ html_theme_options = {
 # Hide empty sidebars
 # Ref.: https://github.com/pydata/pydata-sphinx-theme/issues/1662#issuecomment-1913672649
 html_sidebars = {
-    "introduction": [],
-    "installation": [],
-    "notebooks/getting_started/getting_started": [],
+    "index": [],
     "usage": [],
-    "changelog": [],
     "authors": [],
     "NOTICE": [],
     "notebooks/plugin_system": [],
