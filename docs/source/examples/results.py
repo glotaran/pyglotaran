@@ -1,5 +1,5 @@
 # /// script
-# requires-python = ">=3.13"
+# requires-python = ">=3.13,<3.15"
 # dependencies = ["pyglotaran>=0.8"]
 # ///
 """Read the result of a fit, save it, and read the saved files with and without pyglotaran."""

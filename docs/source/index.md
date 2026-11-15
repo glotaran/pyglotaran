@@ -6,11 +6,14 @@ pyglotaran is the computation library and has no graphical interface. Plotting i
 
 ## Install
 
+pyglotaran needs Python 3.13 or 3.14. With [uv](https://docs.astral.sh/uv/), create an environment in a new folder and install pyglotaran into it:
+
 ```shell
+uv venv --python 3.14
 uv pip install pyglotaran
 ```
 
-pyglotaran needs Python 3.13 or 3.14. [Installation](installation.md) has the details.
+[Installation](installation.md) has the details, including how to activate the environment.
 
 ## A fit
 

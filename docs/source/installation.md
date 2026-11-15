@@ -22,14 +22,15 @@ If you go down this route, note that uv can also be used to install Python itsel
 2. Use `uv` to install Python (if not already installed):
 
    ```shell
-   uv python install # Automatically installs the latest Python version
-   # or use `uv python install 3.13` to install a specific Python version
+   uv python install 3.14
    ```
+
+   pyglotaran supports Python 3.13 and 3.14. `uv python install` without a version installs the latest Python, which can be newer than pyglotaran supports.
 
 3. Create a virtual environment and activate it:
 
    ```shell
-   uv venv
+   uv venv --python 3.14
    source .venv/bin/activate  # On Unix or macOS
    .venv\Scripts\activate  # On Windows (both cmd.exe and PowerShell)
    ```

@@ -1,5 +1,5 @@
 # /// script
-# requires-python = ">=3.13"
+# requires-python = ">=3.13,<3.15"
 # dependencies = ["pyglotaran>=0.8"]
 # ///
 """Define parameters with options, change them in code, and save them as a table."""

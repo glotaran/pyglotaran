@@ -1,5 +1,5 @@
 # /// script
-# requires-python = ">=3.13"
+# requires-python = ">=3.13,<3.15"
 # dependencies = ["pyglotaran>=0.8"]
 # ///
 """Constrain the spectra of a fit: a zero constraint, a relation and an equal area penalty."""

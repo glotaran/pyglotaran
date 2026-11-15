@@ -1,5 +1,5 @@
 # /// script
-# requires-python = ">=3.13"
+# requires-python = ">=3.13,<3.15"
 # dependencies = ["pyglotaran>=0.8"]
 # ///
 """Simulate a sequential model with an instrument response function and fit it."""

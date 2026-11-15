@@ -1,5 +1,5 @@
 # /// script
-# requires-python = ">=3.13"
+# requires-python = ">=3.13,<3.15"
 # dependencies = ["pyglotaran>=0.8"]
 # ///
 """Fit two datasets of the same sample together, with shared rates and spectra."""
