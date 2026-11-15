@@ -2,7 +2,7 @@
 
 A dataset is an `xarray.Dataset` with a variable `data` that has two dimensions:
 
-- The **model dimension** is the one the elements of the scheme describe. Its name is fixed by the element: `time` for a kinetic element.
+- The **model dimension** is the one the elements of the scheme describe. Its name is the `dimension` of the elements, which defaults to `time` for a kinetic element. An element with `dimension: delay` describes data with a dimension `delay`.
 - The **global dimension** is the other one, for example the wavelength. It can have any name; these pages use `spectral`.
 
 The order of the two dimensions does not matter. An `xarray.DataArray` is accepted as well and is used as `data`.
@@ -46,7 +46,7 @@ experiments:
             model_interval: [0, 1]
 ```
 
-Weights from the scheme are used in the fit and are not added to the `input_data` of the result.
+Weights from the scheme are used in the fit and are not added to the `input_data` of the result. If the data have a variable `weight`, the fit uses it and ignores the `weights` of the dataset in the scheme.
 
 ## File formats
 
@@ -60,6 +60,6 @@ Weights from the scheme are used in the fit and are not added to the `input_data
 
 ## Before you fit
 
-- The data cannot contain `NaN`. A fit of such data ends with `success == False` and the reason `Residuals are not finite in the initial point.`
-- The model dimension needs the name the element expects. A kinetic element with data that has no dimension `time` raises `KeyError`.
+- The data cannot contain `NaN`. A fit of such data ends with `success == False` and the reason `Residuals are not finite in the initial point.` In an experiment with `residual_function: non_negative_least_squares` the fit raises `ValueError` instead.
+- The model dimension needs the name the element expects. A kinetic element with the default `dimension: time` and data that have no dimension `time` raises `KeyError`.
 - The dataset needs the variable `data`, or is a `DataArray`.
