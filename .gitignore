@@ -193,3 +193,4 @@ docs/source/notebooks/getting_started/my_project/exports
 
 # Generated schema
 docs/source/_static/pygta_config.schema.json
+docs/source/_static/scheme.schema.json

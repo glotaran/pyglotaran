@@ -22,14 +22,15 @@ If you go down this route, note that uv can also be used to install Python itsel
 2. Use `uv` to install Python (if not already installed):
 
    ```shell
-   uv python install # Automatically installs the latest Python version
-   # or use `uv python install 3.13` to install a specific Python version
+   uv python install 3.14
    ```
+
+   pyglotaran supports Python 3.13 and 3.14. `uv python install` without a version installs the latest Python, which can be newer than pyglotaran supports.
 
 3. Create a virtual environment and activate it:
 
    ```shell
-   uv venv
+   uv venv --python 3.14
    source .venv/bin/activate  # On Unix or macOS
    .venv\Scripts\activate  # On Windows (both cmd.exe and PowerShell)
    ```
@@ -37,8 +38,18 @@ If you go down this route, note that uv can also be used to install Python itsel
 4. Install pyglotaran:
 
    ```shell
-   uv pip install pyglotaran pyglotaran-extras jupyterlab
+   uv pip install pyglotaran
    ```
+
+   This is all the [quickstart](quickstart.md) needs.
+
+5. To plot results in a notebook, as in the {doc}`getting started guide <notebooks/getting_started/getting_started>`, also install pyglotaran-extras and JupyterLab. pyglotaran 0.8 needs pyglotaran-extras 0.8, which is not released yet. Until it is, install pyglotaran-extras from its repository (this needs [git]):
+
+   ```shell
+   uv pip install git+https://github.com/glotaran/pyglotaran-extras.git jupyterlab
+   ```
+
+   `uv pip install pyglotaran-extras` installs version 0.7.5, which cannot read the results of pyglotaran 0.8.
 
 :::{note}
 If you use PowerShell you may have to set your LocalMachine's Execution Policy to RemoteSigned to be able to run scripts.

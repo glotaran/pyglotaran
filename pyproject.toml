@@ -97,6 +97,7 @@ docs = [
   "sphinx-click>=3.0.1",
   "sphinx-copybutton>=0.3",
   "sphinx-last-updated-by-git>=0.3",
+  "sphinx-llms-txt>=0.7",
   "sphinxcontrib-jquery>=4.1",                                                  # Needed for the search to work Ref.: https://github.com/readthedocs/sphinx_rtd_theme/issues/1434
 ]
 
