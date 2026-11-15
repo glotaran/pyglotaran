@@ -89,10 +89,10 @@ The Gaussian activations have optional fields for a dispersion of the IRF along 
 | `baseline` | A constant offset | `dimension` |
 | `coherent-artifact` | A coherent artifact around time zero | `order`, `width`; the dataset needs `activations` |
 | `damped-oscillation` | Damped oscillations | `oscillations`, each with `frequency` and `rate`; the dataset needs `activations` |
-| `pfid` | Perturbed free induction decay | `oscillations`, each with `frequency` and `rate`; the dataset needs one Gaussian `activation` |
+| `pfid` | Perturbed free induction decay | `oscillations`, each with `frequency` and `rate`; the dataset needs one `activation` (singular) of `type: multi-gaussian`, with lists for `center` and `width` |
 | `clp-guide` | Guidance of a spectrum by a known one | `target`, `dimension` |
 
-Every element has a `dimension`: the model dimension it describes. The kinetic, coherent-artifact, damped-oscillation and pfid elements default to `time` and the spectral element to `spectral`. The baseline and clp-guide elements have no default, so set their `dimension`, for example `dimension: time` next to a kinetic element. All elements of a dataset need the same dimension.
+Every element has a `dimension`: the model dimension it describes. The kinetic, coherent-artifact, damped-oscillation and pfid elements default to `time` and the spectral element to `spectral`. The baseline and clp-guide elements have no default, so set their `dimension`, for example `dimension: time` next to a kinetic element. All entries of `elements` of a dataset need the same dimension. `global_elements` describe the global dimension and have its name, such as the spectral element in the simulation above.
 
 A dataset can combine elements, for example `elements: [sequential, artifact, offset]`. The analyses in [pyglotaran-examples](https://github.com/glotaran/pyglotaran-examples) use these elements on measured data.
 
@@ -100,7 +100,7 @@ In the simulation above, `global_elements: [spectra]` gives the dataset a model 
 
 ## Residual function
 
-An experiment can set `residual_function`. The default `variable_projection` allows positive and negative amplitudes; `non_negative_least_squares` keeps all amplitudes of the experiment at zero or above. A dataset also accepts `residual_function`, but the fit does not use it; set it on the experiment.
+An experiment can set `residual_function`. The default `variable_projection` allows positive and negative amplitudes; `non_negative_least_squares` keeps the amplitudes that the fit estimates at zero or above; amplitudes computed from a [relation](constraints.md#non-negative-amplitudes) can still be negative. A dataset also accepts `residual_function`, but the fit does not use it; set it on the experiment.
 
 ## Completion and validation in an editor
 
@@ -118,4 +118,4 @@ An editor with YAML language support, such as VS Code with the YAML extension, u
 # yaml-language-server: $schema=schema.json
 ```
 
-The schema checks field names and types, which covers part of what `load_scheme` checks. It does not check that a parameter label or an element label exists, or that a dataset has the fields its elements need, such as `activations` for a kinetic element. pyglotaran reports these problems when the scheme is loaded, and a missing parameter when the fit starts.
+The schema checks field names and types, which covers part of what `load_scheme` checks. It does not check that a parameter label or an element label exists, or that a dataset has the fields its elements need, such as `activations` for a kinetic element. pyglotaran reports most of these problems when the scheme is loaded. Others are reported when the fit starts, also with `dry_run=True`: a missing parameter raises `ParameterNotFoundError`, and a kinetic dataset with an empty `activations: {}` raises `GlotaranModelIssues`.

@@ -60,7 +60,7 @@ In the example the data determine both spectra, so the penalty changes little. I
 
 ## Non-negative amplitudes
 
-To keep all amplitudes of an experiment at zero or above, set `residual_function: non_negative_least_squares` on the experiment:
+To keep the amplitudes that the fit estimates at zero or above, set `residual_function: non_negative_least_squares` on the experiment:
 
 ```yaml
 experiments:
@@ -72,3 +72,5 @@ experiments:
 ```
 
 A dataset also accepts `residual_function`, but the fit does not use it.
+
+The amplitudes of the `target` of a relation are not estimated; they are computed afterwards as `parameter` times the amplitudes of `source`. With a negative `parameter`, they are negative also with non-negative least squares.
