@@ -146,8 +146,9 @@ nbsphinx_execute_arguments = [
 # -- Plain text files for tools and AI assistants -------------------------
 
 # llms.txt lists the pages, llms-full.txt holds their source text. Left out are the generated
-# module reference (large, and the installed package has the same docstrings) and the notebooks
-# (their source is JSON). The example scripts are appended, because the pages only include them.
+# module reference (large, and the installed package has the same docstrings), the notebooks
+# (their source is JSON) and the page that keeps the old introduction URL. The example scripts
+# are appended, because the pages only include them.
 llms_txt_summary = (
     "pyglotaran is a Python library for global and target analysis of time-resolved "
     "spectroscopy data. It is installed as `pyglotaran` and imported as `glotaran`."
@@ -157,6 +158,7 @@ llms_txt_exclude = [
     "dev_docs/api_documentation",
     "authors",
     "changelog",
+    "introduction",
     "notebooks/*",
 ]
 llms_txt_code_files = ["+:examples/*.py"]
