@@ -79,7 +79,7 @@ unfixable = [ "F401" ]
 ]
 "*/__init__.py" = [ "F401" ]
 "glotaran/builtin/io/netCDF/netCDF.py" = [ "N999" ]
-"docs/*" = [ "INP001", "E501", "BLE001", "T201" ]
+"docs/*" = [ "INP001", "E501", "BLE001", "T201", "PLR2004", "TC001" ]
 # Needs a full rewrite anyway
 "glotaran/builtin/io/ascii/wavelength_time_explicit_file.py" = [ "PTH" ]
 "glotaran/utils/pydantic_serde.py" = [ "ANN401" ]
