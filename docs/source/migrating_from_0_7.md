@@ -12,7 +12,8 @@ The fitting method is the same. The model on this page, fitted to the same data 
 | `megacomplex` of type `decay`, `decay-sequential` or `decay-parallel`, with `k_matrix` | `library` element of type `kinetic` with `rates` |
 | `irf` and `initial_concentration` of a dataset | `activations` of the dataset |
 | `dataset` | `datasets` of an experiment |
-| `dataset_groups` | `experiments` |
+| `dataset_groups` with linked amplitudes (`link_clp: true`, or the default for datasets that can be linked) | One experiment with those datasets |
+| A dataset group with `link_clp: false` | One experiment for each dataset; the parameters stay shared. See [Fit several datasets](user_documentation/multiple_datasets.md) |
 | `clp_link_tolerance`, `clp_link_method` on `Scheme` | Fields of the experiment |
 | `clp_area_penalties` | `clp_penalties` of the experiment |
 | `optimize(Scheme(model, parameters, data))` | `scheme.optimize(parameters, datasets)` |
