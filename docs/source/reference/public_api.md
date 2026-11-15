@@ -268,7 +268,7 @@ experiments:
 - A value that is a parameter is the label of a parameter in the parameter file, or a number for a fixed value.
 - A rate key `(to, from)` names the target and the source compartment.
 
-The [JSON Schema](#json-schema-of-the-scheme) lists every field and type. `load_scheme` checks more, and the remaining checks run when a fit starts, also with `dry_run=True`: a missing parameter, and model issues such as an empty `activations: {}` of a kinetic dataset.
+The [scheme reference](scheme.md) lists every field with its type, default and meaning. The [JSON Schema](#json-schema-of-the-scheme) lets a program check field names and types. `load_scheme` checks more, and the remaining checks run when a fit starts, also with `dry_run=True`: a missing parameter, and model issues such as an empty `activations: {}` of a kinetic dataset.
 
 ### Parameter files
 

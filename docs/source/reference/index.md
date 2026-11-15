@@ -12,5 +12,6 @@ The reference pages list every public name, field and file. For tools and AI ass
 :maxdepth: 1
 
 public_api
+scheme
 ../changelog
 ```

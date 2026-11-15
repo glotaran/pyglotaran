@@ -168,6 +168,12 @@ html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "")
 # JSON Schema of a scheme file for this version, served as _static/scheme.schema.json
 create_model_scheme_json_schema(Path(__file__).parent / "_static" / "scheme.schema.json")
 
+# The scheme reference page is written from the same schema before Sphinx reads the sources
+sys.path.insert(0, str(Path(__file__).parent))
+from _scheme_reference import write_scheme_reference  # noqa: E402
+
+write_scheme_reference(Path(__file__).parent / "reference" / "scheme.md")
+
 # -- Config for sphinx_last_updated_by_git --------------------------------
 
 # Get version information and date from Git
