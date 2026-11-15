@@ -10,10 +10,10 @@ pyglotaran needs Python 3.13 or 3.14. With [uv](https://docs.astral.sh/uv/), cre
 
 ```shell
 uv venv --python 3.14
-uv pip install pyglotaran
+uv pip install --python .venv pyglotaran
 ```
 
-[Installation](installation.md) has the details, including how to activate the environment.
+`--python .venv` installs into the new environment also when another one is active. [Installation](installation.md) has the details, including how to activate the environment.
 
 ## A fit
 
