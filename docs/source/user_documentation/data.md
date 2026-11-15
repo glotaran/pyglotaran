@@ -60,6 +60,6 @@ Weights from the scheme are used in the fit and are not added to the `input_data
 
 ## Before you fit
 
-- The data cannot contain `NaN`. A fit of such data ends with `success == False` and the reason `Residuals are not finite in the initial point.` In an experiment with `residual_function: non_negative_least_squares` the fit raises `ValueError` instead.
+- The data cannot contain `NaN`. A fit of such data with free parameters ends with `success == False` and the reason `Residuals are not finite in the initial point.` A fit in which every parameter is fixed returns `success == True` with `cost` NaN, and a dry run returns `cost` NaN without an error; check the statistics for NaN in these cases. In an experiment with `residual_function: non_negative_least_squares` the fit raises `ValueError` instead.
 - The model dimension needs the name the element expects. A kinetic element with the default `dimension: time` and data that have no dimension `time` raises `KeyError`.
 - The dataset needs the variable `data`, or is a `DataArray`.
