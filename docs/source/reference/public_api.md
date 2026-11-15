@@ -194,7 +194,7 @@ For data with a `weight`, `meta.root_mean_square_error` is computed from the res
 
 `create_model_scheme_json_schema()` returns the schema as a dictionary, and with `output_path` it writes a file. The schema lists every element, activation and option of the installed pyglotaran, including those of plugins. With `parameters` it also lists the labels of those parameters, which an editor can offer as completions. An editor or a form generator can use the schema to validate and complete a scheme.
 
-The schema is an aid for editors and form generators, and validates only part of what `load_scheme` checks. It checks field names and types, and not the references: the label of a parameter or an element that does not exist still validates. It also does not check the fields that an element requires of the datasets that use it: a dataset with a kinetic element and no `activations`, or a dataset with only a baseline element and `activations`, passes the schema and is rejected by `load_scheme`. A program that needs to know whether a scheme is valid loads it with `load_scheme` and catches the error.
+The schema is an aid for editors and form generators, and validates only part of what `load_scheme` checks. It checks field names and types, and not the references: the label of a parameter or an element that does not exist still validates. It also does not check the fields that an element requires of the datasets that use it: a dataset with a kinetic element and no `activations`, or a dataset with only a baseline element and `activations`, passes the schema and is rejected by `load_scheme`. A program that needs to know whether a scheme is valid loads it with `load_scheme`, then runs `Scheme.optimize` with `dry_run=True`, which also reports missing parameters and model issues, and catches the errors of both.
 
 ### Plugins
 
@@ -222,14 +222,14 @@ An unknown field in an experiment, a dataset, an element or an activation raises
 
 `raise_exception=False` covers only errors inside the optimizer. `Scheme.optimize` raises, whatever its value:
 
-- before the fit, for input it cannot use: `GlotaranUserError` for a dataset label without data or a label used by two experiments, `GlotaranModelIssues` for missing parameters and other model problems, and `UnsupportedMethodError` for an unknown `optimization_method`;
+- before the fit, for input it cannot use: `GlotaranUserError` for a dataset label without data or a label used by two experiments, `ParameterNotFoundError` for a parameter label of the scheme that is not in the parameters, `GlotaranModelIssues` for other model problems such as a kinetic dataset without activations, and `UnsupportedMethodError` for an unknown `optimization_method`;
 - after the optimizer stops, when the model cannot be evaluated at the last parameters. The fit then emits the warning and raises the error of the optimizer. An example is data with a NaN in an experiment with `residual_function: non_negative_least_squares`, which raises `ValueError`.
 
 An application that must always get a result catches these exceptions around `Scheme.optimize`.
 
 ## Data
 
-A dataset is an `xarray.Dataset` with a variable `data` of two dimensions. One is the model dimension, named by the `dimension` field of the elements of the dataset. Its default is `time` for the kinetic, damped-oscillation, coherent-artifact and pfid elements and `spectral` for the spectral element; the baseline and clp-guide elements have no default and take the dimension in `dimension`. All elements of a dataset need the same dimension. The other is the global dimension. An optional variable `weight` with the same shape weights the residuals; it replaces the `weights` of the dataset in the scheme. An `xarray.DataArray` is taken as `data`.
+A dataset is an `xarray.Dataset` with a variable `data` of two dimensions. One is the model dimension, named by the `dimension` field of the elements of the dataset. Its default is `time` for the kinetic, damped-oscillation, coherent-artifact and pfid elements and `spectral` for the spectral element; the baseline and clp-guide elements have no default and take the dimension in `dimension`. All entries of `elements` of a dataset need the same dimension. The other is the global dimension, which `global_elements` describe. An optional variable `weight` with the same shape weights the residuals; it replaces the `weights` of the dataset in the scheme. An `xarray.DataArray` is taken as `data`.
 
 Dataset labels name folders in a saved result. A label cannot be empty, end with `.` or a space, contain one of `<>:"/\|?*`, or be a Windows device name such as `CON`. Labels are unique across the experiments of a scheme and cannot differ only in case.
 
@@ -264,11 +264,11 @@ experiments:
 
 - `library` maps an element label to an element. `type` is one of `kinetic`, `spectral`, `baseline`, `coherent-artifact`, `damped-oscillation`, `pfid` and `clp-guide`, or the name of an element plugin.
 - `experiments` maps an experiment label to an experiment. An experiment has `datasets` and the optional `residual_function` (`variable_projection` or `non_negative_least_squares`), `scale`, `clp_relations`, `clp_penalties`, `clp_link_method` and `clp_link_tolerance`.
-- A dataset has `elements` and the optional `global_elements`, `element_scale`, `global_element_scale`, `weights` and `data` (a file path). It also accepts `residual_function`, which the fit does not use; set it on the experiment. Elements add fields: the kinetic, damped-oscillation and coherent-artifact elements add `activations`, the pfid element adds one `activation`.
+- A dataset has `elements` and the optional `global_elements`, `element_scale`, `global_element_scale`, `weights` and `data` (a file path). It also accepts `residual_function`, which the fit does not use; set it on the experiment. Elements add fields: the kinetic, damped-oscillation and coherent-artifact elements add `activations`, the pfid element adds one `activation` of `type: multi-gaussian`.
 - A value that is a parameter is the label of a parameter in the parameter file, or a number for a fixed value.
 - A rate key `(to, from)` names the target and the source compartment.
 
-The [JSON Schema](#json-schema-of-the-scheme) lists every field and type; `load_scheme` is the complete check.
+The [JSON Schema](#json-schema-of-the-scheme) lists every field and type. `load_scheme` checks more, and the remaining checks run when a fit starts, also with `dry_run=True`: a missing parameter, and model issues such as an empty `activations: {}` of a kinetic dataset.
 
 ### Parameter files
 
@@ -364,6 +364,6 @@ These points are decided before the contract is frozen.
 11. **Progress and cancelling.** A running fit reports progress only by printing SciPy's iteration table, from which `optimization_history.csv` is parsed, and can be stopped only with `KeyboardInterrupt`. Every fit replaces `sys.stdout` for the whole process, including its other threads.
 12. **Command line.** pyglotaran 0.8 has no command-line interface; a program in another language runs a Python script.
 13. **Parameters as YAML.** Parameters can be loaded from YAML but saved only as a table.
-14. **Checking input before a fit.** No function checks a scheme, the parameters and the data together without fitting. `dry_run=True` evaluates the model once and stops at the first problem. The values of the data are not checked: with a NaN in the data the fit ends with `success == False` and the reason `Residuals are not finite in the initial point.`
+14. **Checking input before a fit.** No function checks a scheme, the parameters and the data together without fitting. `dry_run=True` evaluates the model once and stops at the first problem. The values of the data are not checked: with a NaN in the data the fit ends with `success == False` and the reason `Residuals are not finite in the initial point.`, or raises `ValueError` with `residual_function: non_negative_least_squares`.
 15. **JSON Schema and loader.** The JSON Schema rejects an unknown top-level key and a missing `library`, which the loader ignores or reports as `KeyError`. It accepts references to parameters and elements that do not exist, which the loader or the fit rejects, and datasets that lack or have extra fields required by their elements, which the loader rejects.
 16. **Saving options.** A result saved without `residuals` still writes `fitted_data.nc`, which `load_result` does not read. `input_data` in `data_filter` has no effect for data created in memory, and for data loaded from a file the saved result depends on a file outside the result folder.

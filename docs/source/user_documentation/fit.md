@@ -44,7 +44,7 @@ A fit without free parameters evaluates the model once; `success` is `True` alth
 
 An error inside the optimizer gives a warning, and the fit still returns a result. With `raise_exception=True` the error is raised. Some errors are raised whatever the value of `raise_exception`:
 
-- Problems with the input are raised before the fit starts, for example a dataset label of the scheme without data, or a parameter the scheme uses that is missing.
+- Problems with the input are raised before the fit starts, for example `GlotaranUserError` for a dataset label of the scheme without data, or `ParameterNotFoundError` for a parameter the scheme uses that is missing.
 - If the model cannot be evaluated at the parameters where the optimizer stopped, the error of the optimizer is raised after the warning. Data with a NaN in an experiment with `residual_function: non_negative_least_squares` end this way with a `ValueError`.
 
 A script or application that must continue after a failed fit catches exceptions around `scheme.optimize`. [Errors and warnings](../reference/public_api.md#errors-and-warnings) in the reference lists them.
