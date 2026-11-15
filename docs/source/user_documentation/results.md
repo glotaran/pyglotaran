@@ -52,6 +52,8 @@ The dataset of a kinetic element holds:
 | `kinetic_amplitudes` | `activation`, global dimension, `kinetic` | Decay associated spectra (DAS) |
 | `k_matrix`, `reduced_k_matrix`, `a_matrix`, `initial_concentrations` | | Matrices of the kinetic scheme |
 
+[Result arrays](../reference/results.md) in the reference lists the arrays of every element type and activation.
+
 ## Save and load
 
 `result.save("folder")` writes a folder with the scheme, the parameters as CSV and the arrays as NetCDF. `load_result("folder")` reads it back. [Result folder](../reference/public_api.md#result-folder) in the reference lists the files.
