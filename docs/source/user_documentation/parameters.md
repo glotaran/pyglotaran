@@ -44,7 +44,9 @@ The label of a parameter is the label of its group and its own label, joined by 
 | `non-negative` | Keep the value positive by optimizing its logarithm | `false` |
 | `expr` | Compute the value from other parameters, referred to as `$label` | none |
 
-A parameter with an expression is not optimized; its value follows the parameters it refers to, as `rates.total` does after `rates.fast` is changed.
+A parameter with an expression is not optimized; its value follows the parameters it refers to. The value is computed when the parameters are loaded and during a fit. After you change `value` in code, the expression keeps its old value until `parameters.update_parameter_expression()` is called; in the script, `rates.total` shows the new value because it was loaded again from the file.
+
+With `non-negative: true` the `standard_error` after a fit is the error of the logarithm of the value; [Run a fit](fit.md#what-to-check-after-a-fit) shows how to convert it.
 
 A mapping of options as the last item of a group applies to every parameter of the group:
 

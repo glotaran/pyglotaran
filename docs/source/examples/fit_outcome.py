@@ -1,5 +1,5 @@
 # /// script
-# requires-python = ">=3.13"
+# requires-python = ">=3.13,<3.15"
 # dependencies = ["pyglotaran>=0.8"]
 # ///
 """Show how a fit can end and how to tell the outcomes apart."""
@@ -57,6 +57,8 @@ def outcome(result: Result) -> str:
         return "evaluated only" if info.termination_reason == "Dry run." else "failed"
     if "maximum number of function evaluations" in info.termination_reason:
         return "stopped at the evaluation limit"
+    if info.termination_reason == "No free parameters to optimize.":
+        return "evaluated only, every parameter fixed"
     return "converged"
 
 

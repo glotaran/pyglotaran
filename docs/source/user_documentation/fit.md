@@ -36,16 +36,24 @@ fit with a starting value outside its bounds: failed
 | --- | --- | --- |
 | Converged | `True` | A termination condition of SciPy (`ftol`, `xtol` or `gtol`) is satisfied |
 | Stopped at the evaluation limit | `True` | `The maximum number of function evaluations is exceeded.` |
+| No free parameters (every parameter fixed) | `True` | `No free parameters to optimize.` |
 | Dry run (`dry_run=True`) | `False` | `Dry run.` |
 | Failed | `False` | The message of the error |
 
-A failed fit gives a warning and still returns a result. With `raise_exception=True` the error is raised.
+A fit without free parameters evaluates the model once; `success` is `True` although nothing was optimized.
+
+An error inside the optimizer gives a warning, and the fit still returns a result. With `raise_exception=True` the error is raised. Some errors are raised whatever the value of `raise_exception`:
+
+- Problems with the input are raised before the fit starts, for example a dataset label of the scheme without data, or a parameter the scheme uses that is missing.
+- If the model cannot be evaluated at the parameters where the optimizer stopped, the error of the optimizer is raised after the warning. Data with a NaN in an experiment with `residual_function: non_negative_least_squares` end this way with a `ValueError`.
+
+A script or application that must continue after a failed fit catches exceptions around `scheme.optimize`. [Errors and warnings](../reference/public_api.md#errors-and-warnings) in the reference lists them.
 
 ## What to check after a fit
 
 - **Termination.** A fit that stopped at the evaluation limit has not converged. Continue from `result.optimized_parameters`, or raise `maximum_number_function_evaluations`.
 - **Root mean square error.** For data without weights, `optimization_info.root_mean_square_error` is in the units of the data. For a model that describes the data it is close to the noise level: 0.0100 above, for noise with a standard deviation of 0.01.
-- **Standard errors.** `result.optimized_parameters` has a `standard_error` for each free parameter. A standard error that is large compared with the value means the data do not determine that parameter.
+- **Standard errors.** `result.optimized_parameters` has a `standard_error` for each free parameter. A standard error that is large compared with the value means the data do not determine that parameter. For a parameter with `non-negative: true` the fit optimizes the logarithm of the value, and `standard_error` is the error of that logarithm: it is a relative error, and the error of the value is approximately `value * standard_error`. A rate of 0.0995 with a `standard_error` of 0.0022 has an error of about 0.0002.
 - **Parameters at a bound.** A value equal to its `minimum` or `maximum` means the bound decides the value.
 - **Residuals.** `result.optimization_results["my_data"].residuals` should look like noise. Structure in the residuals means the model misses a component. [Plotting](plotting.md) shows how to look at them.
 
