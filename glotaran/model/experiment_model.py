@@ -62,7 +62,8 @@ class ExperimentModel(BaseModel):
         description=(
             "How the amplitudes of all datasets of the experiment are estimated. "
             "`variable_projection` allows positive and negative amplitudes; "
-            "`non_negative_least_squares` keeps them at zero or above."
+            "`non_negative_least_squares` keeps the estimated amplitudes at zero or above; "
+            "amplitudes computed from a clp relation can still be negative."
         ),
     )
     scale: dict[str, ParameterType] = Field(
