@@ -9,6 +9,7 @@ import numpy as np
 import xarray as xr
 
 from glotaran.model.element import Element
+from glotaran.model.item import Attribute
 
 if TYPE_CHECKING:
     from glotaran.model.data_model import DataModel
@@ -16,10 +17,17 @@ if TYPE_CHECKING:
 
 
 class ClpGuideElement(Element):
+    """Guides one amplitude with a dataset that holds its known values."""
+
     type: Literal["clp-guide"]  # type:ignore[assignment]
     register_as: ClassVar[str] = "clp-guide"
     _exclusive: bool = True
-    target: str
+    target: str = Attribute(
+        description=(
+            "Label of the guided amplitude, for example a compartment of a kinetic element. "
+            "The dataset with this element holds the known values of that amplitude."
+        )
+    )
 
     def calculate_matrix(
         self,

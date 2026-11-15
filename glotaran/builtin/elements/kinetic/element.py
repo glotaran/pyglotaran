@@ -15,6 +15,7 @@ from glotaran.builtin.elements.kinetic.matrix import calculate_matrix_gaussian_a
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.model.element import ExtendableElement
+from glotaran.model.item import Attribute
 from glotaran.model.item import ParameterType  # noqa:F401
 
 if TYPE_CHECKING:
@@ -24,10 +25,14 @@ if TYPE_CHECKING:
 
 
 class KineticElement(ExtendableElement, Kinetic):
+    """Compartments that convert into each other and decay with first-order rates."""
+
     type: Literal["kinetic"]  # type:ignore[assignment]
     register_as: ClassVar[str] = "kinetic"
     data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
-    dimension: str = "time"
+    dimension: str = Attribute(
+        default="time", description="The dimension of the data that the element describes."
+    )
 
     def extend(self, other: KineticElement) -> KineticElement:  # type:ignore[override]
         return other.model_copy(update={"rates": self.rates | other.rates})

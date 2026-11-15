@@ -32,8 +32,15 @@ if TYPE_CHECKING:
 class Scheme(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
-    experiments: dict[str, ExperimentModel]
-    library: ModelLibrary
+    experiments: dict[str, ExperimentModel] = Field(
+        description=(
+            "The experiments by label. An experiment assigns elements of the library to datasets "
+            "that are fitted together."
+        )
+    )
+    library: ModelLibrary = Field(
+        description="The elements of the model by label, for use in the experiments."
+    )
     source_path: Path | None = Field(
         default=None,
         description="Path to the source file from which this scheme was loaded.",

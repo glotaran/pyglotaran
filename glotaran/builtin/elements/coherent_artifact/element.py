@@ -12,7 +12,8 @@ from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.model.element import Element
 from glotaran.model.errors import GlotaranModelError
-from glotaran.model.item import ParameterType  # noqa: TC001
+from glotaran.model.item import Attribute
+from glotaran.model.item import ParameterType
 
 if TYPE_CHECKING:
     from glotaran.model.data_model import DataModel
@@ -20,12 +21,26 @@ if TYPE_CHECKING:
 
 
 class CoherentArtifactElement(Element):
+    """A coherent artifact: a Gaussian at the center of a Gaussian activation and its derivatives.
+
+    The activation is the one that lists the label of this element in its ``compartments``.
+    """
+
     type: Literal["coherent-artifact"]  # type:ignore[assignment]
     register_as: ClassVar[str] = "coherent-artifact"
-    dimension: str = "time"
+    dimension: str = Attribute(
+        default="time", description="The dimension of the data that the element describes."
+    )
     data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
-    order: int
-    width: ParameterType | None = None
+    order: int = Attribute(
+        description=(
+            "The number of terms, from 1 to 3: the Gaussian, its first and its second derivative."
+        )
+    )
+    width: ParameterType | None = Attribute(
+        default=None,
+        description="The width of the Gaussian. Without it, the width of the activation is used.",
+    )
 
     def calculate_matrix(  # type:ignore[override]
         self,

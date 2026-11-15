@@ -30,21 +30,42 @@ if TYPE_CHECKING:
 
 
 class ExperimentModel(BaseModel):
-    """A dataset group for optimization."""
+    """Datasets that are fitted together and share their amplitudes."""
 
     model_config = ConfigDict(extra="forbid")
 
-    clp_link_tolerance: float = 0.0
-    clp_link_method: Literal["nearest", "backward", "forward"] = "nearest"
-    clp_penalties: list[EqualAreaPenalty] = Field(default_factory=list)
-    clp_relations: list[ClpRelation] = Field(default_factory=list)
-    datasets: dict[str, DataModel]
+    clp_link_tolerance: float = Field(
+        default=0.0,
+        description=(
+            "The largest distance between values of the global dimension of two datasets "
+            "at which the datasets share their amplitudes."
+        ),
+    )
+    clp_link_method: Literal["nearest", "backward", "forward"] = Field(
+        default="nearest",
+        description=(
+            "How a value of the global dimension of one dataset is matched "
+            "to the values of the other datasets."
+        ),
+    )
+    clp_penalties: list[EqualAreaPenalty] = Field(
+        default_factory=list, description="Penalties on the amplitudes of the experiment."
+    )
+    clp_relations: list[ClpRelation] = Field(
+        default_factory=list, description="Relations between amplitudes of the experiment."
+    )
+    datasets: dict[str, DataModel] = Field(
+        description="The datasets that are fitted together, by dataset label."
+    )
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Field(
         default="variable_projection", description="The residual function to use."
     )
     scale: dict[str, ParameterType] = Field(
         default_factory=dict,
-        description="The scales of of the datasets in the experiment.",
+        description=(
+            "A factor for datasets of the experiment, by dataset label. "
+            "A dataset that is not listed has the factor 1."
+        ),
     )
 
     @field_serializer("datasets")

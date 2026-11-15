@@ -20,6 +20,7 @@ from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.model.data_model import DataModel  # noqa: TC001
 from glotaran.model.element import Element
+from glotaran.model.item import Attribute
 from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 
@@ -28,16 +29,29 @@ if TYPE_CHECKING:
 
 
 class Oscillation(Item):
-    frequency: ParameterType
-    rate: ParameterType
+    """One damped oscillation."""
+
+    frequency: ParameterType = Attribute(
+        description="The frequency of the oscillation in 1/cm, for a time axis in ps."
+    )
+    rate: ParameterType = Attribute(description="The damping rate of the oscillation.")
 
 
 class DampedOscillationElement(Element):
+    """Damped oscillations, each with a cosine and a sine amplitude."""
+
     type: Literal["damped-oscillation"]  # type:ignore[assignment]
     register_as: ClassVar[str] = "damped-oscillation"
-    dimension: str = "time"
+    dimension: str = Attribute(
+        default="time", description="The dimension of the data that the element describes."
+    )
     data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
-    oscillations: dict[str, Oscillation]
+    oscillations: dict[str, Oscillation] = Attribute(
+        description=(
+            "The oscillations by label. An activation of the dataset excites an oscillation "
+            "by listing its label in `compartments`."
+        )
+    )
 
     def calculate_matrix(  # type:ignore[override]
         self,

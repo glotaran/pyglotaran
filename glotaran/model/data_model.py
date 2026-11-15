@@ -180,24 +180,50 @@ def validate_global_elements(
 class DataModel(Item):
     """A model for datasets."""
 
-    data: str | xr.Dataset | None = Field(None, exclude=True)
+    data: str | xr.Dataset | None = Field(
+        None,
+        exclude=True,
+        description="Path of the data file, which is loaded when the scheme is loaded.",
+    )
     # Seems unused:
     # extra_data: str | xr.Dataset | None = None
     elements: list[Element | str] = Attribute(
-        description="The elements contributing to this dataset.",
+        description=(
+            "The elements that describe the model dimension of this dataset, "
+            "as labels of elements in the library."
+        ),
         validator=validate_elements,
     )
-    element_scale: dict[str, ParameterType] | None = None
+    element_scale: dict[str, ParameterType] | None = Attribute(
+        default=None,
+        description=(
+            "A factor for elements of this dataset, by element label. "
+            "An element that is not listed has the factor 1."
+        ),
+    )
     global_elements: list[Element | str] | None = Attribute(
         default=None,
-        description="The global elements contributing to this dataset.",
+        description=(
+            "The elements that describe the global dimension of this dataset, as labels of "
+            "elements in the library. Without them the amplitudes along the global dimension "
+            "are free."
+        ),
         validator=validate_global_elements,
     )
-    global_element_scale: dict[str, ParameterType] | None = None
+    global_element_scale: dict[str, ParameterType] | None = Attribute(
+        default=None,
+        description=(
+            "A factor for global elements of this dataset, by element label. "
+            "An element that is not listed has the factor 1."
+        ),
+    )
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Attribute(
         default="variable_projection", description="The residual function to use."
     )
-    weights: list[Weight] = Field(default_factory=list)
+    weights: list[Weight] = Field(
+        default_factory=list,
+        description="Weights for regions of the data, applied to the residuals of the fit.",
+    )
 
     @property
     def data_path(self) -> str | None:

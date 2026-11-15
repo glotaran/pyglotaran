@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
+from glotaran.model.item import Attribute
 from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 
@@ -13,23 +14,36 @@ class ClpPenalty(Item):
 
 
 class EqualAreaPenalty(ClpPenalty):
-    """Forces the area of 2 clp to be the same.
+    """Penalizes a difference between the area of one amplitude and the scaled area of another.
 
-    An equal area constraint adds a the difference of the sum of a
-    compartments in the e matrix in one or more intervals to the scaled sum
-    of the e matrix of one or more target compartments to residual. The additional
-    residual is scaled with the weight.
+    The area is the sum of the amplitude over its intervals on the global dimension.
+    The term ``weight * |area(source) - parameter * area(target)|`` is added to the residual.
     """
 
     # note: we do not use pydantic discriminators as it needs at least 2 different types.
     # we keep the type though for later extension.
     type: Literal["equal_area"]
-    source: str
-    source_intervals: list[tuple[float, float]] | tuple[float, float] | None = None
-    target: str
-    target_intervals: list[tuple[float, float]] | tuple[float, float] | None = None
-    parameter: ParameterType
-    weight: float
+    source: str = Attribute(description="Label of the amplitude whose area is compared.")
+    source_intervals: list[tuple[float, float]] | tuple[float, float] | None = Attribute(
+        default=None,
+        description=(
+            "Intervals on the global dimension over which the source is summed. "
+            "Without it, the whole range."
+        ),
+    )
+    target: str = Attribute(description="Label of the amplitude whose area is scaled.")
+    target_intervals: list[tuple[float, float]] | tuple[float, float] | None = Attribute(
+        default=None,
+        description=(
+            "Intervals on the global dimension over which the target is summed. "
+            "Without it, the whole range."
+        ),
+    )
+    parameter: ParameterType = Attribute(
+        description="The factor of the target area: the penalty is "
+        "weight * |area(source) - parameter * area(target)|."
+    )
+    weight: float = Attribute(description="The factor of the penalty in the residual.")
 
     def source_applies(self, index: float | None) -> bool:
         return self.applies(index, self.source_intervals)  # type:ignore[arg-type]

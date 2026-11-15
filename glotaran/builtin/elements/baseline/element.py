@@ -16,6 +16,11 @@ if TYPE_CHECKING:
 
 
 class BaselineElement(Element):
+    """A constant along the model dimension, with one amplitude for each global value.
+
+    Set ``dimension`` to the model dimension of the dataset, for example ``time``.
+    """
+
     type: Literal["baseline"]  # type:ignore[assignment]
     register_as: ClassVar[str] = "baseline"
     _unique: ClassVar[bool] = True
