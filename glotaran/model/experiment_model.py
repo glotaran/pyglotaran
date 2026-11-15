@@ -58,7 +58,12 @@ class ExperimentModel(BaseModel):
         description="The datasets that are fitted together, by dataset label."
     )
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Field(
-        default="variable_projection", description="The residual function to use."
+        default="variable_projection",
+        description=(
+            "How the amplitudes of all datasets of the experiment are estimated. "
+            "`variable_projection` allows positive and negative amplitudes; "
+            "`non_negative_least_squares` keeps them at zero or above."
+        ),
     )
     scale: dict[str, ParameterType] = Field(
         default_factory=dict,

@@ -218,7 +218,11 @@ class DataModel(Item):
         ),
     )
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Attribute(
-        default="variable_projection", description="The residual function to use."
+        default="variable_projection",
+        description=(
+            "Not used by the fit. Set `residual_function` on the experiment that holds the "
+            "dataset."
+        ),
     )
     weights: list[Weight] = Field(
         default_factory=list,
