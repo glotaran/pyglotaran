@@ -22,6 +22,12 @@ type LibraryType = dict[str, ElementType]
 
 
 class ModelLibrary(RootModel[LibraryType]):
+    """The elements of a scheme, by label.
+
+    Elements with ``extends`` are combined with the elements they extend when the library is
+    created.
+    """
+
     root: LibraryType
 
     def __init__(self, **data: ElementType) -> None:

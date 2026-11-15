@@ -204,14 +204,23 @@ class OptimizationResultMetaData(BaseModel):
 
 
 class OptimizationResult(BaseModel):
+    """The result arrays of one dataset of a fit."""
+
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     elements: dict[str, xr.Dataset] = Field(default_factory=dict)
+    """The result of each element of the dataset, by element label."""
     activations: dict[str, xr.Dataset] = Field(default_factory=dict)
+    """The result of each Gaussian activation of the dataset, by activation label."""
     input_data: xr.DataArray | xr.Dataset
+    """The data the fit used; a dataset with ``data`` and ``weight`` if the input had a weight."""
     residuals: xr.DataArray | xr.Dataset | None = None
+    """The data minus the fit, not multiplied by the weight; ``None`` if saved without it."""
     fit_decomposition: FitDecomposition | None
+    """The amplitudes (``clp``) and the model matrix (``matrix``) of the fit; ``None`` if saved
+    without it."""
     meta: OptimizationResultMetaData
+    """The dimensions, the root mean square errors and the scale of the dataset."""
 
     @computed_field  # type: ignore[prop-decorator]
     @property
